@@ -18,10 +18,10 @@ var config = new ConfigurationBuilder()
 #endif
     .Build();
 
-var writeCertValidationEventsToConsole = bool.TryParse(config["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
-var mTlsEnabled = bool.TryParse(config["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
-var statsEnabled = bool.TryParse(config["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
-var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
+var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
+var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
 
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
@@ -98,8 +98,18 @@ app.MapGet("/hello-world", () =>
 await app.StartAsync();
 
 Console.WriteLine("Application Info:");
-if (mTlsEnabled) Console.WriteLine($"\tmTLS is enabled (client cert is required)");
-if (writeCertValidationEventsToConsole) Console.WriteLine($"\tenabled logging certificate validation events to console");
+if (mTlsEnabled)
+{
+    Console.WriteLine($"\tmTLS is enabled (client cert is required)");
+}
+if (writeCertValidationEventsToConsole)
+{
+    Console.WriteLine($"\tenabled logging certificate validation events to console");
+}
+if (statsEnabled)
+{
+    Console.WriteLine($"\tenabled logging stats to console");
+}
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
 

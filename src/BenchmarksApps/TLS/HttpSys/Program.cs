@@ -12,21 +12,12 @@ builder.WebHost.UseHttpSys(options =>
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 
-var config = new ConfigurationBuilder()
-    .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-    .AddCommandLine(args)
-    .AddJsonFile("appsettings.json")
-#if DEBUG
-    .AddJsonFile($"appsettings.Development.json")
-#endif
-    .Build();
+var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
+var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
 
-var writeCertValidationEventsToConsole = bool.TryParse(config["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
-var statsEnabled = bool.TryParse(config["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
-var mTlsEnabled = bool.TryParse(config["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
-var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
-
-var app = builder.Build();
+var app = builder.Build();  
 
 app.MapGet("/hello-world", () =>
 {
@@ -57,13 +48,20 @@ if (mTlsEnabled)
         var clientCert = context.Connection.ClientCertificate;
         if (clientCert is null)
         {
-            if (writeCertValidationEventsToConsole) Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
+            if (writeCertValidationEventsToConsole)
+            {
+                Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
+            }
+
             clientCert = await context.Connection.GetClientCertificateAsync(CancellationToken.None);
-            fetchedCertsCounter++;
+            Interlocked.Increment(ref fetchedCertsCounter);
         }
         else
         {
-            if (writeCertValidationEventsToConsole) Console.WriteLine($"client certificate ({clientCert.Thumbprint}) already exists on the connection {context.Connection.Id}");
+            if (writeCertValidationEventsToConsole)
+            {
+                Console.WriteLine($"client certificate ({clientCert.Thumbprint}) already exists on the connection {context.Connection.Id}");
+            }
         }
 
         // we have a client cert here, and lets imagine we do the validation here
@@ -75,9 +73,18 @@ if (mTlsEnabled)
 
 await app.StartAsync();
 Console.WriteLine("Application Info:");
-if (mTlsEnabled) Console.WriteLine($"\tmTLS is enabled (client cert is required)");
-if (writeCertValidationEventsToConsole) Console.WriteLine($"\tenabled logging certificate validation events to console");
-if (statsEnabled) Console.WriteLine($"\tenabled logging stats to console");
+if (mTlsEnabled)
+{
+    Console.WriteLine($"\tmTLS is enabled (client cert is required)");
+}
+if (writeCertValidationEventsToConsole)
+{
+    Console.WriteLine($"\tenabled logging certificate validation events to console");
+}
+if (statsEnabled)
+{
+    Console.WriteLine($"\tenabled logging stats to console");
+}
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
 
