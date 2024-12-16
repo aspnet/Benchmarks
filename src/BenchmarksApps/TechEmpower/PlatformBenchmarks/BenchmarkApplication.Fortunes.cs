@@ -16,9 +16,9 @@ public partial class BenchmarkApplication
     {
         await OutputFortunes(
             pipeWriter,
-            //await RawDb.LoadFortunesRows(),
+            await RawDb.LoadFortunesRows(),
             // To isolate template rendering from DB access, comment out the line above and uncomment the line below
-            await RawDb.LoadFortunesRowsNoDb(),
+            //await RawDb.LoadFortunesRowsNoDb(),
             Templates.FortunesUtf8.Create);
     }
 

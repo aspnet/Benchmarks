@@ -42,7 +42,7 @@ namespace PlatformBenchmarks
 #if DATABASE
             try
             {
-                //await BenchmarkApplication.RawDb.PopulateCache();
+                await BenchmarkApplication.RawDb.PopulateCache();
             }
             catch (Exception ex)
             {
@@ -86,7 +86,7 @@ namespace PlatformBenchmarks
 
             var hostBuilder = new WebHostBuilder()
                 .UseBenchmarksConfiguration(config)
-                .ConfigureLogging(logging => logging.AddConsole())
+                //.ConfigureLogging(logging => logging.AddConsole())
                 .UseKestrel((context, options) =>
                 {
                     var endPoints = context.Configuration.CreateIPEndPoints();
