@@ -4,18 +4,19 @@ using Microsoft.AspNetCore.Server.HttpSys;
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
+var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
+var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
+
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
 {
     // meaning client can send a certificate, but it can be explicitly requested by server as well (renegotiation)
     options.ClientCertificateMethod = ClientCertificateMethod.AllowRenegotation;
+    options.Authentication.AllowAnonymous = false;
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
-
-var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
-var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
-var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
-var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
 
 var app = builder.Build();  
 
