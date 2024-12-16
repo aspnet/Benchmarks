@@ -40,7 +40,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Windows
@@ -52,7 +54,9 @@ jobs:
   steps:
   - template: trend-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Trends_Database_Arm_28_Linux
@@ -64,8 +68,24 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
+      
+- job: Trends_Database_Gold_Linux
+  displayName: 1- Trends Database Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: []
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 2
 
@@ -73,37 +93,57 @@ jobs:
   displayName: 2- Trends Database Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux]
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux, Trends_Database_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Linux
   displayName: 2- Trends Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux]
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux, Trends_Database_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load2-load "
       
 - job: Native_Aot_Arm_28_Linux
   displayName: 2- Native Aot Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux]
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux, Trends_Database_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: nativeaot-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
+      
+- job: Trends_Gold_Windows
+  displayName: 2- Trends Gold Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_28_Linux, Trends_Database_Gold_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-win "
       
 # GROUP 3
 
@@ -111,37 +151,57 @@ jobs:
   displayName: 3- Trends Database Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux]
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux, Trends_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Arm_28_Linux
   displayName: 3- Trends Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux]
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux, Trends_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
       
 - job: GC_Intel_Windows
   displayName: 3- GC Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux]
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux, Trends_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: gc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app "
+      
+- job: Trends_Gold_Linux
+  displayName: 3- Trends Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Native_Aot_Arm_28_Linux, Trends_Gold_Windows]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 4
 
@@ -149,37 +209,57 @@ jobs:
   displayName: 4- Trends Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows]
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows, Trends_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
 - job: Containers_Intel_Linux
   displayName: 4- Containers Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows]
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows, Trends_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: containers-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: EF_Core_Intel_Windows
   displayName: 4- EF Core Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows]
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows, Trends_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: efcore-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app "
+      
+- job: Trends_Database_Gold_Windows
+  displayName: 4- Trends Database Gold Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_28_Linux, GC_Intel_Windows, Trends_Gold_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-win "
       
 # GROUP 5
 
@@ -187,37 +267,57 @@ jobs:
   displayName: 5- Baselines Database Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows]
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Trends_Database_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Intel_Windows
   displayName: 5- Baselines Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows]
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Trends_Database_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Baselines_Database_Arm_28_Linux
   displayName: 5- Baselines Database Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows]
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Trends_Database_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
+      
+- job: Baselines_Database_Gold_Linux
+  displayName: 5- Baselines Database Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Trends_Database_Gold_Windows]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 6
 
@@ -225,37 +325,57 @@ jobs:
   displayName: 6- Baselines Database Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux]
+  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux, Baselines_Database_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Intel_Linux
   displayName: 6- Baselines Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux]
+  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux, Baselines_Database_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load2-load "
       
 - job: PGO_Arm_28_Linux
   displayName: 6- PGO Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux]
+  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux, Baselines_Database_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: pgo-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
+      
+- job: Baselines_Gold_Windows
+  displayName: 6- Baselines Gold Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Database_Intel_Linux, Baselines_Intel_Windows, Baselines_Database_Arm_28_Linux, Baselines_Database_Gold_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-win "
       
 # GROUP 7
 
@@ -263,37 +383,57 @@ jobs:
   displayName: 7- Baselines Database Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux]
+  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux, Baselines_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Arm_28_Linux
   displayName: 7- Baselines Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux]
+  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux, Baselines_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
       
 - job: Native_Aot_Intel_Windows
   displayName: 7- Native Aot Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux]
+  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux, Baselines_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: nativeaot-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-lin-load --profile amd-lin2-db "
+      
+- job: Baselines_Gold_Linux
+  displayName: 7- Baselines Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Database_Intel_Windows, Baselines_Intel_Linux, PGO_Arm_28_Linux, Baselines_Gold_Windows]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 8
 
@@ -301,37 +441,57 @@ jobs:
   displayName: 8- Baselines Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows]
+  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows, Baselines_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-lin-load "
       
 - job: Frameworks_Intel_Linux
   displayName: 8- Frameworks Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows]
+  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows, Baselines_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile amd-lin2-db "
       
 - job: Grpc_Intel_Windows
   displayName: 8- Grpc Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows]
+  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows, Baselines_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: grpc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      
+- job: Baselines_Database_Gold_Windows
+  displayName: 8- Baselines Database Gold Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Database_Amd_Linux, Baselines_Arm_28_Linux, Native_Aot_Intel_Windows, Baselines_Gold_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-win "
       
 # GROUP 9
 
@@ -339,37 +499,57 @@ jobs:
   displayName: 9- Frameworks Database Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows]
+  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows, Baselines_Database_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: WebSockets_Intel_Windows
   displayName: 9- WebSockets Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows]
+  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows, Baselines_Database_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: websocket-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Frameworks_Database_Arm_28_Linux
   displayName: 9- Frameworks Database Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows]
+  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows, Baselines_Database_Gold_Windows]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
+      
+- job: Frameworks_Database_Intel_Gold_Linux
+  displayName: 9- Frameworks Database Intel Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows, Baselines_Database_Gold_Windows]
+  condition: succeededOrFailed()
+  steps:
+  - template: frameworks-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 10
 
@@ -377,37 +557,57 @@ jobs:
   displayName: 10- Frameworks Database Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Frameworks_Arm_80_Linux
   displayName: 10- Frameworks Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-app --profile amd-lin-load --profile amd-lin2-db "
       
 - job: Trends_Siryn_Linux
   displayName: 10- Trends Siryn Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-load2-load "
+      
+- job: Frameworks_Intel_Gold_Linux
+  displayName: 10- Frameworks Intel Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: frameworks-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 11
 
@@ -415,36 +615,42 @@ jobs:
   displayName: 11- Frameworks Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux, Frameworks_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile amd-lin2-load --profile intel-load2-db "
       
 - job: Native_Aot_Intel_Linux
   displayName: 11- Native Aot Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux, Frameworks_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: nativeaot-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Siryn_Linux
   displayName: 11- Baselines Siryn Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux, Frameworks_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load "
       
 

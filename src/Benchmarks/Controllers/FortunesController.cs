@@ -29,7 +29,7 @@ namespace Benchmarks.Controllers
         public async Task<IActionResult> Dapper()
         {
             var db = HttpContext.RequestServices.GetRequiredService<DapperDb>();
-            return View("Fortunes", await db.LoadFortunesRows());
+            return View("FortunesUtf16", await db.LoadFortunesRows());
         }
 
         [HttpGet("ef")]

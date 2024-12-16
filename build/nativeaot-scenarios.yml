@@ -5,6 +5,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -19,7 +25,7 @@ parameters:
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (CoreCLR - Server GC)
-    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1ServerGC --property publish=coreclr
+    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1ServerGC --property publish=coreclr --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (CoreCLR - PGO)
@@ -37,7 +43,7 @@ parameters:
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
-    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Workstation GC)
@@ -55,7 +61,7 @@ parameters:
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (CoreCLR - Server GC)
-    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2ServerGC --property publish=coreclr
+    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2ServerGC --property publish=coreclr --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (CoreCLR - PGO)
@@ -73,7 +79,7 @@ parameters:
 
   - displayName: Goldilocks Stage 2 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
-    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
+    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (NativeAOT - Workstation GC)
@@ -91,7 +97,7 @@ parameters:
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Server GC)
-    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcServerGC --property publish=coreclr
+    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcServerGC --property publish=coreclr --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - PGO)
@@ -109,7 +115,7 @@ parameters:
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Workstation GC)
@@ -127,17 +133,19 @@ parameters:
     condition: true
 
   - displayName: Gin Json
-    arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property publish=default --application.options.requiredOperatingSystem Linux
+    arguments: --scenario json_gin --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonGin --property publish=default --application.options.requiredOperatingSystem Linux
     condition: Math.round(Date.now() / 43200000) % 6 == 2 # once every 6 half-days (43200000 ms per half-day)
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
+  - task: PublishToAzureServiceBus@2
     displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
     timeoutInMinutes: 10
     inputs:
       connectedServiceName: ${{ parameters.connection }}
+      serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+      serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
       waitForCompletion: true
       useDataContractSerializer: "false"
       messageBody: |
@@ -145,5 +153,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net9.0 --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net10.0 --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
         }

@@ -13,8 +13,8 @@ namespace TcpClient
         private static string Ip;
         private static int Port = 5201;
         private static int Size = 1;
-        private static int WarmupSeconds;
-        private static int DurationSeconds;
+        private static TimeSpan Warmup = default(TimeSpan);
+        private static TimeSpan Duration = default(TimeSpan);
         private static int Connections;
         private static Stopwatch _stopwatch = Stopwatch.StartNew();
 
@@ -65,11 +65,9 @@ namespace TcpClient
                     Size = int.Parse(optionSize.Value());
                 }
 
-                WarmupSeconds = optionWarmup.HasValue()
-                    ? int.Parse(optionWarmup.Value())
-                    : 0;
-
-                DurationSeconds = int.Parse(optionDuration.Value());
+                Warmup = TimeSpan.FromSeconds(optionWarmup.HasValue() ? int.Parse(optionWarmup.Value()) : 0);
+		
+		        Duration = TimeSpan.FromSeconds(int.Parse(optionDuration.Value()));
 
                 Connections = int.Parse(optionConnections.Value());
 
@@ -90,13 +88,13 @@ namespace TcpClient
 
         private static async Task ScheduleAsync()
         {
-            await Task.Delay(WarmupSeconds);
+            await Task.Delay(Warmup);
 
             Interlocked.Exchange(ref _requests, 0);
 
             _measure = true;
 
-            await Task.Delay(DurationSeconds);
+            await Task.Delay(Duration);
 
             _stopped = true;
         }

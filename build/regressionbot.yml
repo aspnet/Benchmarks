@@ -34,6 +34,10 @@ extends:
       image: MMSWindows2022-Secure
       os: windows
     sdl:
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
       sourceRepositoriesToScan:
           exclude:
           # exclude dotnet-crank from this SDL since it already has it's own Official pipeline
@@ -59,7 +63,12 @@ extends:
           fetchDepth: 1
           path: benchmarks
           displayName: Checkout aspnet-benchmarks
-        - powershell: |
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Service Bus
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: |
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
                   --config $(Pipeline.Workspace)/benchmarks/build/regressions.config.yml `
                   --connectionstring BENCHMARKSBOT_ConnectionString `
@@ -80,6 +89,7 @@ extends:
                   --app-key BENCHMARKSBOT_GitHubAppKey `
                   --verbose
           displayName: Run regression bot
+          continueOnError: false
           env:
             BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
             BENCHMARKSBOT_GitHubAppKey: $(github.privatekey)

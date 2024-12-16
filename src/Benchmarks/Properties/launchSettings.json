@@ -2,6 +2,7 @@
   "profiles": {
     "Benchmarks": {
       "commandName": "Project",
+      "commandLineArgs": "--nonInteractive true --scenarios DbFortunesRaw --urls http://localhost:8080 --server Kestrel --protocol http",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

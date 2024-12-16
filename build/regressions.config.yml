@@ -6,7 +6,7 @@ sources:
       - include: Mvc # custom include for the extra-label
         labels: 
           - area-mvc
-      - exclude: drogon|fasthttp|actix|gin|express|node|netty
+      - exclude: drogon|fasthttp|actix|gin|express|node|netty|spring|vertx|ntex|Siryn
       - exclude: '[aA]zure'
       - exclude: Arm\s80
     daysToLoad: 60
@@ -30,7 +30,7 @@ sources:
     rules:
       - include: FortunesEF
       - include: JsonPlatform
-      - include: JsonMapAction
+      - include: JsonMinimalApis
     daysToLoad: 60
     stdevCount: 7
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
@@ -54,6 +54,14 @@ sources:
       - include: ApiCrud.*
         labels: 
           - area-mvc
+      - include: Plaintext.*
+        labels: 
+          - area-auth
+        owners:
+          - BrennanConroy
+      - include: OrchardAboutSqlite
+        owners:
+          - sebastienros
     daysToLoad: 60
     stdevCount: 7
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives

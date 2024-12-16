@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -16,14 +22,14 @@ parameters:
   type: object
   default: 
   
-  - displayName: "7.0"
-    arguments: --application.framework net7.0 --property framework=net7.0
-
   - displayName: "8.0"
     arguments: --application.framework net8.0 --property framework=net8.0
 
   - displayName: "9.0"
     arguments: --application.framework net9.0 --property framework=net9.0
+
+  - displayName: "10.0"
+    arguments: --application.framework net10.0 --property framework=net10.0
 
 # Scenarios
 - name: scenarios 
@@ -32,10 +38,10 @@ parameters:
 
   # Platform
   - displayName: Fortunes Platform
-    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform
+    arguments: --scenario fortunes $(platformJobs) --load.connections 512 --property scenario=FortunesPlatform
 
   - displayName: Single Query Platform
-    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform
+    arguments: --scenario single_query $(platformJobs) --load.connections 512 --property scenario=SingleQueryPlatform
 
   - displayName: Multiple Queries Platform
     arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform
@@ -46,25 +52,9 @@ parameters:
   - displayName: Caching Platform
     arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform
 
-  # PGO Inline
-  - displayName: Fortunes Platform PGO Inline
-    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
-  - displayName: Single Query Platform PGO Inline
-    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
-  - displayName: Multiple Queries Platform PGO Inline
-    arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
-  - displayName: Updates Platform PGO Inline
-    arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
-  - displayName: Caching Platform PGO Inline
-    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
   # Database Fortunes
-  - displayName: Database Fortunes Raw
-    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes
+  - displayName: Database Fortunes Minimal Apis
+    arguments: --scenario fortunes $(minimalJobs) --load.connections 512 --property scenario=Fortunes
 
   - displayName: Database Fortunes EF
     arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEF
@@ -72,12 +62,14 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
-    - task: PublishToAzureServiceBus@1
+    - task: PublishToAzureServiceBus@2
       condition: succeededOrFailed()
       timeoutInMinutes: 10
       displayName: "${{ s.displayName }} - ${{ b.displayName }}"
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |
@@ -85,5 +77,5 @@ steps:
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
             "retries": 1,
-            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --load.options.reuseBuild true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
           }

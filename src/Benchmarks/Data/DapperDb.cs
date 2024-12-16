@@ -92,19 +92,19 @@ namespace Benchmarks.Data
 
         }
 
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
+        public async Task<IEnumerable<FortuneUtf16>> LoadFortunesRows()
         {
-            List<Fortune> result;
+            List<FortuneUtf16> result;
 
             using (var db = _dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = _connectionString;
 
                 // Note: don't need to open connection if only doing one thing; let dapper do it
-                result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
+                result = (await db.QueryAsync<FortuneUtf16>("SELECT id, message FROM fortune")).AsList();
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new FortuneUtf16(0, "Additional fortune added at request time."));
             result.Sort();
 
             return result;

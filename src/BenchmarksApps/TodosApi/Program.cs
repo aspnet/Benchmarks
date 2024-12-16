@@ -6,6 +6,9 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Logging.ClearProviders();
 #endif
 
+// Add service defaults
+builder.AddServiceDefaults();
+
 // Bind app settings from configuration & validate
 builder.Services.ConfigureAppSettings(builder.Configuration, builder.Environment);
 
@@ -24,15 +27,19 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 // Configure health checks
-builder.Services.AddHealthChecks()
-    .AddCheck<DatabaseHealthCheck>("Database", timeout: TimeSpan.FromSeconds(2))
-    .AddCheck<JwtHealthCheck>("JwtAuthentication");
 
 // Problem details
 builder.Services.AddProblemDetails();
 
 // OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) => {
+        document.Info.Title = "Todos API";
+        document.Info.Version = "v1";
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 
@@ -43,7 +50,7 @@ if (!app.Environment.IsDevelopment())
 
 app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
 
-app.MapHealthChecks("/health");
+app.MapDefaultEndpoints();
 
 // Enables testing request exception handling behavior
 app.MapGet("/throw", void () => throw new InvalidOperationException("You hit the throw endpoint"));

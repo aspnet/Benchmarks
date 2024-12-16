@@ -7,21 +7,35 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
 
-- name: getScenarios 
+- name: httpClientJobs
+  type: string
+  default: '--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml?raw=true'
+
+- name: tfm
+  type: string
+  default: '--client.framework net10.0 --server.framework net10.0'
+
+- name: getScenarios
   type: object
   default:
   - displayName: "GET"
-    arguments: --scenario httpclient-kestrel-get $(httpClientJobs) --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
+    arguments: --scenario httpclient-kestrel-get --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
 
-- name: postScenarios 
+- name: postScenarios
   type: object
   default:
   - displayName: "POST"
-    arguments: --scenario httpclient-kestrel-post $(httpClientJobs) --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=post --client.options.collectCounters true
+    arguments: --scenario httpclient-kestrel-post --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=post --client.options.collectCounters true
 
 - name: httpVersion
   type: object
@@ -33,7 +47,9 @@ parameters:
     - displayName: "HTTP/2.0 (mult conn)"
       arguments: --variable httpVersion=2.0 --variable useHttps=true --variable http20EnableMultipleConnections=true --property httpversion=h2multconn
     - displayName: "HTTP/3.0"
-      arguments: --variable httpVersion=3.0 --variable useHttps=true --property httpversion=h3
+      arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=false --property httpversion=h3
+    - displayName: "HTTP/3.0 (mult conn)"
+      arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=true --property httpversion=h3multconn
 
 - name: clientsxThreads
   type: object
@@ -64,19 +80,21 @@ steps:
   - ${{ each version in parameters.httpVersion }}:
     - ${{ each ct in parameters.clientsxThreads }}:
       - ${{ each response in parameters.response }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
               {
-                "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
+                "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0)",
                 "name": "crank",
-                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
+                "args": [ "--description \"${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }} $(System.JobDisplayName)\" ${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
               }
 
 # POST scenarios
@@ -84,17 +102,19 @@ steps:
   - ${{ each version in parameters.httpVersion }}:
     - ${{ each ct in parameters.clientsxThreads }}:
       - ${{ each content in parameters.requestContent }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ content.displayName }} ${{ ct.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
               {
-                "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
+                "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0)",
                 "name": "crank",
-                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
+                "args": [ "--description \"${{ version.displayName }} ${{ s.displayName }} ${{ content.displayName }} ${{ ct.displayName }} $(System.JobDisplayName)\" ${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
               }

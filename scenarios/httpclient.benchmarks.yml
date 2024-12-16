@@ -25,6 +25,7 @@ variables:
     # HttpClient-specific parameters:
     http11MaxConnectionsPerServer: 0 #unlimited
     http20EnableMultipleConnections: true
+    http30EnableMultipleConnections: true
     useWinHttpHandler: false
     useHttpMessageInvoker: false
     useDefaultRequestHeaders: false
@@ -102,6 +103,7 @@ scenarios:
         numberOfHttpClients: 1
         concurrencyPerHttpClient: '{% if cores > 0 %}{{cores}}{% else %}1{% endif %}'
         http20EnableMultipleConnections: false
+        http30EnableMultipleConnections: false
         useHttpMessageInvoker: true
         host: '{{secondaryAddress}}'
 
@@ -168,7 +170,7 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 1200 #seconds
-    arguments: '--address {{host}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}'
+    arguments: '--address {{host}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --http30EnableMultipleConnections {{http30EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}'
 
   wrk:
     source:

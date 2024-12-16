@@ -7,9 +7,18 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
+- name: config
+  type: string
+  default: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 # Scenarios
 - name: scenarios 
@@ -24,45 +33,51 @@ parameters:
   # Express (JavaScript)
 
   - displayName: Express Plaintext
-    arguments: --scenario plaintext_express $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextExpress --property protocol=http
+    arguments: --scenario plaintext_express --load.variables.connections 1024 --property scenario=PlaintextExpress
   - displayName: Express Json
-    arguments: --scenario json_express $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonExpress --property protocol=http
+    arguments: --scenario json_express --load.variables.connections 512 --property scenario=JsonExpress
 
   # Gin (Go)
   # Scenarios are in frameworks-database-scenarios.yml since they require the db server
 
-  # Actix (Rust)
-  # Actix is disable as the build is currently broken
-  #- displayName: Actix Plaintext
-  #  arguments: --scenario plaintext_actix $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextActix --property protocol=http
-  #- displayName: Actix Json
-  #  arguments: --scenario json_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonActix --property protocol=http
+#  Ntex (Rust)
 
-  # Drogon (C++)
-  # Scenarios are in frameworks-database-scenarios.yml since they require the db server
+  - displayName: Ntex Plaintext
+    arguments: --scenario plaintext_ntex --load.variables.connections 1024 --property scenario=PlaintextNtex
+  - displayName: Ntex Json
+    arguments: --scenario json_ntex --load.variables.connections 512 --property scenario=JsonNtex
+
+#  Vertx (Java)
+
+  - displayName: Vertx Plaintext
+    arguments: --scenario plaintext_vertx --load.variables.connections 1024 --property scenario=PlaintextVertx
+  - displayName: Vertx Json
+    arguments: --scenario json_vertx --load.variables.connections 512 --property scenario=JsonVertx
 
   # FastHttp (Go)
 
   - displayName: Go Plaintext
-    arguments: --scenario plaintext_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
+    arguments: --scenario plaintext_fasthttp --load.variables.connections 512 --property scenario=PlaintextFastHttp
   - displayName: Go Json
-    arguments: --scenario json_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonFastHttp --property protocol=http
+    arguments: --scenario json_fasthttp --load.variables.connections 512 --property scenario=JsonFastHttp
 
-  # Netty
+  # Netty (Java)
 
   - displayName: Netty Plaintext
-    arguments: --scenario plaintext_netty $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextNetty --property protocol=http
+    arguments: --scenario plaintext_netty --load.variables.connections 1024 --property scenario=PlaintextNetty
   - displayName: Netty Json
-    arguments: --scenario json_netty $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonNetty --property protocol=http
+    arguments: --scenario json_netty --load.variables.connections 512 --property scenario=JsonNetty
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
+  - task: PublishToAzureServiceBus@2
     condition: succeededOrFailed()
     displayName: ${{ s.displayName }}
     timeoutInMinutes: 10
     inputs:
       connectedServiceName: ${{ parameters.connection }}
+      serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+      serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
       waitForCompletion: true
       useDataContractSerializer: "false"
       messageBody: |
@@ -70,5 +85,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} ${{ parameters.config }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ] 
         }

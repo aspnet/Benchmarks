@@ -12,7 +12,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -25,7 +25,7 @@
         "operationId": "GetAllTodos",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -45,7 +45,13 @@
         ],
         "operationId": "CreateTodo",
         "requestBody": {
-          "content": { },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            }
+          },
           "required": true
         },
         "responses": {
@@ -55,6 +61,16 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
                 }
               }
             }
@@ -70,7 +86,7 @@
         "operationId": "GetCompleteTodos",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -93,7 +109,7 @@
         "operationId": "GetIncompleteTodos",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -119,7 +135,6 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -128,7 +143,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },
@@ -142,7 +167,6 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -150,7 +174,13 @@
           }
         ],
         "requestBody": {
-          "content": { },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            }
+          },
           "required": true
         },
         "responses": {
@@ -163,6 +193,12 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },
@@ -176,7 +212,6 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -184,8 +219,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Success"
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -201,7 +239,6 @@
             "name": "title",
             "in": "query",
             "required": true,
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -209,7 +246,6 @@
           {
             "name": "isComplete",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "boolean"
             }
@@ -217,7 +253,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -233,7 +279,6 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -241,8 +286,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Success"
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -258,7 +306,6 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -266,8 +313,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Success"
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -280,7 +330,15 @@
         "operationId": "DeleteAll",
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }
@@ -319,11 +377,9 @@
               "items": {
                 "type": "string"
               }
-            },
-            "nullable": true
+            }
           }
-        },
-        "additionalProperties": { }
+        }
       },
       "Todo": {
         "type": "object",
@@ -333,8 +389,7 @@
             "format": "int32"
           },
           "title": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "dueBy": {
             "type": "string",
@@ -344,9 +399,13 @@
           "isComplete": {
             "type": "boolean"
           }
-        },
-        "additionalProperties": false
+        }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "TodosApi"
+    }
+  ]
 }
