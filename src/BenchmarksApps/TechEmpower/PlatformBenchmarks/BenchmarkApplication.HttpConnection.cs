@@ -258,54 +258,44 @@ namespace PlatformBenchmarks
             => new(new(pipeWriter), sizeHint);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ChunkedBufferWriter<WriterAdapter> GetChunkedWriter(PipeWriter pipeWriter, int chunkSizeHint)
+        private static ChunkedPipeWriter GetChunkedWriter(PipeWriter pipeWriter, int chunkSizeHint)
         {
             var writer = ChunkedWriterPool.Get();
-            writer.SetOutput(new WriterAdapter(pipeWriter), chunkSizeHint);
+            writer.SetOutput(pipeWriter, chunkSizeHint);
             return writer;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ReturnChunkedWriter(ChunkedBufferWriter<WriterAdapter> writer) => ChunkedWriterPool.Return(writer);
+        private static void ReturnChunkedWriter(ChunkedPipeWriter writer) => ChunkedWriterPool.Return(writer);
 
-        private struct WriterAdapter : IBufferWriter<byte>
+        private readonly struct WriterAdapter(PipeWriter writer) : IBufferWriter<byte>
         {
-            public PipeWriter Writer;
+            public readonly void Advance(int count)
+                => writer.Advance(count);
 
-            public WriterAdapter(PipeWriter writer)
-                => Writer = writer;
+            public readonly Memory<byte> GetMemory(int sizeHint = 0)
+                => writer.GetMemory(sizeHint);
 
-            public void Advance(int count)
-                => Writer.Advance(count);
-
-            public Memory<byte> GetMemory(int sizeHint = 0)
-                => Writer.GetMemory(sizeHint);
-
-            public Span<byte> GetSpan(int sizeHint = 0)
-                => Writer.GetSpan(sizeHint);
+            public readonly Span<byte> GetSpan(int sizeHint = 0)
+                => writer.GetSpan(sizeHint);
         }
 
-        private struct ParsingAdapter : IHttpRequestLineHandler, IHttpHeadersHandler
+        private readonly struct ParsingAdapter(BenchmarkApplication requestHandler) : IHttpRequestLineHandler, IHttpHeadersHandler
         {
-            public BenchmarkApplication RequestHandler;
+            public readonly void OnStaticIndexedHeader(int index)
+                => requestHandler.OnStaticIndexedHeader(index);
 
-            public ParsingAdapter(BenchmarkApplication requestHandler)
-                => RequestHandler = requestHandler;
+            public readonly void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+                => requestHandler.OnStaticIndexedHeader(index, value);
 
-            public void OnStaticIndexedHeader(int index)
-                => RequestHandler.OnStaticIndexedHeader(index);
+            public readonly void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+                => requestHandler.OnHeader(name, value);
 
-            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-                => RequestHandler.OnStaticIndexedHeader(index, value);
+            public readonly void OnHeadersComplete(bool endStream)
+                => requestHandler.OnHeadersComplete(endStream);
 
-            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
-                => RequestHandler.OnHeader(name, value);
-
-            public void OnHeadersComplete(bool endStream)
-                => RequestHandler.OnHeadersComplete(endStream);
-
-            public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
-                => RequestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
+            public readonly void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+                => requestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
         }
     }
 }

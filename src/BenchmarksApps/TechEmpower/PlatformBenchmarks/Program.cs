@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 #if DATABASE
 using Npgsql;
 #endif
@@ -41,7 +42,7 @@ namespace PlatformBenchmarks
 #if DATABASE
             try
             {
-                await BenchmarkApplication.RawDb.PopulateCache();
+                //await BenchmarkApplication.RawDb.PopulateCache();
             }
             catch (Exception ex)
             {
@@ -85,6 +86,7 @@ namespace PlatformBenchmarks
 
             var hostBuilder = new WebHostBuilder()
                 .UseBenchmarksConfiguration(config)
+                .ConfigureLogging(logging => logging.AddConsole())
                 .UseKestrel((context, options) =>
                 {
                     var endPoints = context.Configuration.CreateIPEndPoints();
