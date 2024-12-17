@@ -10,8 +10,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.ObjectPool;
-using PlatformBenchmarks.Templates;
-using RazorSlices;
 
 namespace PlatformBenchmarks;
 
@@ -56,12 +54,6 @@ public sealed partial class BenchmarkApplication
             return true;
         }
     }
-
-#if DATABASE
-    //private readonly static Func<List<FortuneUtf8>, RazorSlice> FortunesTemplateFactory = FortunesUtf8.Create(;
-    //private readonly static SliceFactory<List<FortuneUtf16>> FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneUtf16>>("/Templates/FortunesUtf16.cshtml");
-    //private readonly static SliceFactory<List<FortuneEf>> FortunesEfTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneEf>>("/Templates/FortunesEf.cshtml");
-#endif
 
     [ThreadStatic]
     private static Utf8JsonWriter t_writer;
