@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace Server
 {
@@ -84,7 +85,10 @@ namespace Server
                     if (Enum.TryParse<LogLevel>(config["LogLevel"], out var logLevel))
                     {
                         Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
-                        loggerFactory.AddConsole(o => o.TimestampFormat = "ss.ffff ").SetMinimumLevel(logLevel);
+                        loggerFactory
+                            .AddConsole()
+                            .AddConsoleFormatter<ConsoleFormatter, ConsoleFormatterOptions>(o => o.TimestampFormat = "ss.ffff")
+                            .SetMinimumLevel(logLevel);
                     }
                 })
                 .UseDefaultServiceProvider((context, options) =>

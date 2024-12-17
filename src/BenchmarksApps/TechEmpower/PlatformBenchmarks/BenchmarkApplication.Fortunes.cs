@@ -1,81 +1,81 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using RazorSlices;
 
-namespace PlatformBenchmarks
+namespace PlatformBenchmarks;
+
+public sealed partial class BenchmarkApplication
 {
-    public partial class BenchmarkApplication
-    {
 #if DATABASE
-        private async Task FortunesRaw(PipeWriter pipeWriter)
-        {
-            await OutputFortunes(
-                pipeWriter,
-                await RawDb.LoadFortunesRows(),
-                // To isolate template rendering from DB access, comment out the line above and uncomment the line below
-                //await RawDb.LoadFortunesRowsNoDb(),
-                FortunesTemplateFactory);
-        }
-
-        private async Task FortunesDapper(PipeWriter pipeWriter)
-        {
-            await OutputFortunes(pipeWriter, await DapperDb.LoadFortunesRows(), FortunesDapperTemplateFactory);
-        }
-
-        private async Task FortunesEf(PipeWriter pipeWriter)
-        {
-            await OutputFortunes(pipeWriter, await EfDb.LoadFortunesRows(), FortunesEfTemplateFactory);
-        }
-
-        private ValueTask OutputFortunes<TModel>(PipeWriter pipeWriter, TModel model, SliceFactory<TModel> templateFactory)
-        {
-            // Render headers
-            var preamble = """
-                HTTP/1.1 200 OK
-                Server: K
-                Content-Type: text/html; charset=utf-8
-                Transfer-Encoding: chunked
-                """u8;
-            var headersLength = preamble.Length + DateHeader.HeaderBytes.Length;
-            var headersSpan = pipeWriter.GetSpan(headersLength);
-            preamble.CopyTo(headersSpan);
-            DateHeader.HeaderBytes.CopyTo(headersSpan[preamble.Length..]);
-            pipeWriter.Advance(headersLength);
-
-            // Render body
-            var template = templateFactory(model);
-            // Kestrel PipeWriter span size is 4K, headers above already written to first span & template output is ~1350 bytes,
-            // so 2K chunk size should result in only a single span and chunk being used.
-            var chunkedWriter = GetChunkedWriter(pipeWriter, chunkSizeHint: 2048);
-            var renderTask = template.RenderAsync(chunkedWriter, null, HtmlEncoder);
-
-            if (renderTask.IsCompletedSuccessfully)
-            {
-                renderTask.GetAwaiter().GetResult();
-                EndTemplateRendering(chunkedWriter, template);
-                return ValueTask.CompletedTask;
-            }
-
-            return AwaitTemplateRenderTask(renderTask, chunkedWriter, template);
-        }
-
-        private static async ValueTask AwaitTemplateRenderTask(ValueTask renderTask, ChunkedBufferWriter<WriterAdapter> chunkedWriter, RazorSlice template)
-        {
-            await renderTask;
-            EndTemplateRendering(chunkedWriter, template);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void EndTemplateRendering(ChunkedBufferWriter<WriterAdapter> chunkedWriter, RazorSlice template)
-        {
-            chunkedWriter.End();
-            ReturnChunkedWriter(chunkedWriter);
-            template.Dispose();
-        }
-#endif
+    private async Task FortunesRaw(PipeWriter pipeWriter)
+    {
+        await OutputFortunes(
+            pipeWriter,
+            await RawDb.LoadFortunesRows(),
+            // To isolate template rendering from DB access, comment out the line above and uncomment the line below
+            //await RawDb.LoadFortunesRowsNoDb(),
+            Templates.FortunesUtf8.Create);
     }
+
+    private async Task FortunesDapper(PipeWriter pipeWriter)
+    {
+        await OutputFortunes(pipeWriter, await DapperDb.LoadFortunesRows(), Templates.FortunesUtf8.Create);
+    }
+
+    private async Task FortunesEf(PipeWriter pipeWriter)
+    {
+        await OutputFortunes(pipeWriter, await EfDb.LoadFortunesRows(), Templates.FortunesEf.Create);
+    }
+
+    private ValueTask OutputFortunes<TModel>(PipeWriter pipeWriter, TModel model, Func<TModel, RazorSlice> templateFactory)
+    {
+        // Render headers
+        var preamble = """
+            HTTP/1.1 200 OK
+            Server: K
+            Content-Type: text/html; charset=utf-8
+            Transfer-Encoding: chunked
+            """u8;
+        var headersLength = preamble.Length + DateHeader.HeaderBytes.Length;
+        var headersSpan = pipeWriter.GetSpan(headersLength);
+        preamble.CopyTo(headersSpan);
+        DateHeader.HeaderBytes.CopyTo(headersSpan[preamble.Length..]);
+        pipeWriter.Advance(headersLength);
+
+        // Render body
+        var template = templateFactory(model);
+        // Kestrel PipeWriter span size is 4K, headers above already written to first span & template output is ~1350 bytes,
+        // so 2K chunk size should result in only a single span and chunk being used.
+        var chunkedWriter = GetChunkedWriter(pipeWriter, chunkSizeHint: 2048);
+        var renderTask = template.RenderAsync(chunkedWriter, HtmlEncoder);
+
+        if (renderTask.IsCompletedSuccessfully)
+        {
+            renderTask.GetAwaiter().GetResult();
+            EndTemplateRendering(chunkedWriter, template);
+            return ValueTask.CompletedTask;
+        }
+
+        return AwaitTemplateRenderTask(renderTask, chunkedWriter, template);
+    }
+
+    private static async ValueTask AwaitTemplateRenderTask(ValueTask renderTask, ChunkedPipeWriter chunkedWriter, RazorSlice template)
+    {
+        await renderTask;
+        EndTemplateRendering(chunkedWriter, template);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void EndTemplateRendering(ChunkedPipeWriter chunkedWriter, RazorSlice template)
+    {
+        chunkedWriter.Complete();
+        ReturnChunkedWriter(chunkedWriter);
+        template.Dispose();
+    }
+#endif
 }
