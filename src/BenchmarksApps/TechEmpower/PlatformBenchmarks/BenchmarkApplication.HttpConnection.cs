@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace PlatformBenchmarks
 {
-    public partial class BenchmarkApplication : IHttpConnection
+    public sealed partial class BenchmarkApplication : IHttpConnection
     {
         private State _state;
 

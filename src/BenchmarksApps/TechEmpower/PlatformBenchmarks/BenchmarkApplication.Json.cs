@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace PlatformBenchmarks
 {
-    public partial class BenchmarkApplication
+    public sealed partial class BenchmarkApplication
     {
 #if !DATABASE
         private static ReadOnlySpan<byte> _jsonPreamble =>
