@@ -18,6 +18,14 @@
       "_justification": "Legitimate development X.509 Certificate Private Key"
     },
     {
+      "file": "src/BenchmarksApps/TLS/HttpSys/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/TLS/Kestrel/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
       "file": "src/Downstream/testCert.pfx",
       "_justification": "Legitimate development X.509 Certificate Private Key"
     },
