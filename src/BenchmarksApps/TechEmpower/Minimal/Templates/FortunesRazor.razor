@@ -1,0 +1,5 @@
+﻿<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>@foreach (var item in Model){<tr><td>@(new MarkupString(item.Id.ToString(CultureInfo.InvariantCulture)))</td><td>@item.Message</td></tr>}</table></body></html>
+@code {
+    [Parameter]
+    public required List<Fortune> Model { get; set; }
+}

@@ -78,7 +78,7 @@ scenarios:
         presetHeaders: html
         path: /fortunes
 
-  fortunes_result:
+  fortunes_razor:
     db:
       job: postgresql
     application:
@@ -87,7 +87,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: html
-        path: /fortunes/result
+        path: /fortunes/razor
 
   single_query:
     db:
