@@ -25,7 +25,6 @@ builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorComponents();
 builder.Services.AddSingleton(serviceProvider =>
 {
-    // TODO: This custom configured HtmlEncoder won't actually be used until Blazor supports it: https://github.com/dotnet/aspnetcore/issues/47477
     var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
     settings.AllowCharacter('\u2014'); // allow EM DASH through
     return HtmlEncoder.Create(settings);

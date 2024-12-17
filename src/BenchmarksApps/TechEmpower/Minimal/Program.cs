@@ -23,6 +23,7 @@ builder.Configuration.Bind(appSettings);
 // Add services to the container.
 builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorComponents();
+builder.Services.AddSingleton(CreateHtmlEncoder());
 
 var app = builder.Build();
 
@@ -38,9 +39,7 @@ app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
 app.MapGet("/db/result", async (Db db) => Results.Json(await db.LoadSingleQueryRow()));
 
-var htmlEncoder = CreateHtmlEncoder();
-
-app.MapGet("/fortunes", async (HttpContext context, Db db) => {
+app.MapGet("/fortunes", async (HttpContext context, Db db, HtmlEncoder htmlEncoder) => {
     var fortunes = await db.LoadFortunesRows();
     //var fortunes = await db.LoadFortunesRowsNoDb(); // Don't call the database
     var template = (RazorSliceHttpResult<List<Fortune>>)Fortunes.Create(fortunes);
