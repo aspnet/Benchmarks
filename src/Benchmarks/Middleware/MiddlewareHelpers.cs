@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -30,13 +31,13 @@ namespace Benchmarks.Middleware
         }
 
         public static async Task RenderFortunesHtml<T>(IEnumerable<T> model, HttpContext httpContext,
-            HtmlEncoder htmlEncoder, SliceFactory<IEnumerable<T>> fortunesFactory)
+            HtmlEncoder htmlEncoder, Func<IEnumerable<T>, RazorSlice> templateFactory)
         {
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             httpContext.Response.ContentType = "text/html; charset=UTF-8";
 
-            using var template = fortunesFactory(model);
-            await template.RenderToPipeWriterAsync(httpContext.Response.BodyWriter, htmlEncoder);
+            using var template = templateFactory(model);
+            await template.RenderAsync(httpContext.Response.BodyWriter, htmlEncoder);
             await httpContext.Response.BodyWriter.FlushAsync();
         }
     }
