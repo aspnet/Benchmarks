@@ -1,0 +1,53 @@
+name: ASP.NET Benchmarks CI
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - "**/*.md"
+  
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    name: Build & Test
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_NOLOGO: true
+      SuppressNETCoreSdkPreviewMessage: true
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install .NET SDK (global.json)
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+        dotnet-version: | 
+          8.0.x
+    
+    - name: Print .NET info
+      run: dotnet --info
+
+    - name: Build
+      run: dotnet build ./src/BenchmarksApps.sln
+
+    - name: Test
+      run: >
+        dotnet test ./src/BenchmarksApps.sln 
+        --no-build --logger console --logger trx --logger html --logger GitHubActions 
+        --results-directory ./TestResults --blame 
+        --RunConfiguration.CollectSourceInformation=true
+    
+    - name: Publish Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_${{ matrix.os }}
+        path: ./TestResults
