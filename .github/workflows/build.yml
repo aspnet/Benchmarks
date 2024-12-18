@@ -30,8 +30,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: global.json
-        dotnet-version: | 
-          8.0.x
     
     - name: Print .NET info
       run: dotnet --info
@@ -43,8 +41,7 @@ jobs:
       run: >
         dotnet test ./src/BenchmarksApps.sln 
         --no-build --logger console --logger trx --logger html --logger GitHubActions 
-        --results-directory ./TestResults --blame 
-        --RunConfiguration.CollectSourceInformation=true
+        --results-directory ./TestResults --blame
     
     - name: Publish Test Results
       uses: actions/upload-artifact@v4
