@@ -22,7 +22,6 @@ builder.Configuration.Bind(appSettings);
 
 // Add services to the container.
 builder.Services.AddSingleton(new Db(appSettings));
-builder.Services.AddRazorComponents();
 builder.Services.AddSingleton(CreateHtmlEncoder());
 
 var app = builder.Build();
@@ -45,18 +44,6 @@ app.MapGet("/fortunes", async (HttpContext context, Db db, HtmlEncoder htmlEncod
     var template = (RazorSliceHttpResult<List<Fortune>>)Fortunes.Create(fortunes);
     template.HtmlEncoder = htmlEncoder;
     return template;
-});
-
-app.MapGet("/fortunes/razor", async (HttpContext context, Db db) => {
-    var fortunes = await db.LoadFortunesRows();
-    //var fortunes = await db.LoadFortunesRowsNoDb(); // Don't call the database
-    var parameters = new Dictionary<string, object?> { { nameof(FortunesRazor.Model), fortunes } };
-    //var parameters = new FortunesRazorParameters(fortunes); // Custom parameters class to avoid allocating a Dictionary
-    var result = new RazorComponentResult<FortunesRazor>(parameters)
-    {
-        PreventStreamingRendering = true
-    };
-    return result;
 });
 
 app.MapGet("/queries/{count}", async (Db db, int count) => await db.LoadMultipleQueriesRows(count));

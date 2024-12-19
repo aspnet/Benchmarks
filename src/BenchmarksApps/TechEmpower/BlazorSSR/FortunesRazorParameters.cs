@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using Minimal.Models;
-using Minimal.Templates;
+using BlazorSSR.Components;
+using BlazorSSR.Models;
 
-namespace Minimal;
+namespace BlazorSSR;
 
 internal readonly struct FortunesRazorParameters(List<Fortune> model) : IReadOnlyDictionary<string, object?>
 {
-    private const string ModelKeyName = nameof(FortunesRazor.Model);
+    private const string ModelKeyName = nameof(FortunesParameters.Rows);
 
     private readonly KeyValuePair<string, object?> _modelKvp = new(ModelKeyName, model);
 
