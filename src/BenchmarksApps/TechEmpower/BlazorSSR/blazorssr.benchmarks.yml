@@ -51,6 +51,39 @@ scenarios:
         presetHeaders: html
         path: /fortunes-ef
 
+  fortunes-direct:
+    db:
+      job: postgresql
+    application:
+      job: blazorssr
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /direct/fortunes
+
+  fortunes-direct-ef:
+    db:
+      job: postgresql
+    application:
+      job: blazorssr
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /direct/fortunes-ef
+
+  fortunes-direct-params:
+    db:
+      job: postgresql
+    application:
+      job: blazorssr
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /direct/fortunes/params
+
 profiles:
   # this profile uses the local folder as the source 
   # instead of the public repository

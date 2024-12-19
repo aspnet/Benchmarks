@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Fortunes</title>
+</head>
+<body>
+    <table>
+        <tr><th>id</th><th>message</th></tr>
+        @foreach (var item in Rows)
+        {
+            <tr><td>@item.Id</td><td>@item.Message</td></tr>
+        }
+    </table>
+</body>
+</html>
+@code {
+    [Parameter]
+    public required List<Fortune> Rows { get; set; }
+}

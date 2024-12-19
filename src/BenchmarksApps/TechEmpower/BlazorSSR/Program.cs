@@ -25,7 +25,6 @@ builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorComponents();
 builder.Services.AddSingleton(serviceProvider =>
 {
-    // TODO: This custom configured HtmlEncoder won't actually be used until Blazor supports it: https://github.com/dotnet/aspnetcore/issues/47477
     var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
     settings.AllowCharacter('\u2014'); // allow EM DASH through
     return HtmlEncoder.Create(settings);
@@ -39,6 +38,18 @@ app.MapRazorComponents<App>();
 
 app.MapGet("/direct/fortunes", () => new RazorComponentResult<Fortunes>());
 app.MapGet("/direct/fortunes-ef", () => new RazorComponentResult<FortunesEf>());
+
+app.MapGet("/direct/fortunes/params", async (HttpContext context, Db db) => {
+    var fortunes = await db.LoadFortunesRowsDapper();
+    //var fortunes = await db.LoadFortunesRowsNoDb(); // Don't call the database
+    var parameters = new Dictionary<string, object?> { { nameof(FortunesParameters.Rows), fortunes } };
+    //var parameters = new FortunesRazorParameters(fortunes); // Custom parameters class to avoid allocating a Dictionary
+    var result = new RazorComponentResult<FortunesParameters>(parameters)
+    {
+        PreventStreamingRendering = true
+    };
+    return result;
+});
 
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));
