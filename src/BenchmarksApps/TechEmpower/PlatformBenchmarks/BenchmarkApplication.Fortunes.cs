@@ -24,7 +24,7 @@ public sealed partial class BenchmarkApplication
 
     private async Task FortunesDapper(PipeWriter pipeWriter)
     {
-        await OutputFortunes(pipeWriter, await DapperDb.LoadFortunesRows(), Templates.FortunesUtf8.Create);
+        await OutputFortunes(pipeWriter, await DapperDb.LoadFortunesRows(), Templates.FortunesUtf16.Create);
     }
 
     private async Task FortunesEf(PipeWriter pipeWriter)
