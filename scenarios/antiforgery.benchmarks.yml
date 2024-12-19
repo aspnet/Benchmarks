@@ -35,7 +35,7 @@ scenarios:
     load:
       job: wrk
       variables:
-        path: /auth
+        path: /generateToken
 
   antiforgery-noop:
     application:

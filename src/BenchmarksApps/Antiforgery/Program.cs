@@ -10,6 +10,13 @@ app.UseAntiforgery();
 app.MapGet("/", () => Results.Ok("hello world!"));
 app.MapGet("/noOp", (HttpContext ctx, IAntiforgery antiforgery) => Results.Ok());
 
+// GET https://localhost:55471/generateToken
+app.MapGet("/generateToken", (HttpContext ctx, IAntiforgery antiforgery) =>
+{
+    var token = antiforgery.GetAndStoreTokens(ctx);
+    return Results.Ok();
+});
+
 // GET https://localhost:55471/auth
 app.MapGet("/auth", (HttpContext ctx, IAntiforgery antiforgery) =>
 {
