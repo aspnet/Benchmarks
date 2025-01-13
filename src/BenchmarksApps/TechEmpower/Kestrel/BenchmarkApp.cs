@@ -33,12 +33,10 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
     {
         res.StatusCode = 404;
         res.Headers.ContentType = "text/plain";
-        res.Headers.ContentLength = HelloWorldPayload.Length;
 
         var body = features.GetResponseBodyFeature();
 
         await body.StartAsync();
-        body.Writer.Write(HelloWorldPayload);
         await body.CompleteAsync();
     }
 
@@ -56,8 +54,6 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         await body.StartAsync();
         body.Writer.Write(IndexPayload);
-        await body.Writer.FlushAsync();
-        await body.CompleteAsync();
     }
 
     private static ReadOnlySpan<byte> HelloWorldPayload => "Hello, World!"u8;
@@ -69,11 +65,8 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         res.Headers.ContentLength = HelloWorldPayload.Length;
 
         var body = features.GetResponseBodyFeature();
-
         await body.StartAsync();
         body.Writer.Write(HelloWorldPayload);
-        await body.Writer.FlushAsync();
-        await body.CompleteAsync();
     }
 
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -84,29 +77,30 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task Json(IHttpRequestFeature req, IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = 200;
-        res.Headers.ContentType = "application/json";
+        res.Headers.ContentType = "application/json; charset=utf-8";
 
-        //Span<byte> buffer = stackalloc byte[256];
         var bufferWriter = _bufferWriterPool.Get();
         var jsonWriter = _jsonWriterPool.Get();
 
         bufferWriter.ResetWrittenCount();
         jsonWriter.Reset(bufferWriter);
 
-        JsonSerializer.Serialize(jsonWriter, new { message = "Hello, World!" }, _jsonSerializerOptions);
+        JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
 
         res.Headers.ContentLength = bufferWriter.WrittenCount;
 
         var body = features.GetResponseBodyFeature();
 
         await body.StartAsync();
-        bufferWriter.WrittenSpan.CopyTo(body.Writer.GetSpan(bufferWriter.WrittenCount));
-        body.Writer.Advance(bufferWriter.WrittenCount);
-        await body.Writer.FlushAsync();
-        await body.CompleteAsync();
+        body.Writer.Write(bufferWriter.WrittenSpan);
 
         _jsonWriterPool.Return(jsonWriter);
         _bufferWriterPool.Return(bufferWriter);
+    }
+
+    private struct JsonMessage
+    {
+        public required string message { get; set; }
     }
 
     private class Utf8JsonWriterPooledObjectPolicy : IPooledObjectPolicy<Utf8JsonWriter>
