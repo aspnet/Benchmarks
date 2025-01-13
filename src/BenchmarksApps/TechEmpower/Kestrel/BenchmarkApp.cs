@@ -54,6 +54,7 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         await body.StartAsync();
         body.Writer.Write(IndexPayload);
+        await body.Writer.FlushAsync();
     }
 
     private static ReadOnlySpan<byte> HelloWorldPayload => "Hello, World!"u8;
@@ -67,6 +68,7 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         var body = features.GetResponseBodyFeature();
         await body.StartAsync();
         body.Writer.Write(HelloWorldPayload);
+        await body.Writer.FlushAsync();
     }
 
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -93,6 +95,7 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         await body.StartAsync();
         body.Writer.Write(bufferWriter.WrittenSpan);
+        await body.Writer.FlushAsync();
 
         _jsonWriterPool.Return(jsonWriter);
         _bufferWriterPool.Return(bufferWriter);
@@ -109,10 +112,6 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         public Utf8JsonWriter Create() => new(_dummyBufferWriter, new() { Indented = false, SkipValidation = true });
 
-        public bool Return(Utf8JsonWriter obj)
-        {
-            //obj.Reset();
-            return true;
-        }
+        public bool Return(Utf8JsonWriter obj) => true;
     }
 }
