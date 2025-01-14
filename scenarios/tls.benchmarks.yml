@@ -54,6 +54,25 @@ scenarios:
       variables:
         mTLS: true
         certValidationConsoleEnabled: false # only for debug purposes
+      options:
+        beforeScript: ".\setup-httpsys.ps1"
+        afterScript: ".\shutdown-httpsys.ps1"
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
+        certPwd: testPassword
+
+  tls-renegotiation-httpsys:
+    application:
+      job: httpSysServer
+      variables:
+        mTLS: true
+        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:
