@@ -53,6 +53,7 @@ scenarios:
       job: httpSysServer
       variables:
         mTLS: true
+        tlsRenegotiation: true
         certValidationConsoleEnabled: false # only for debug purposes
       options:
         beforeScript: "powershell -File .\\setup-httpsys.ps1"
