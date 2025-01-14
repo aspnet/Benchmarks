@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
@@ -22,6 +23,8 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         {
             "/plaintext" => Plaintext(res, features),
             "/json" => Json(res, features),
+            "/json-string" => JsonString(res, features),
+            "/json-utf8bytes" => JsonUtf8Bytes(res, features),
             "/json-chunked" => JsonChunked(res, features),
             "/" => Index(res, features),
             _ => NotFound(res, features),
@@ -75,6 +78,40 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         var body = features.GetResponseBodyFeature();
         await body.StartAsync();
         await JsonSerializer.SerializeAsync(body.Writer, new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        await body.Writer.FlushAsync();
+    }
+
+    private static async Task JsonString(IHttpResponseFeature res, IFeatureCollection features)
+    {
+        res.StatusCode = StatusCodes.Status200OK;
+        res.Headers.ContentType = "application/json; charset=utf-8";
+
+        var message = JsonSerializer.Serialize(new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        res.Headers.ContentLength = Encoding.UTF8.GetByteCount(message);
+
+        var body = features.GetResponseBodyFeature();
+        await body.StartAsync();
+
+        Span<byte> buffer = stackalloc byte[256];
+        var length = Encoding.UTF8.GetBytes(message, buffer);
+        body.Writer.Write(buffer[..length]);
+
+        await body.Writer.FlushAsync();
+    }
+
+    private static async Task JsonUtf8Bytes(IHttpResponseFeature res, IFeatureCollection features)
+    {
+        res.StatusCode = StatusCodes.Status200OK;
+        res.Headers.ContentType = "application/json; charset=utf-8";
+
+        var messageBytes = JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        res.Headers.ContentLength = messageBytes.Length;
+
+        var body = features.GetResponseBodyFeature();
+        await body.StartAsync();
+
+        body.Writer.Write(messageBytes);
+
         await body.Writer.FlushAsync();
     }
 

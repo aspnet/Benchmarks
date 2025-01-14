@@ -36,6 +36,24 @@ scenarios:
         presetHeaders: json
         path: /json
 
+  json-string:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json-string
+
+  json-utf8bytes:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json-utf8bytes
+
   json-chunked:
     application:
       job: kestrel
