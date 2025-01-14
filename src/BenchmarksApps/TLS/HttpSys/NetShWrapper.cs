@@ -15,9 +15,9 @@ namespace HttpSys
             Console.WriteLine("Disabled http.sys settings for mTLS");
         }
 
-        public static bool HttpSysCertBindingExists(string ipPort)
+        public static void Show()
         {
-            return true;
+            ExecuteNetShCommand("http show sslcert", alwaysLogOutput: true);
         }
 
         public static void EnableHttpSysMutualTls(string ipPort)
@@ -43,7 +43,7 @@ namespace HttpSys
             Console.WriteLine("Configured http.sys settings for mTLS");
         }
 
-        private static void ExecuteNetShCommand(string command)
+        private static void ExecuteNetShCommand(string command, bool alwaysLogOutput = false)
         {
             ProcessStartInfo processInfo = new ProcessStartInfo("netsh", command)
             {
@@ -57,6 +57,11 @@ namespace HttpSys
             using Process process = Process.Start(processInfo)!;
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
+
+            if (alwaysLogOutput)
+            {
+                Console.WriteLine(output);
+            }
 
             if (process.ExitCode != 0)
             {

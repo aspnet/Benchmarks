@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Server.HttpSys;
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
-Console.WriteLine($"args: {string.Join(" ", args)}");
-Console.WriteLine();
-
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var httpSysLoggingEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out var httpSysLogsEnabled) && httpSysLogsEnabled;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
@@ -51,6 +49,8 @@ if (mTlsEnabled)
 
     void OnShutdown()
     {
+        Console.WriteLine("Application shutdown started.");
+
         try
         {
             NetShWrapper.DisableHttpSysMutualTls(ipPort: httpsIpPort);
@@ -106,6 +106,12 @@ if (tlsRenegotiationEnabled)
 }
 
 await app.StartAsync();
+
+if (httpSysLoggingEnabled)
+{
+    NetShWrapper.Show();
+}
+
 Console.WriteLine("Application Info:");
 if (mTlsEnabled)
 {
