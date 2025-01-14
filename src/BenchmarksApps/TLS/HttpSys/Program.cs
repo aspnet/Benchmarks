@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.HttpSys;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ builder.Logging.ClearProviders();
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
@@ -40,6 +42,11 @@ if (statsEnabled)
 }
 
 if (mTlsEnabled)
+{
+    ConfigureHttpSysForMutualTls();
+}
+
+if (tlsRenegotiationEnabled)
 {
     // this is an http.sys middleware to get a cert
     Console.WriteLine("Registered client cert validation middleware");
@@ -90,3 +97,38 @@ Console.WriteLine("--------------------------------");
 
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
+
+void ConfigureHttpSysForMutualTls()
+{
+    var certificate = new X509Certificate2("testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+    using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+    {
+        store.Open(OpenFlags.ReadWrite);
+        store.Add(certificate);
+        store.Close();
+    }
+
+    string certThumbprint = certificate.Thumbprint;
+    string appId = Guid.NewGuid().ToString();
+
+    string command = $"http add sslcert ipport=0.0.0.0:5000 certhash={certThumbprint} appid={{{appId}}} clientcertnegotiation=enable";
+    ProcessStartInfo processInfo = new ProcessStartInfo("netsh", command)
+    {
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false,
+        CreateNoWindow = true
+    };
+
+    using Process process = Process.Start(processInfo)!;
+    string output = process.StandardOutput.ReadToEnd();
+    string error = process.StandardError.ReadToEnd();
+    process.WaitForExit();
+
+    if (process.ExitCode != 0)
+    {
+        throw new InvalidOperationException($"Failed to configure http.sys: {error}");
+    }
+
+    Console.WriteLine("Configured http.sys settings for mTLS");
+}
