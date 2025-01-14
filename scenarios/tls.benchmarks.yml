@@ -15,9 +15,9 @@ jobs:
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
     variables:
-      mTLS: false
+      mTLS: false # enables settings on http.sys to negotiate client cert on connections
+      tlsRenegotiation: false # enables client cert validation
       certValidationConsoleEnabled: false
-      tlsRenegotiation: false
       httpSysLogs: false
       statsEnabled: false
     arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}}"
@@ -54,8 +54,8 @@ scenarios:
     application:
       job: httpSysServer
       variables:
-        mTLS: true
-        tlsRenegotiation: true
+        mTLS: true # enables settings on http.sys to negotiate client cert on connections
+        tlsRenegotiation: true # enables client cert validation
         httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
     load:
@@ -72,7 +72,9 @@ scenarios:
     application:
       job: httpSysServer
       variables:
-        mTLS: true
+        mTLS: false
+        tlsRenegotiation: true
+        httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
