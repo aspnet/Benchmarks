@@ -55,9 +55,6 @@ scenarios:
         mTLS: true
         tlsRenegotiation: true
         certValidationConsoleEnabled: false # only for debug purposes
-      options:
-        beforeScript: "powershell -File .\\setup-httpsys.ps1"
-        afterScript: "powershell -File .\\shutdown-httpsys.ps1"
     load:
       job: httpclient
       variables:

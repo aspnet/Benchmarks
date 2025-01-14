@@ -1,15 +1,18 @@
-using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
+using HttpSys;
 using Microsoft.AspNetCore.Server.HttpSys;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
+
+Console.WriteLine($"args: {string.Join(" ", args)}");
+Console.WriteLine();
 
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
+var httpsIpPort = listeningEndpoints.Split(";").First(x => x.Contains("https")).Replace("https://", "");
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
@@ -19,7 +22,7 @@ builder.WebHost.UseHttpSys(options =>
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 
-var app = builder.Build();  
+var app = builder.Build();
 
 app.MapGet("/hello-world", () =>
 {
@@ -43,13 +46,30 @@ if (statsEnabled)
 
 if (mTlsEnabled)
 {
+    var hostAppLifetime = app.Services.GetService<IHostApplicationLifetime>();
+    hostAppLifetime!.ApplicationStopping.Register(OnShutdown);
+
+    void OnShutdown()
+    {
+        try
+        {
+            NetShWrapper.DisableHttpSysMutualTls(ipPort: httpsIpPort);
+        }
+        catch
+        {
+            Console.WriteLine("Failed to disable HTTP.SYS mTLS settings");
+            throw;
+        }
+    }
+
     try
     {
-        ConfigureHttpSysForMutualTls();
+        NetShWrapper.EnableHttpSysMutualTls(ipPort: httpsIpPort);
     }
-    catch (Exception ex)
+    catch
     {
-        throw new Exception($"Http.Sys configuration for mTLS failed. Current dir: {Directory.GetCurrentDirectory()}", innerException: ex);
+        Console.WriteLine($"Http.Sys configuration for mTLS failed");
+        throw;
     }
 }
 
@@ -105,39 +125,3 @@ Console.WriteLine("--------------------------------");
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
 
-void ConfigureHttpSysForMutualTls()
-{
-    Console.WriteLine("Setting up mTLS for http.sys");
-
-    var certificate = new X509Certificate2("../testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-    using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
-    {
-        store.Open(OpenFlags.ReadWrite);
-        store.Add(certificate);
-        store.Close();
-    }
-
-    string certThumbprint = certificate.Thumbprint;
-    string appId = Guid.NewGuid().ToString();
-
-    string command = $"http add sslcert ipport=0.0.0.0:5000 certhash={certThumbprint} appid={{{appId}}} clientcertnegotiation=enable";
-    ProcessStartInfo processInfo = new ProcessStartInfo("netsh", command)
-    {
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-        CreateNoWindow = true
-    };
-
-    using Process process = Process.Start(processInfo)!;
-    string output = process.StandardOutput.ReadToEnd();
-    string error = process.StandardError.ReadToEnd();
-    process.WaitForExit();
-
-    if (process.ExitCode != 0)
-    {
-        throw new InvalidOperationException($"Failed to configure http.sys: {error}");
-    }
-
-    Console.WriteLine("Configured http.sys settings for mTLS");
-}
