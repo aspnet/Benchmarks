@@ -109,7 +109,7 @@ void ConfigureHttpSysForMutualTls()
 {
     Console.WriteLine("Setting up mTLS for http.sys");
 
-    var certificate = new X509Certificate2("testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+    var certificate = new X509Certificate2("../testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
     using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
     {
         store.Open(OpenFlags.ReadWrite);
