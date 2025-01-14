@@ -130,4 +130,3 @@ Console.WriteLine("--------------------------------");
 
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
-
