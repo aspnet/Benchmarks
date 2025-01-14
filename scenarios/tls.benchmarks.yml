@@ -17,8 +17,10 @@ jobs:
     variables:
       mTLS: false
       certValidationConsoleEnabled: false
+      tlsRenegotiation: false
+      httpSysLogs: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}}"
 
   kestrelServer:
     source:
@@ -54,6 +56,7 @@ scenarios:
       variables:
         mTLS: true
         tlsRenegotiation: true
+        httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
