@@ -15,7 +15,6 @@ jobs:
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
     variables:
       serverScheme: http
-    environmentVariables:
 
 scenarios:
   plaintext:
