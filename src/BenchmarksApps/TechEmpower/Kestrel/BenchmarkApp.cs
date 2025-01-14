@@ -15,38 +15,32 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         if (req.Method != "GET")
         {
-            res.StatusCode = 405;
-            var body = features.GetResponseBodyFeature();
-            return body.StartAsync().ContinueWith(t => body.CompleteAsync());
+            res.StatusCode = StatusCodes.Status405MethodNotAllowed;
         }
 
         return req.Path switch
         {
-            "/plaintext" => Plaintext(req, res, features),
-            "/json" => Json(req, res, features),
-            "/" => Index(req, res, features),
-            _ => NotFound(req, res, features),
+            "/plaintext" => Plaintext(res, features),
+            "/json" => Json(res, features),
+            "/json-chunked" => JsonChunked(res, features),
+            "/" => Index(res, features),
+            _ => NotFound(res, features),
         };
     }
 
-    private static async Task NotFound(IHttpRequestFeature req, IHttpResponseFeature res, IFeatureCollection features)
+    private static Task NotFound(IHttpResponseFeature res, IFeatureCollection features)
     {
-        res.StatusCode = 404;
-        res.Headers.ContentType = "text/plain";
-
-        var body = features.GetResponseBodyFeature();
-
-        await body.StartAsync();
-        await body.CompleteAsync();
+        res.StatusCode = StatusCodes.Status404NotFound;
+        return Task.CompletedTask;
     }
 
     public void DisposeContext(IFeatureCollection features, Exception? exception) { }
 
     private static ReadOnlySpan<byte> IndexPayload => "Running directly on Kestrel! Navigate to /plaintext and /json to see other endpoints."u8;
 
-    private static async Task Index(IHttpRequestFeature req, IHttpResponseFeature res, IFeatureCollection features)
+    private static async Task Index(IHttpResponseFeature res, IFeatureCollection features)
     {
-        res.StatusCode = 200;
+        res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "text/plain";
         res.Headers.ContentLength = IndexPayload.Length;
 
@@ -59,9 +53,9 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
     private static ReadOnlySpan<byte> HelloWorldPayload => "Hello, World!"u8;
 
-    private static async Task Plaintext(IHttpRequestFeature req, IHttpResponseFeature res, IFeatureCollection features)
+    private static async Task Plaintext(IHttpResponseFeature res, IFeatureCollection features)
     {
-        res.StatusCode = 200;
+        res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "text/plain";
         res.Headers.ContentLength = HelloWorldPayload.Length;
 
@@ -72,13 +66,25 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
     }
 
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private static async Task JsonChunked(IHttpResponseFeature res, IFeatureCollection features)
+    {
+        res.StatusCode = StatusCodes.Status200OK;
+        res.Headers.ContentType = "application/json; charset=utf-8";
+
+        var body = features.GetResponseBodyFeature();
+        await body.StartAsync();
+        await JsonSerializer.SerializeAsync(body.Writer, new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        await body.Writer.FlushAsync();
+    }
+
     private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
     private static readonly ObjectPool<ArrayBufferWriter<byte>> _bufferWriterPool = _objectPoolProvider.Create<ArrayBufferWriter<byte>>();
     private static readonly ObjectPool<Utf8JsonWriter> _jsonWriterPool = _objectPoolProvider.Create(new Utf8JsonWriterPooledObjectPolicy());
 
-    private static async Task Json(IHttpRequestFeature req, IHttpResponseFeature res, IFeatureCollection features)
+    private static async Task Json(IHttpResponseFeature res, IFeatureCollection features)
     {
-        res.StatusCode = 200;
+        res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "application/json; charset=utf-8";
 
         var bufferWriter = _bufferWriterPool.Get();

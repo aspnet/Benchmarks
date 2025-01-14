@@ -36,6 +36,15 @@ scenarios:
         presetHeaders: json
         path: /json
 
+  json-chunked:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json-chunked
+
 profiles:
   # this profile uses the local folder as the source 
   # instead of the public repository
