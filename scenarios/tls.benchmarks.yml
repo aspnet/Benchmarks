@@ -58,6 +58,7 @@ scenarios:
         tlsRenegotiation: true # enables client cert validation
         httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
+        serverPort: 30000 # IMPORTANT: not to intersect with other tests 
     load:
       job: httpclient
       variables:

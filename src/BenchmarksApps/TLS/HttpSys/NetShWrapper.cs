@@ -5,6 +5,18 @@ namespace HttpSys
 {
     public static class NetShWrapper
     {
+        public static void DisableHttpSysMutualTlsIfExists(string ipPort)
+        {
+            try
+            {
+                DisableHttpSysMutualTls(ipPort);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         public static void DisableHttpSysMutualTls(string ipPort)
         {
             Console.WriteLine("Disabling mTLS for http.sys");
@@ -70,9 +82,10 @@ namespace HttpSys
         }
 
 #pragma warning disable SYSLIB0057 // Type or member is obsolete
-        private static X509Certificate2 LoadCertificate() => File.Exists("testCert.pfx")
-            ? new X509Certificate2("testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable)
-            : new X509Certificate2("../testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+        private static X509Certificate2 LoadCertificate()
+            => File.Exists("testCert.pfx")
+            ? X509CertificateLoader.LoadPkcs12FromFile("testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable)
+            : X509CertificateLoader.LoadPkcs12FromFile("../testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable)
 #pragma warning restore SYSLIB0057 // Type or member is obsolete
     }
 }

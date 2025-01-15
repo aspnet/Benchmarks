@@ -64,6 +64,9 @@ if (mTlsEnabled)
 
     try
     {
+        // if not executed, following command (enable http.sys mutual tls) will fail because binding exists
+        NetShWrapper.DisableHttpSysMutualTlsIfExists(ipPort: httpsIpPort);
+
         NetShWrapper.EnableHttpSysMutualTls(ipPort: httpsIpPort);
     }
     catch
