@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Formats.Asn1;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -162,11 +161,11 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
     private static readonly JsonContext SerializerContext = JsonContext.Default;
 
-    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+    // BUG: Can't use GenerationMode = JsonSourceGenerationMode.Serialization here due to https://github.com/dotnet/runtime/issues/111477
+    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Default)]
     [JsonSerializable(typeof(JsonMessage))]
     private partial class JsonContext : JsonSerializerContext
     {
 
     }
-
 }
