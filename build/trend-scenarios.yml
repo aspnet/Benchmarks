@@ -108,6 +108,9 @@ parameters:
   - displayName: "HttpSys Windows: mTLS Handshakes"
     arguments: --scenario mTls-handshakes-httpsys $(tlsJobs) --property scenario=HttpSysMutualTLSHandshakes --application.options.requiredOperatingSystem windows
 
+  - displayName: "HttpSys Windows: TLS Renegotiation"
+    arguments: --scenario tls-renegotiation-httpsys $(tlsJobs) --property scenario=HttpSysTLSRenegotiation --application.options.requiredOperatingSystem windows
+
   - displayName: "Kestrel Linux: TLS Handshakes"
     arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=KestrelTLSHandshakes --application.options.requiredOperatingSystem linux
     
