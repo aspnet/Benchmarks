@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+namespace Kestrel;
+
 public class ConsoleLifetime : IDisposable
 {
     private readonly TaskCompletionSource _tcs = new();

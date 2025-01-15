@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.Features;
+﻿namespace Microsoft.AspNetCore.Http.Features;
 
 public static class FeatureCollectionExtensions
 {
@@ -15,10 +15,5 @@ public static class FeatureCollectionExtensions
     public static IHttpResponseBodyFeature GetResponseBodyFeature(this IFeatureCollection features)
     {
         return features.GetRequiredFeature<IHttpResponseBodyFeature>();
-    }
-
-    public static TFeature GetRequiredFeature<TFeature>(this IFeatureCollection features)
-    {
-        return features.Get<TFeature>() ?? throw new InvalidOperationException($"Feature of type {typeof(TFeature).Name} not found");
     }
 }

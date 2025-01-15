@@ -1,11 +1,15 @@
 ﻿using System.Buffers;
+using System.Formats.Asn1;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.ObjectPool;
 
-public class BenchmarkApp : IHttpApplication<IFeatureCollection>
+namespace Kestrel;
+
+public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 {
     public IFeatureCollection CreateContext(IFeatureCollection features) => features;
 
@@ -68,8 +72,6 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         await body.Writer.FlushAsync();
     }
 
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
-
     private static async Task JsonChunked(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
@@ -77,7 +79,7 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         var body = features.GetResponseBodyFeature();
         await body.StartAsync();
-        await JsonSerializer.SerializeAsync(body.Writer, new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        await JsonSerializer.SerializeAsync(body.Writer, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         await body.Writer.FlushAsync();
     }
 
@@ -86,7 +88,7 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "application/json; charset=utf-8";
 
-        var message = JsonSerializer.Serialize(new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        var message = JsonSerializer.Serialize(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         res.Headers.ContentLength = Encoding.UTF8.GetByteCount(message);
 
         var body = features.GetResponseBodyFeature();
@@ -104,7 +106,7 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "application/json; charset=utf-8";
 
-        var messageBytes = JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        var messageBytes = JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         res.Headers.ContentLength = messageBytes.Length;
 
         var body = features.GetResponseBodyFeature();
@@ -130,7 +132,10 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         bufferWriter.ResetWrittenCount();
         jsonWriter.Reset(bufferWriter);
 
-        JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, _jsonSerializerOptions);
+        JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
+
+        _jsonWriterPool.Return(jsonWriter);
+        _bufferWriterPool.Return(bufferWriter);
 
         res.Headers.ContentLength = bufferWriter.WrittenCount;
 
@@ -139,9 +144,6 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
         await body.StartAsync();
         body.Writer.Write(bufferWriter.WrittenSpan);
         await body.Writer.FlushAsync();
-
-        _jsonWriterPool.Return(jsonWriter);
-        _bufferWriterPool.Return(bufferWriter);
     }
 
     private struct JsonMessage
@@ -157,4 +159,14 @@ public class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         public bool Return(Utf8JsonWriter obj) => true;
     }
+
+    private static readonly JsonContext SerializerContext = JsonContext.Default;
+
+    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(JsonMessage))]
+    private partial class JsonContext : JsonSerializerContext
+    {
+
+    }
+
 }
