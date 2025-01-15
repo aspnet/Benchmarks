@@ -62,6 +62,7 @@ scenarios:
     load:
       job: httpclient
       variables:
+        serverPort: 30000 # in sync with server
         path: /hello-world
         presetHeaders: connectionclose
         connections: 32
