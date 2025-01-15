@@ -44,7 +44,7 @@ if (statsEnabled)
 
 if (mTlsEnabled)
 {
-    var hostAppLifetime = app.Services.GetService<IHostApplicationLifetime>();
+    var hostAppLifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
     hostAppLifetime!.ApplicationStopping.Register(OnShutdown);
 
     void OnShutdown()
