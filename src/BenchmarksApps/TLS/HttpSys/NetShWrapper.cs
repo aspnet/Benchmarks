@@ -85,7 +85,7 @@ namespace HttpSys
         private static X509Certificate2 LoadCertificate()
             => File.Exists("testCert.pfx")
             ? X509CertificateLoader.LoadPkcs12FromFile("testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable)
-            : X509CertificateLoader.LoadPkcs12FromFile("../testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable)
+            : X509CertificateLoader.LoadPkcs12FromFile("../testCert.pfx", "testPassword", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
 #pragma warning restore SYSLIB0057 // Type or member is obsolete
     }
 }
