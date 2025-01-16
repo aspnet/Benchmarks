@@ -1,12 +1,10 @@
 ﻿using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
-using System.Formats.Asn1;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Kestrel;
 
@@ -118,27 +116,12 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         await body.Writer.FlushAsync();
     }
 
-    private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
-    private static readonly ObjectPool<ArrayBufferWriter<byte>> _bufferWriterPool = _objectPoolProvider.Create<ArrayBufferWriter<byte>>();
-    private static readonly ObjectPool<Utf8JsonWriter> _jsonWriterPool = _objectPoolProvider.Create(new Utf8JsonWriterPooledObjectPolicy());
-
     private static async Task Json(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "application/json; charset=utf-8";
 
-        //var bufferWriter = _bufferWriterPool.Get();
-        //var jsonWriter = _jsonWriterPool.Get();
-
-        //var bufferWriter = new ArrayBufferWriter<byte>(64);
-        //await using var jsonWriter = new Utf8JsonWriter(bufferWriter, new() { Indented = false, SkipValidation = true });
-
-        //bufferWriter.ResetWrittenCount();
-        //jsonWriter.Reset(bufferWriter);
-
-        //JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
-
-        var messageSpan = WriteMessage(new JsonMessage { message = "Hello, World!" });
+        var messageSpan = JsonSerializeToUtf8Span(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         res.Headers.ContentLength = messageSpan.Length;
 
         var body = features.GetResponseBodyFeature();
@@ -147,9 +130,6 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         await body.StartAsync();
         await body.Writer.FlushAsync();
-
-        //_jsonWriterPool.Return(jsonWriter);
-        //_bufferWriterPool.Return(bufferWriter);
     }
 
     [ThreadStatic]
@@ -157,7 +137,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     [ThreadStatic]
     private static Utf8JsonWriter? _jsonWriter;
 
-    private static ReadOnlySpan<byte> WriteMessage(JsonMessage message)
+    private static ReadOnlySpan<byte> JsonSerializeToUtf8Span<T>(T value, JsonTypeInfo<T> jsonTypeInfo)
     {
         var bufferWriter = _bufferWriter ??= new(64);
         var jsonWriter = _jsonWriter ??= new(_bufferWriter, new() { Indented = false, SkipValidation = true });
@@ -165,7 +145,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         bufferWriter.ResetWrittenCount();
         jsonWriter.Reset(bufferWriter);
 
-        JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
+        JsonSerializer.Serialize(jsonWriter, value, jsonTypeInfo);
 
         return bufferWriter.WrittenSpan;
     }
@@ -173,15 +153,6 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private struct JsonMessage
     {
         public required string message { get; set; }
-    }
-
-    private class Utf8JsonWriterPooledObjectPolicy : IPooledObjectPolicy<Utf8JsonWriter>
-    {
-        private static readonly ArrayBufferWriter<byte> _dummyBufferWriter = new(256);
-
-        public Utf8JsonWriter Create() => new(_dummyBufferWriter, new() { Indented = false, SkipValidation = true });
-
-        public bool Return(Utf8JsonWriter obj) => true;
     }
 
     private static readonly JsonContext SerializerContext = JsonContext.Default;
