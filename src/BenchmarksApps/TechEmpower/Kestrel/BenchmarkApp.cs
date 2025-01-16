@@ -125,16 +125,16 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = "application/json; charset=utf-8";
 
-        var bufferWriter = _bufferWriterPool.Get();
-        var jsonWriter = _jsonWriterPool.Get();
+        //var bufferWriter = _bufferWriterPool.Get();
+        //var jsonWriter = _jsonWriterPool.Get();
 
-        bufferWriter.ResetWrittenCount();
-        jsonWriter.Reset(bufferWriter);
+        var bufferWriter = new ArrayBufferWriter<byte>(64);
+        await using var jsonWriter = new Utf8JsonWriter(bufferWriter, new() { Indented = false, SkipValidation = true });
+
+        //bufferWriter.ResetWrittenCount();
+        //jsonWriter.Reset(bufferWriter);
 
         JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
-
-        _jsonWriterPool.Return(jsonWriter);
-        _bufferWriterPool.Return(bufferWriter);
 
         res.Headers.ContentLength = bufferWriter.WrittenCount;
 
@@ -143,6 +143,9 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         await body.StartAsync();
         body.Writer.Write(bufferWriter.WrittenSpan);
         await body.Writer.FlushAsync();
+
+        //_jsonWriterPool.Return(jsonWriter);
+        //_bufferWriterPool.Return(bufferWriter);
     }
 
     private struct JsonMessage
