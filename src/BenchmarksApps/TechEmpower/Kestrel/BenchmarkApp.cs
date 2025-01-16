@@ -10,6 +10,9 @@ namespace Kestrel;
 
 public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 {
+    private const string TextPlainContentType = "text/plain";
+    private const string JsonContentTypeWithCharset = "application/json; charset=utf-8";
+
     public IFeatureCollection CreateContext(IFeatureCollection features) => features;
 
     public Task ProcessRequestAsync(IFeatureCollection features)
@@ -47,7 +50,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task Index(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
-        res.Headers.ContentType = "text/plain";
+        res.Headers.ContentType = TextPlainContentType;
         res.Headers.ContentLength = IndexPayload.Length;
 
         var body = features.GetResponseBodyFeature();
@@ -62,7 +65,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task Plaintext(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
-        res.Headers.ContentType = "text/plain";
+        res.Headers.ContentType = TextPlainContentType;
         res.Headers.ContentLength = HelloWorldPayload.Length;
 
         var body = features.GetResponseBodyFeature();
@@ -74,7 +77,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task JsonChunked(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
-        res.Headers.ContentType = "application/json; charset=utf-8";
+        res.Headers.ContentType = JsonContentTypeWithCharset;
 
         var body = features.GetResponseBodyFeature();
         await body.StartAsync();
@@ -85,7 +88,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task JsonString(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
-        res.Headers.ContentType = "application/json; charset=utf-8";
+        res.Headers.ContentType = JsonContentTypeWithCharset;
 
         var message = JsonSerializer.Serialize(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         res.Headers.ContentLength = Encoding.UTF8.GetByteCount(message);
@@ -103,7 +106,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task JsonUtf8Bytes(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
-        res.Headers.ContentType = "application/json; charset=utf-8";
+        res.Headers.ContentType = JsonContentTypeWithCharset;
 
         var messageBytes = JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         res.Headers.ContentLength = messageBytes.Length;
@@ -119,7 +122,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private static async Task Json(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
-        res.Headers.ContentType = "application/json; charset=utf-8";
+        res.Headers.ContentType = JsonContentTypeWithCharset;
 
         var messageSpan = JsonSerializeToUtf8Span(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         res.Headers.ContentLength = messageSpan.Length;
