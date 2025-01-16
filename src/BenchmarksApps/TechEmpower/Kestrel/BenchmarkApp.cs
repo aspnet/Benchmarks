@@ -1,4 +1,6 @@
 ﻿using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
+using System.Formats.Asn1;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -128,24 +130,44 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         //var bufferWriter = _bufferWriterPool.Get();
         //var jsonWriter = _jsonWriterPool.Get();
 
-        var bufferWriter = new ArrayBufferWriter<byte>(64);
-        await using var jsonWriter = new Utf8JsonWriter(bufferWriter, new() { Indented = false, SkipValidation = true });
+        //var bufferWriter = new ArrayBufferWriter<byte>(64);
+        //await using var jsonWriter = new Utf8JsonWriter(bufferWriter, new() { Indented = false, SkipValidation = true });
 
         //bufferWriter.ResetWrittenCount();
         //jsonWriter.Reset(bufferWriter);
 
-        JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
+        //JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
 
-        res.Headers.ContentLength = bufferWriter.WrittenCount;
+        var messageSpan = WriteMessage(new JsonMessage { message = "Hello, World!" });
+        res.Headers.ContentLength = messageSpan.Length;
 
         var body = features.GetResponseBodyFeature();
 
+        body.Writer.Write(messageSpan);
+
         await body.StartAsync();
-        body.Writer.Write(bufferWriter.WrittenSpan);
         await body.Writer.FlushAsync();
 
         //_jsonWriterPool.Return(jsonWriter);
         //_bufferWriterPool.Return(bufferWriter);
+    }
+
+    [ThreadStatic]
+    private static ArrayBufferWriter<byte>? _bufferWriter;
+    [ThreadStatic]
+    private static Utf8JsonWriter? _jsonWriter;
+
+    private static ReadOnlySpan<byte> WriteMessage(JsonMessage message)
+    {
+        var bufferWriter = _bufferWriter ??= new(64);
+        var jsonWriter = _jsonWriter ??= new(_bufferWriter, new() { Indented = false, SkipValidation = true });
+
+        bufferWriter.ResetWrittenCount();
+        jsonWriter.Reset(bufferWriter);
+
+        JsonSerializer.Serialize(jsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
+
+        return bufferWriter.WrittenSpan;
     }
 
     private struct JsonMessage
