@@ -23,6 +23,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         if (req.Method != "GET")
         {
             res.StatusCode = StatusCodes.Status405MethodNotAllowed;
+            return Task.CompletedTask;
         }
 
         return req.Path switch
