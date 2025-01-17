@@ -22,9 +22,10 @@ jobs:
       # debug purpose settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
+      tlsRegistryLogs: false
       statsEnabled: false
       logRequestInfo: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --tlsProtocols {{tlsProtocols}} --logRequestInfo {{logRequestInfo}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --tlsProtocols {{tlsProtocols}} --logRequestInfo {{logRequestInfo}} --tlsRegistryLogs {{tlsRegistryLogs}}"
 
   kestrelServer:
     source:

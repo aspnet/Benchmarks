@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
-var httpSysLoggingEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out var httpSysLogsEnabled) && httpSysLogsEnabled;
+var httpSysLogsEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out var httpSysLogsConfig) && httpSysLogsConfig;
+var tlsRegistryLogsEnabled = bool.TryParse(builder.Configuration["tlsRegistryLogs"], out var tlsRegistryLogsConfig) && tlsRegistryLogsConfig;
 var logRequestInfo = bool.TryParse(builder.Configuration["logRequestInfo"], out var logRequestInfoConfig) && logRequestInfoConfig;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 
@@ -90,7 +91,9 @@ if (logRequestInfo)
         if (!logged)
         {
             logged = true;
+            Console.WriteLine("[RequestInfo]");
             Console.WriteLine("TLS Protocol: " + context.Features.Get<ITlsHandshakeFeature>()?.Protocol);
+            Console.WriteLine("---");
         }
 
         await next();
@@ -131,7 +134,11 @@ if (tlsRenegotiationEnabled)
 
 await app.StartAsync();
 
-if (httpSysLoggingEnabled)
+if (tlsRegistryLogsEnabled)
+{
+    RegistryController.ShowRegistryKeys();
+}
+if (httpSysLogsEnabled)
 {
     NetShWrapper.Show();
 }
