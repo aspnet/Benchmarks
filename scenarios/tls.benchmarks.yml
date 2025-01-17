@@ -15,10 +15,12 @@ jobs:
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
     variables:
-      mTLS: false
+      mTLS: false # enables settings on http.sys to negotiate client cert on connections
+      tlsRenegotiation: false # enables client cert validation
       certValidationConsoleEnabled: false
+      httpSysLogs: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}}"
 
   kestrelServer:
     source:
@@ -52,7 +54,29 @@ scenarios:
     application:
       job: httpSysServer
       variables:
-        mTLS: true
+        mTLS: true # enables settings on http.sys to negotiate client cert on connections
+        tlsRenegotiation: true # enables client cert validation
+        httpSysLogs: false # only for debug purposes
+        certValidationConsoleEnabled: false # only for debug purposes
+        serverPort: 8080 # IMPORTANT: not to intersect with other tests in case http.sys configuration impacts other benchmarks
+    load:
+      job: httpclient
+      variables:
+        serverPort: 8080 # in sync with server
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
+        certPwd: testPassword
+
+  tls-renegotiation-httpsys:
+    application:
+      job: httpSysServer
+      variables:
+        mTLS: false
+        tlsRenegotiation: true
+        httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient

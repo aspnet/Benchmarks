@@ -1,13 +1,16 @@
-using Microsoft.AspNetCore.Mvc;
+using HttpSys;
 using Microsoft.AspNetCore.Server.HttpSys;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var httpSysLoggingEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out var httpSysLogsEnabled) && httpSysLogsEnabled;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
+var httpsIpPort = listeningEndpoints.Split(";").First(x => x.Contains("https")).Replace("https://", "");
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
@@ -17,7 +20,7 @@ builder.WebHost.UseHttpSys(options =>
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 
-var app = builder.Build();  
+var app = builder.Build();
 
 app.MapGet("/hello-world", () =>
 {
@@ -40,6 +43,40 @@ if (statsEnabled)
 }
 
 if (mTlsEnabled)
+{
+    var hostAppLifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    hostAppLifetime!.ApplicationStopping.Register(OnShutdown);
+
+    void OnShutdown()
+    {
+        Console.WriteLine("Application shutdown started.");
+
+        try
+        {
+            NetShWrapper.DisableHttpSysMutualTls(ipPort: httpsIpPort);
+        }
+        catch
+        {
+            Console.WriteLine("Failed to disable HTTP.SYS mTLS settings");
+            throw;
+        }
+    }
+
+    try
+    {
+        // if not executed, following command (enable http.sys mutual tls) will fail because binding exists
+        NetShWrapper.DisableHttpSysMutualTlsIfExists(ipPort: httpsIpPort);
+
+        NetShWrapper.EnableHttpSysMutualTls(ipPort: httpsIpPort);
+    }
+    catch
+    {
+        Console.WriteLine($"Http.Sys configuration for mTLS failed");
+        throw;
+    }
+}
+
+if (tlsRenegotiationEnabled)
 {
     // this is an http.sys middleware to get a cert
     Console.WriteLine("Registered client cert validation middleware");
@@ -72,6 +109,12 @@ if (mTlsEnabled)
 }
 
 await app.StartAsync();
+
+if (httpSysLoggingEnabled)
+{
+    NetShWrapper.Show();
+}
+
 Console.WriteLine("Application Info:");
 if (mTlsEnabled)
 {
