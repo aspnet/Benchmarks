@@ -136,6 +136,7 @@ await app.StartAsync();
 
 if (tlsRegistryLogsEnabled)
 {
+    Console.WriteLine("Fetching registry info");
     RegistryController.ShowRegistryKeys();
 }
 if (httpSysLogsEnabled)
