@@ -81,48 +81,46 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
     private static ReadOnlySpan<byte> HelloWorldPayload => "Hello, World!"u8;
 
-    private static async Task Plaintext(IHttpResponseFeature res, IFeatureCollection features)
+    private static Task Plaintext(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = TextPlainContentType;
         res.Headers.ContentLength = HelloWorldPayload.Length;
 
         var body = features.GetResponseBodyFeature();
-        await body.StartAsync();
+
         body.Writer.Write(HelloWorldPayload);
-        await body.Writer.FlushAsync();
+
+        return Task.CompletedTask;
     }
 
-    private static async Task JsonChunked(IHttpResponseFeature res, IFeatureCollection features)
+    private static Task JsonChunked(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = JsonContentTypeWithCharset;
 
         var body = features.GetResponseBodyFeature();
-        await body.StartAsync();
-        await JsonSerializer.SerializeAsync(body.Writer, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
-        await body.Writer.FlushAsync();
+        return JsonSerializer.SerializeAsync(body.Writer, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
     }
 
-    private static async Task JsonString(IHttpResponseFeature res, IFeatureCollection features)
+    private static Task JsonString(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = JsonContentTypeWithCharset;
 
         var message = JsonSerializer.Serialize(new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
-        res.Headers.ContentLength = Encoding.UTF8.GetByteCount(message);
+        Span<byte> buffer = stackalloc byte[64];
+        var length = Encoding.UTF8.GetBytes(message, buffer);
+        res.Headers.ContentLength = length;
 
         var body = features.GetResponseBodyFeature();
-        await body.StartAsync();
 
-        Span<byte> buffer = stackalloc byte[256];
-        var length = Encoding.UTF8.GetBytes(message, buffer);
         body.Writer.Write(buffer[..length]);
 
-        await body.Writer.FlushAsync();
+        return Task.CompletedTask;
     }
 
-    private static async Task JsonUtf8Bytes(IHttpResponseFeature res, IFeatureCollection features)
+    private static Task JsonUtf8Bytes(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = JsonContentTypeWithCharset;
@@ -131,11 +129,10 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         res.Headers.ContentLength = messageBytes.Length;
 
         var body = features.GetResponseBodyFeature();
-        await body.StartAsync();
 
         body.Writer.Write(messageBytes);
 
-        await body.Writer.FlushAsync();
+        return Task.CompletedTask;
     }
 
     private static Task Json(IHttpResponseFeature res, IFeatureCollection features)
@@ -150,8 +147,6 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         body.Writer.Write(messageSpan);
 
-        //await body.StartAsync();
-        //await body.Writer.FlushAsync();
         return Task.CompletedTask;
     }
 
