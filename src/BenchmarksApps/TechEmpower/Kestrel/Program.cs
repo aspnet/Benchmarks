@@ -23,8 +23,12 @@ if (int.TryParse(configuration["threadCount"], out var value))
 {
     socketOptions.IOQueueCount = value;
 }
+var kestrelOptions = new KestrelServerOptions();
+kestrelOptions.Limits.MinRequestBodyDataRate = null;
+kestrelOptions.Limits.MinResponseDataRate = null;
+
 using var server = new KestrelServer(
-    Options.Create(new KestrelServerOptions()),
+    Options.Create(kestrelOptions),
     new SocketTransportFactory(Options.Create(socketOptions), loggerFactory),
     loggerFactory
     );
