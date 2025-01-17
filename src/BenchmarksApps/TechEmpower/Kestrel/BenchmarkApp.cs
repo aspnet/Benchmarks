@@ -20,22 +20,50 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         var req = features.GetRequestFeature();
         var res = features.GetResponseFeature();
 
-        if (req.Method != "GET")
+        //if (req.Method != "GET")
+        //{
+        //    res.StatusCode = StatusCodes.Status405MethodNotAllowed;
+        //    return Task.CompletedTask;
+        //}
+
+        var pathSpan = req.Path.AsSpan();
+        if (Paths.IsPath(pathSpan, Paths.Plaintext))
         {
-            res.StatusCode = StatusCodes.Status405MethodNotAllowed;
-            return Task.CompletedTask;
+            return Plaintext(res, features);
+        }
+        else if (Paths.IsPath(pathSpan, Paths.Json))
+        {
+            return Json(res, features);
+        }
+        else if (pathSpan.StartsWith("json-string", StringComparison.OrdinalIgnoreCase))
+        {
+            return JsonString(res, features);
+        }
+        else if (pathSpan.StartsWith("json-utf8bytes", StringComparison.OrdinalIgnoreCase))
+        {
+            return JsonUtf8Bytes(res, features);
+        }
+        else if (pathSpan.StartsWith("json-chunked", StringComparison.OrdinalIgnoreCase))
+        {
+            return JsonChunked(res, features);
+        }
+        else if (pathSpan.IsEmpty || pathSpan.Equals("/", StringComparison.OrdinalIgnoreCase))
+        {
+            return Index(res, features);
         }
 
-        return req.Path switch
-        {
-            "/plaintext" => Plaintext(res, features),
-            "/json" => Json(res, features),
-            "/json-string" => JsonString(res, features),
-            "/json-utf8bytes" => JsonUtf8Bytes(res, features),
-            "/json-chunked" => JsonChunked(res, features),
-            "/" => Index(res, features),
-            _ => NotFound(res, features),
-        };
+        return NotFound(res, features);
+
+        //return req.Path switch
+        //{
+        //    "/plaintext" => Plaintext(res, features),
+        //    "/json" => Json(res, features),
+        //    "/json-string" => JsonString(res, features),
+        //    "/json-utf8bytes" => JsonUtf8Bytes(res, features),
+        //    "/json-chunked" => JsonChunked(res, features),
+        //    "/" => Index(res, features),
+        //    _ => NotFound(res, features),
+        //};
     }
 
     private static Task NotFound(IHttpResponseFeature res, IFeatureCollection features)
@@ -167,5 +195,13 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
     private partial class JsonContext : JsonSerializerContext
     {
 
+    }
+
+    private static class Paths
+    {
+        public static ReadOnlySpan<char> Plaintext => "/plaintext";
+        public static ReadOnlySpan<char> Json => "/json";
+
+        public static bool IsPath(ReadOnlySpan<char> path, ReadOnlySpan<char> targetPath) => path.SequenceEqual(targetPath);
     }
 }
