@@ -138,7 +138,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
         await body.Writer.FlushAsync();
     }
 
-    private static async Task Json(IHttpResponseFeature res, IFeatureCollection features)
+    private static Task Json(IHttpResponseFeature res, IFeatureCollection features)
     {
         res.StatusCode = StatusCodes.Status200OK;
         res.Headers.ContentType = JsonContentTypeWithCharset;
@@ -152,6 +152,7 @@ public sealed partial class BenchmarkApp : IHttpApplication<IFeatureCollection>
 
         //await body.StartAsync();
         //await body.Writer.FlushAsync();
+        return Task.CompletedTask;
     }
 
     [ThreadStatic]
