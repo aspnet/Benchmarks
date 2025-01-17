@@ -8,7 +8,9 @@ builder.Logging.ClearProviders();
 
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var httpSysLoggingEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out var httpSysLogsEnabled) && httpSysLogsEnabled;
+var logRequestInfo = bool.TryParse(builder.Configuration["logRequestInfo"], out var logRequestInfoConfig) && logRequestInfoConfig;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
+
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
@@ -78,6 +80,23 @@ if (mTlsEnabled)
     }
 }
 
+if (logRequestInfo)
+{
+    Console.WriteLine("Registered request logging middleware");
+    var logged = false;
+
+    app.Use(async (context, next) =>
+    {
+        if (!logged)
+        {
+            logged = true;
+            Console.WriteLine("TLS Protocol: " + context.Features.Get<ITlsHandshakeFeature>()?.Protocol);
+        }
+
+        await next();
+    });
+}
+
 if (tlsRenegotiationEnabled)
 {
     // this is an http.sys middleware to get a cert
@@ -89,7 +108,6 @@ if (tlsRenegotiationEnabled)
         {
             if (writeCertValidationEventsToConsole)
             {
-                Console.WriteLine("Protocol: " + context.Features.Get<ITlsHandshakeFeature>()?.Protocol);
                 Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
             }
 

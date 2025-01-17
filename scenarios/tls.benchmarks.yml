@@ -17,11 +17,13 @@ jobs:
     variables:
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
+      tlsProtocols: "tls12"
+      # debug purpose settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
       statsEnabled: false
-      tlsProtocols: "tls12"
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --tlsProtocols {{tlsProtocols}}"
+      logRequestInfo: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --tlsProtocols {{tlsProtocols}} --logRequestInfo {{logRequestInfo}}"
 
   kestrelServer:
     source:
