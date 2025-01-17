@@ -20,7 +20,8 @@ jobs:
       certValidationConsoleEnabled: false
       httpSysLogs: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}}"
+      tlsProtocols: "tls12"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --tlsProtocols {{tlsProtocols}}"
 
   kestrelServer:
     source:
@@ -33,7 +34,8 @@ jobs:
       tlsRenegotiation: false
       certValidationConsoleEnabled: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
+      tlsProtocols: "tls12"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --tlsProtocols {{tlsProtocols}}"
 
 scenarios:
 
