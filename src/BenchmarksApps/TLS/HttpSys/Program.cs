@@ -1,7 +1,7 @@
 using HttpSys;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
+using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -11,6 +11,7 @@ var httpSysLogsEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out
 var tlsRegistryLogsEnabled = bool.TryParse(builder.Configuration["tlsRegistryLogs"], out var tlsRegistryLogsConfig) && tlsRegistryLogsConfig;
 var logRequestInfo = bool.TryParse(builder.Configuration["logRequestInfo"], out var logRequestInfoConfig) && logRequestInfoConfig;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
+var supportedTlsVersions = ConfigurationHelpers.ParseSslProtocols(builder.Configuration["tlsProtocols"]);
 
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
@@ -132,11 +133,9 @@ if (tlsRenegotiationEnabled)
     });
 }
 
-await app.StartAsync();
-
+RegistryController.EnableTls(supportedTlsVersions);
 if (tlsRegistryLogsEnabled)
 {
-    Console.WriteLine("Fetching registry info");
     RegistryController.ShowRegistryKeys();
 }
 if (httpSysLogsEnabled)
@@ -159,6 +158,8 @@ if (statsEnabled)
 }
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
+
+await app.StartAsync();
 
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
