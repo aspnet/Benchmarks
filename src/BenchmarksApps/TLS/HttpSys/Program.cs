@@ -1,4 +1,6 @@
 using HttpSys;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,6 +89,7 @@ if (tlsRenegotiationEnabled)
         {
             if (writeCertValidationEventsToConsole)
             {
+                Console.WriteLine("Protocol: " + context.Features.Get<ITlsHandshakeFeature>()?.Protocol);
                 Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
             }
 
