@@ -1,8 +1,8 @@
 ﻿using System.Security.Authentication;
 
-namespace Shared
+namespace HttpSys
 {
-    public static class ConfigurationHelpers
+    internal static class ConfigurationHelpers
     {
         public static SslProtocols ParseSslProtocols(string? supportedTlsVersions)
         {

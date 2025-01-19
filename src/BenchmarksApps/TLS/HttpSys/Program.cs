@@ -1,7 +1,6 @@
 using HttpSys;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
-using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();

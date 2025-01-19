@@ -72,8 +72,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpSys", "BenchmarksApps\T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kestrel", "BenchmarksApps\TLS\Kestrel\Kestrel.csproj", "{291DCDF7-4B7C-D687-A62B-9DF7DF50F2F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "BenchmarksApps\TLS\Shared\Shared.csproj", "{C7A7E484-F1DB-4A46-B8F8-4895C413F680}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Database|Any CPU = Debug_Database|Any CPU
@@ -282,14 +280,6 @@ Global
 		{291DCDF7-4B7C-D687-A62B-9DF7DF50F2F2}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
 		{291DCDF7-4B7C-D687-A62B-9DF7DF50F2F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{291DCDF7-4B7C-D687-A62B-9DF7DF50F2F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Debug_Database|Any CPU.ActiveCfg = Debug_Database|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Debug_Database|Any CPU.Build.0 = Debug_Database|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Release_Database|Any CPU.ActiveCfg = Release_Database|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -307,7 +297,6 @@ Global
 		{D6616E03-A2DA-4929-AD28-595ECC4C004D} = {B6DB234C-8F80-4160-B95D-D70AFC444A3D}
 		{455942DF-6C8E-4054-AF1D-41A10BE1466F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{291DCDF7-4B7C-D687-A62B-9DF7DF50F2F2} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{C7A7E484-F1DB-4A46-B8F8-4895C413F680} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {117072DC-DE12-4F74-90CA-692FA2BE8DCB}
