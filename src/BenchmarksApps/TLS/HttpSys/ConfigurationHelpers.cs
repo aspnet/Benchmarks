@@ -7,7 +7,7 @@ namespace HttpSys
         public static SslProtocols ParseSslProtocols(string? supportedTlsVersions)
         {
             var protocols = SslProtocols.None;
-            if (supportedTlsVersions is null)
+            if (string.IsNullOrEmpty(supportedTlsVersions))
             {
                 return protocols;
             }
@@ -27,6 +27,8 @@ namespace HttpSys
                     case "tls13":
                         protocols |= SslProtocols.Tls13;
                         break;
+                    case "any":
+                        return SslProtocols.None;
                     default:
                         throw new ArgumentException($"Unsupported TLS version: {version}");
                 }
