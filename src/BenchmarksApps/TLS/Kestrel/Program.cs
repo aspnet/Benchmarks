@@ -197,9 +197,9 @@ static IPEndPoint CreateIPEndPoint(UrlPrefix urlPrefix)
 static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
 {
     var protocols = SslProtocols.None;
-    if (string.IsNullOrEmpty(supportedTlsVersions))
+    if (string.IsNullOrEmpty(supportedTlsVersions) || supportedTlsVersions == "any")
     {
-        return protocols;
+        return null;
     }
 
     foreach (var version in supportedTlsVersions.Split(','))
@@ -217,8 +217,6 @@ static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
             case "tls13":
                 protocols |= SslProtocols.Tls13;
                 break;
-            case "any":
-                return null;
             default:
                 throw new ArgumentException($"Unsupported TLS version: {version}");
         }
