@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Certificate;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -9,11 +11,15 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
-var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+// behavioral
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
-var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
+
+// debug
+var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
+var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"], out var logRequestDetailsConfig) && logRequestDetailsConfig;
 
 if (mTlsEnabled && tlsRenegotiationEnabled)
 {
@@ -79,6 +85,27 @@ bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509
     // Not interested in measuring actual certificate validation code:
     // we only need to measure the work of getting to the point where certificate is accessible and can be validated
     return true;
+}
+
+if (logRequestDetails)
+{
+    var logged = false;
+    Console.WriteLine("Registered request details logging middleware");
+    app.Use(async (context, next) =>
+    {
+        if (!logged)
+        {
+            logged = true;
+
+            var tlsHandshakeFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
+
+            Console.WriteLine("Request details:");
+            Console.WriteLine("-----");
+            Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
+            Console.WriteLine("-----");
+        }
+        await next();
+    });
 }
 
 if (statsEnabled)
