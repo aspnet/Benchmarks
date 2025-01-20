@@ -18,7 +18,7 @@ jobs:
       # behavioral settings
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
-      tlsProtocols: "tls12"
+      tlsProtocols: 
       # debug purpose settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
@@ -37,7 +37,7 @@ jobs:
       # behavioral settings
       mTLS: false
       tlsRenegotiation: false
-      tlsProtocols: "tls12"
+      tlsProtocols: 
       # debug purpose settings
       certValidationConsoleEnabled: false
       statsEnabled: false
