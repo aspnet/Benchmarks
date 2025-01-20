@@ -50,7 +50,7 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: wrk
+      job: httpclient
       variables:
         path: /hello-world
         presetHeaders: connectionclose
@@ -101,7 +101,7 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: wrk
+      job: httpclient
       variables:
         path: /hello-world
         presetHeaders: connectionclose
