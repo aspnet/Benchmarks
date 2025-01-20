@@ -6,13 +6,12 @@ namespace HttpSys
     {
         public static SslProtocols ParseSslProtocols(string? supportedTlsVersions)
         {
-            var protocols = SslProtocols.Tls12; // default it TLS 1.2
-            if (string.IsNullOrEmpty(supportedTlsVersions))
+            var protocols = SslProtocols.None;
+            if (supportedTlsVersions is null)
             {
                 return protocols;
             }
 
-            protocols = SslProtocols.None;
             foreach (var version in supportedTlsVersions.Split(','))
             {
                 switch (version.Trim().ToLower())

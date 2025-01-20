@@ -33,6 +33,8 @@ public static class RegistryController
 
     public static void EnableTls(SslProtocols sslProtocols)
     {
+        Console.WriteLine($"Configuring tls to match {sslProtocols}");
+
         if (sslProtocols.HasFlag(SslProtocols.Tls12))
         {
             EnableTls12();
@@ -44,7 +46,19 @@ public static class RegistryController
             return;
         }
 
-        throw new ArgumentOutOfRangeException(nameof(sslProtocols), "Unsupported TLS protocol version. Only TLS1.2 and TLS1.3 are supported.");
+        Console.WriteLine("Enabling all TLS - no option specified");
+        EnableAll();
+    }
+
+    private static void EnableAll()
+    {
+        // Enable TLS1.2
+        SetRegistryValue(TLS12SubKey, "DisabledByDefault", value: 0, valueToOverride: 1);
+        SetRegistryValue(TLS12SubKey, "Enabled", value: 1, valueToOverride: 0);
+
+        // Enable TLS1.3
+        SetRegistryValue(TLS13SubKey, "DisabledByDefault", value: 0, valueToOverride: 1);
+        SetRegistryValue(TLS13SubKey, "Enabled", value: 1, valueToOverride: 0);
     }
 
     private static void EnableTls12()
