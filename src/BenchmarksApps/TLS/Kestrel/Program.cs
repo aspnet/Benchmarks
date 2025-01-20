@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Connections.Features;
@@ -15,6 +16,7 @@ builder.Logging.ClearProviders();
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
+var supportedTlsVersions = ParseSslProtocols(builder.Configuration["tlsProtocols"]);
 
 // debug
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
@@ -46,6 +48,11 @@ builder.WebHost.UseKestrel(options =>
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
             listenOptions.UseHttps("testCert.pfx", "testPassword", options =>
             {
+                if (supportedTlsVersions is not null)
+                {
+                    options.SslProtocols = supportedTlsVersions.Value;
+                }
+
                 if (mTlsEnabled)
                 {
                     options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
@@ -164,6 +171,7 @@ if (statsEnabled)
 {
     Console.WriteLine($"\tenabled logging stats to console");
 }
+Console.WriteLine($"\tsupported TLS versions: {supportedTlsVersions}");
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
 
@@ -184,4 +192,37 @@ static IPEndPoint CreateIPEndPoint(UrlPrefix urlPrefix)
     }
 
     return new IPEndPoint(ip, urlPrefix.PortValue);
+}
+
+static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
+{
+    var protocols = SslProtocols.None;
+    if (string.IsNullOrEmpty(supportedTlsVersions))
+    {
+        return protocols;
+    }
+
+    foreach (var version in supportedTlsVersions.Split(','))
+    {
+        switch (version.Trim().ToLower())
+        {
+#pragma warning disable SYSLIB0039 // Type or member is obsolete
+            case "tls11":
+                protocols |= SslProtocols.Tls11;
+                break;
+#pragma warning restore SYSLIB0039 // Type or member is obsolete
+            case "tls12":
+                protocols |= SslProtocols.Tls12;
+                break;
+            case "tls13":
+                protocols |= SslProtocols.Tls13;
+                break;
+            case "any":
+                return null;
+            default:
+                throw new ArgumentException($"Unsupported TLS version: {version}");
+        }
+    }
+
+    return protocols;
 }
