@@ -35,7 +35,7 @@ jobs:
       # behavioral settings
       mTLS: false
       tlsRenegotiation: false
-      tlsProtocols: "tls12"
+      tlsProtocols: "tls12,tls13"
       # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
