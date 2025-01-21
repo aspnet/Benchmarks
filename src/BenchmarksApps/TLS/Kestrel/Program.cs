@@ -111,7 +111,8 @@ if (logRequestDetails)
             Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
             Console.WriteLine("-----");
         }
-        await next();
+
+        await next(context);
     });
 }
 
@@ -123,7 +124,7 @@ if (statsEnabled)
         connectionIds.Add(context.Connection.Id);
         Console.WriteLine($"[stats] unique connections established: {connectionIds.Count}; fetched certificates: {fetchedCertsCounter}");
 
-        await next();
+        await next(context);
     });
 }
 
@@ -143,7 +144,7 @@ if (tlsRenegotiationEnabled)
             Console.WriteLine($"client certificate ({clientCert.Thumbprint}) already exists on the connection {context.Connection.Id}");
         }
 
-        await next();
+        await next(context);
     });
 }
 
@@ -206,11 +207,6 @@ static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
     {
         switch (version.Trim().ToLower())
         {
-#pragma warning disable SYSLIB0039 // Type or member is obsolete
-            case "tls11":
-                protocols |= SslProtocols.Tls11;
-                break;
-#pragma warning restore SYSLIB0039 // Type or member is obsolete
             case "tls12":
                 protocols |= SslProtocols.Tls12;
                 break;
