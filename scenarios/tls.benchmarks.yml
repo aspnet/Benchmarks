@@ -36,20 +36,20 @@ jobs:
     arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
 
   linuxDockerKestrelServer:
-  source:
-    dockerKestrel:
-      repository: https://github.com/deaglegross/benchmarks.git
-      branchOrCommit: dmkorolev/idna/openssl-versioning
-      dockerFile: src/BenchmarksApps/TLS/Kestrel/Dockerfile
-      dockerImageName: kestrel
-      dockerContextDirectory: src/BenchmarksApps/TLS/Kestrel
-  port: 8080
-  variables:
-    mTLS: false
-    tlsRenegotiation: false
-    certValidationConsoleEnabled: false
-    statsEnabled: false
-  arguments: "--urls https://{{serverAddress}}:8080 --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
+    source:
+      dockerKestrel:
+        repository: https://github.com/deaglegross/benchmarks.git
+        branchOrCommit: dmkorolev/idna/openssl-versioning
+        dockerFile: src/BenchmarksApps/TLS/Kestrel/Dockerfile
+        dockerImageName: kestrel
+        dockerContextDirectory: src/BenchmarksApps/TLS/Kestrel
+    port: 8080
+    variables:
+      mTLS: false
+      tlsRenegotiation: false
+      certValidationConsoleEnabled: false
+      statsEnabled: false
+    arguments: "--urls https://{{serverAddress}}:8080 --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
 
 scenarios:
 
