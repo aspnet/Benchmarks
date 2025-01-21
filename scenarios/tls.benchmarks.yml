@@ -36,7 +36,7 @@ jobs:
     arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
 
   linuxDockerKestrelServer:
-    sources:
+    source:
       dockerKestrel:
         repository: https://github.com/deaglegross/benchmarks.git
         branchOrCommit: dmkorolev/idna/openssl-versioning
