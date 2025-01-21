@@ -1,8 +1,7 @@
 ﻿imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
-  # - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
-  - https://raw.githubusercontent.com/dotnet/crank/311be9f76544c3f5340ccedc26e77212b3f4abd0/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
@@ -57,7 +56,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        sslProtocols: tls12
+        sslProtocol: tls12
 
   mTls-handshakes-httpsys:
     application:
@@ -78,7 +77,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
         certPwd: testPassword
-        sslProtocols: tls12
+        sslProtocol: tls12
 
   tls-renegotiation-httpsys:
     application:
@@ -97,7 +96,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
         certPwd: testPassword
-        sslProtocols: tls12
+        sslProtocol: tls12
 
 # Kestrel
   
@@ -111,7 +110,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        sslProtocols: tls12
+        sslProtocol: tls12
 
   mTls-handshakes-kestrel:
     application:
@@ -128,7 +127,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
         certPwd: testPassword
-        sslProtocols: tls12
+        sslProtocol: tls12
 
   tls-renegotiation-kestrel:
     application:
@@ -146,4 +145,4 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
         certPwd: testPassword
-        sslProtocols: tls12
+        sslProtocol: tls12
