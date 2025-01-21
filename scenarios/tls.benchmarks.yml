@@ -40,10 +40,10 @@ jobs:
       dockerKestrel:
         repository: https://github.com/deaglegross/benchmarks.git
         branchOrCommit: dmkorolev/idna/openssl-versioning
-        dockerFile: src/BenchmarksApps/TLS/Kestrel/Dockerfile
-        dockerImageName: kestrel
-        dockerContextDirectory: src/BenchmarksApps/TLS/Kestrel
-    port: 8080
+      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
+      dockerImageName: kestrel
+      dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
+      port: 8080
     variables:
       mTLS: false
       tlsRenegotiation: false
