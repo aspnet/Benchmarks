@@ -43,6 +43,7 @@ jobs:
     dockerImageName: kestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
     port: 8080
+    readyStateText: Application started.
     variables:
       mTLS: false
       tlsRenegotiation: false
