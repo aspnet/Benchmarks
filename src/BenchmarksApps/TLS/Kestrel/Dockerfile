@@ -26,4 +26,20 @@ RUN dotnet publish "./Kestrel.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Kestrel.dll"]
+
+# Arguments for the app itself
+ARG urls="https://0.0.0.0:8080"
+ARG mTLS="false"
+ARG certValidationConsoleEnabled ="false"
+ARG statsEnabled ="false"
+ARG tlsRenegotiation ="false"
+ENTRYPOINT [
+    "dotnet", "Kestrel.dll",
+    # behavioral args
+    "--urls", $urls,
+    "--mTLS", $mTLS,
+    "--tlsRenegotiation", $tlsRenegotiation,
+    # debug args
+    "--certValidationConsoleEnabled", $certValidationConsoleEnabled,
+    "--statsEnabled", $statsEnabled,
+]
