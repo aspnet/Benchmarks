@@ -1,5 +1,4 @@
 ﻿imports:
-  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
@@ -59,7 +58,7 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: wrk
+      job: httpclient
       variables:
         path: /hello-world
         presetHeaders: connectionclose
@@ -110,7 +109,7 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: wrk
+      job: httpclient
       variables:
         path: /hello-world
         presetHeaders: connectionclose
@@ -155,10 +154,10 @@ scenarios:
     application:
       job: linuxDockerKestrelServer
     load:
-      job: wrk
+      job: httpclient
       variables:
         path: /hello-world
-        serverPort: 8080
+        # serverPort: 5000
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https

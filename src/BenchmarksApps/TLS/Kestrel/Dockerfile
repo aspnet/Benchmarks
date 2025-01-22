@@ -28,7 +28,7 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # Arguments for the app itself
-ARG urls=https://0.0.0.0:8080
+ARG urls=https://localhost:8080
 ARG mTLS=false
 ARG certValidationConsoleEnabled=false
 ARG statsEnabled=false
