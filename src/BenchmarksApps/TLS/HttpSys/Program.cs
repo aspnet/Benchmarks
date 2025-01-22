@@ -53,7 +53,8 @@ if (logRequestDetails)
             Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
             Console.WriteLine("-----");
         }
-        await next();
+
+        await next(context);
     });
 }
 
@@ -65,7 +66,7 @@ if (statsEnabled)
         connectionIds.Add(context.Connection.Id);
         Console.WriteLine($"[stats] unique connections established: {connectionIds.Count}; fetched certificates: {fetchedCertsCounter}");
 
-        await next();
+        await next(context);
     });
 }
 
@@ -131,7 +132,7 @@ if (tlsRenegotiationEnabled)
         // we have a client cert here, and lets imagine we do the validation here
         // if (clientCert.Thumbprint != "1234567890") throw new NotImplementedException();
 
-        await next();
+        await next(context);
     });
 }
 
