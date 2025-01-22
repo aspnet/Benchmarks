@@ -1,10 +1,11 @@
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+
+Console.WriteLine("Starting application...");
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();

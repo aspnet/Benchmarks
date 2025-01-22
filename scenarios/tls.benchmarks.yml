@@ -44,12 +44,12 @@ jobs:
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
     port: 8080
     readyStateText: Application started.
-    variables:
-      mTLS: false
-      tlsRenegotiation: false
-      certValidationConsoleEnabled: false
-      statsEnabled: false
-    arguments: "--build-arg urls=https://{{serverAddress}}:8080 --build-arg mTLS={{mTLS}} --build-arg certValidationConsoleEnabled={{certValidationConsoleEnabled}} --build-arg statsEnabled={{statsEnabled}} --build-arg tlsRenegotiation={{tlsRenegotiation}}"
+    buildArguments:
+      - urls=https://0.0.0.0:8080
+      - mTLS=false
+      - tlsRenegotiation=false
+      - certValidationConsoleEnabled=false
+      - statsEnabled=false
 
 scenarios:
 

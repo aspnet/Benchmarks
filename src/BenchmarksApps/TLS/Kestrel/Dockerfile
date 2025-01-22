@@ -1,4 +1,9 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+# Arguments for the app itself
+ARG urls=https://0.0.0.0:8080
+ARG mTLS=false
+ARG certValidationConsoleEnabled=false
+ARG statsEnabled=false
+ARG tlsRenegotiation=false
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
@@ -27,12 +32,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Arguments for the app itself
-ARG urls=https://0.0.0.0:8080
-ARG mTLS=false
-ARG certValidationConsoleEnabled=false
-ARG statsEnabled=false
-ARG tlsRenegotiation=false
 ENTRYPOINT [ "dotnet", "Kestrel.dll", \
     # behavioral args 
     "--urls", $urls, \
