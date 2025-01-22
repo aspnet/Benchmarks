@@ -1,11 +1,3 @@
-# Arguments for the app itself
-ARG urls=https://0.0.0.0:8080
-ENV urlsEnv=$urls
-ARG mTLS=false
-ARG certValidationConsoleEnabled=false
-ARG statsEnabled=false
-ARG tlsRenegotiation=false
-
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 USER $APP_UID
@@ -33,15 +25,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT [ "dotnet", "Kestrel.dll", "--urls", $urlsEnv ]
-
-# ENTRYPOINT [ "dotnet", "Kestrel.dll",                                   \
-#     # behavioral args 
-#     #"--urls", $urlsEnv,                                                    \
-#     "--urls", $urlsEnv      \
-#     # "--mTLS", $mTLS,                                                    \
-#     # "--tlsRenegotiation", $tlsRenegotiation,                            \
-#     # # debug args 
-#     # "--certValidationConsoleEnabled", $certValidationConsoleEnabled,    \
-#     # "--statsEnabled", $statsEnabled                                     \
-# ]
+ENTRYPOINT [ "dotnet", "Kestrel.dll" ]
