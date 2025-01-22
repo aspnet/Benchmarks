@@ -1,5 +1,6 @@
 # Arguments for the app itself
 ARG urls=https://0.0.0.0:8080
+ENV urlsEnv=$urls
 ARG mTLS=false
 ARG certValidationConsoleEnabled=false
 ARG statsEnabled=false
@@ -32,12 +33,15 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT [ "dotnet", "Kestrel.dll",                                   \
-    # behavioral args 
-    "--urls", $urls,                                                    \
-    "--mTLS", $mTLS,                                                    \
-    "--tlsRenegotiation", $tlsRenegotiation,                            \
-    # debug args 
-    "--certValidationConsoleEnabled", $certValidationConsoleEnabled,    \
-    "--statsEnabled", $statsEnabled                                     \
-]
+ENTRYPOINT [ "dotnet", "Kestrel.dll", "--urls", $urlsEnv ]
+
+# ENTRYPOINT [ "dotnet", "Kestrel.dll",                                   \
+#     # behavioral args 
+#     #"--urls", $urlsEnv,                                                    \
+#     "--urls", $urlsEnv      \
+#     # "--mTLS", $mTLS,                                                    \
+#     # "--tlsRenegotiation", $tlsRenegotiation,                            \
+#     # # debug args 
+#     # "--certValidationConsoleEnabled", $certValidationConsoleEnabled,    \
+#     # "--statsEnabled", $statsEnabled                                     \
+# ]
