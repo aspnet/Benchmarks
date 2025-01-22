@@ -32,12 +32,12 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT [ "dotnet", "Kestrel.dll", \
+ENTRYPOINT [ "dotnet", "Kestrel.dll",                                   \
     # behavioral args 
-    "--urls", $urls, \
-    "--mTLS", $mTLS, \
-    "--tlsRenegotiation", $tlsRenegotiation, \
+    "--urls", $urls,                                                    \
+    "--mTLS", $mTLS,                                                    \
+    "--tlsRenegotiation", $tlsRenegotiation,                            \
     # debug args 
-    "--certValidationConsoleEnabled", $certValidationConsoleEnabled, \
-    "--statsEnabled", $statsEnabled \
+    "--certValidationConsoleEnabled", $certValidationConsoleEnabled,    \
+    "--statsEnabled", $statsEnabled                                     \
 ]
