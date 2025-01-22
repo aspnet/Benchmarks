@@ -33,13 +33,13 @@ ARG mTLS=false
 ARG certValidationConsoleEnabled=false
 ARG statsEnabled=false
 ARG tlsRenegotiation=false
-ENTRYPOINT [
-    "dotnet", "Kestrel.dll",
-    # behavioral args
-    "--urls", $urls,
-    "--mTLS", $mTLS,
-    "--tlsRenegotiation", $tlsRenegotiation,
-    # debug args
-    "--certValidationConsoleEnabled", $certValidationConsoleEnabled,
-    "--statsEnabled", $statsEnabled,
+ENTRYPOINT [ \
+    "dotnet", "Kestrel.dll", \
+    # behavioral args 
+    "--urls", $urls, \
+    "--mTLS", $mTLS, \
+    "--tlsRenegotiation", $tlsRenegotiation, \
+    # debug args 
+    "--certValidationConsoleEnabled", $certValidationConsoleEnabled, \
+    "--statsEnabled", $statsEnabled \
 ]
