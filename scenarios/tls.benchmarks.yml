@@ -49,7 +49,7 @@ jobs:
       tlsRenegotiation: false
       certValidationConsoleEnabled: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:8080 --build-arg mTLS={{mTLS}} --build-arg certValidationConsoleEnabled={{certValidationConsoleEnabled}} --build-arg statsEnabled={{statsEnabled}} --build-arg tlsRenegotiation={{tlsRenegotiation}}"
+    arguments: "--build-arg urls=https://{{serverAddress}}:8080 --build-arg mTLS={{mTLS}} --build-arg certValidationConsoleEnabled={{certValidationConsoleEnabled}} --build-arg statsEnabled={{statsEnabled}} --build-arg tlsRenegotiation={{tlsRenegotiation}}"
 
 scenarios:
 
