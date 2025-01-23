@@ -44,7 +44,6 @@ jobs:
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
     port: 8080
     readyStateText: Application started.
-    beforeScript: "openssl version"
     environmentVariables:
       urls: "https://*:8080" # any ip, port 8080
       mTLS: false
