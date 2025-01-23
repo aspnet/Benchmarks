@@ -8,10 +8,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 Console.WriteLine("Starting application...");
 
-ProcessStartInfo processInfo = new ProcessStartInfo()
+ProcessStartInfo processInfo = new ProcessStartInfo("/bin/bash", "openssl version")
 {
-    FileName = "/bin/bash",
-    Arguments = "openssl version",
     RedirectStandardOutput = true,
     RedirectStandardError = true,
 };
