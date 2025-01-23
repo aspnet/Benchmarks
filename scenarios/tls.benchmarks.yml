@@ -185,3 +185,20 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+
+  tls-handshakes-docker-openssl-3015:
+    application:
+      job: dockerLinuxKestrelServer
+      buildArguments: 
+        # openssl version to install
+        - OPENSSL_VERSION="3.0.15-r1"
+        # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+        - ALPINE_BRANCH="v3.17"
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
