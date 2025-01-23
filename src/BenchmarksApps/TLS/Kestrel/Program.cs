@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -6,6 +7,18 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 Console.WriteLine("Starting application...");
+
+ProcessStartInfo startInfo = new ProcessStartInfo()
+{
+    FileName = "/bin/bash",
+    Arguments = "openssl version",
+    RedirectStandardOutput = true,
+    RedirectStandardError = true,
+};
+Process process = new Process() { StartInfo = startInfo, };
+string output = process.StandardOutput.ReadToEnd();
+process.WaitForExit();
+Console.WriteLine(output);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
