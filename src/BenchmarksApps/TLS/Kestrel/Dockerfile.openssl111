@@ -1,9 +1,26 @@
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
+USER root
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
+
+# install wget to download openssl
+RUN apt-get update && apt-get install -y wget
+# install perl as openssl dependency
+RUN apt-get update && apt-get install -y perl
+# install build-essential to get make and other build tools
+RUN apt-get update && apt-get install -y build-essential
+
+# install openssl 1.1.1
+RUN wget -O - https://www.openssl.org/source/openssl-1.1.1w.tar.gz | tar zxf -; \
+    cd openssl-1.1.1w; \
+    ./config; \
+    make install_sw; \
+    ldconfig
+
+# Update PATH to prioritize the newly installed OpenSSL 1.1.1
+ENV PATH="/usr/local/bin:$PATH"
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build

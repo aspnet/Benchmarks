@@ -34,12 +34,12 @@ jobs:
       statsEnabled: false
     arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
 
-  linuxDockerKestrelServer:
+  dockerLinuxKestrelServer:
     sources:
       dockerKestrel:
         repository: https://github.com/deaglegross/benchmarks.git
         branchOrCommit: dmkorolev/idna/openssl-versioning
-    dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
+    dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
     dockerImageName: kestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
     port: 8080
@@ -50,7 +50,7 @@ jobs:
       mTLS: false
       tlsRenegotiation: false
       certValidationConsoleEnabled: false
-      statsEnabled: false
+      statsEnabled: false  
 
 scenarios:
 
@@ -152,9 +152,25 @@ scenarios:
         certPwd: testPassword
 
 # Kestrel in Docker
-  tls-handshakes-linux-docker:
+  tls-handshakes-docker-openssl-default:
     application:
       job: linuxDockerKestrelServer
+      variables:
+        dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+
+  tls-handshakes-docker-openssl-111:
+    application:
+      job: linuxDockerKestrelServer
+      variables:
+        dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.openssl111
     load:
       job: httpclient
       variables:
