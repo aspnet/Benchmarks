@@ -45,7 +45,7 @@ jobs:
     port: 8080
     readyStateText: Application started.
     environmentVariables:
-      urls: https://0.0.0.0:8080
+      urls: https://*:8080 # any ip, port 8080
       mTLS: false
       tlsRenegotiation: false
       certValidationConsoleEnabled: false
