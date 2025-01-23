@@ -155,7 +155,6 @@ scenarios:
   tls-handshakes-docker-openssl-332:
     application:
       job: dockerLinuxKestrelServer
-      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
       buildArguments: 
         # openssl version to install
         - OPENSSL_VERSION="3.3.2-r4"
