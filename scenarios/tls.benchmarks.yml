@@ -44,8 +44,8 @@ jobs:
   dockerLinuxKestrelServer:
     sources:
       dockerKestrel:
-        repository: https://github.com/deaglegross/benchmarks.git
-        branchOrCommit: dmkorolev/idna/openssl-versioning
+        repository: https://github.com/aspnet/benchmarks.git
+        branchOrCommit: main
     dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
     dockerImageName: dockerKestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel

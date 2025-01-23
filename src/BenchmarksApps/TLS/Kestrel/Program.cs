@@ -243,5 +243,5 @@ static void LogOpenSSLVersion()
     process.Start();
     process.WaitForExit();
     var output = process.StandardOutput.ReadToEnd();
-    Console.WriteLine("In app openssl version: " + output);
+    Console.WriteLine(output);
 }
