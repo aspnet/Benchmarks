@@ -224,7 +224,6 @@ static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
 
     return protocols;
 }
-}
 
 static void LogOpenSSLVersion()
 {
