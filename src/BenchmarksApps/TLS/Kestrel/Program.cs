@@ -8,6 +8,25 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 Console.WriteLine("Starting application...");
 
+using var process = new Process()
+{
+    StartInfo =
+    {
+        FileName = "/usr/bin/env",
+        Arguments = "openssl version",
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false,
+        CreateNoWindow = true,
+    },
+    EnableRaisingEvents = true,
+};
+
+process.Start();
+process.WaitForExit();
+string output = process.StandardOutput.ReadToEnd();
+Console.WriteLine("In app openssl version: \n" + output + "\n\n");
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
