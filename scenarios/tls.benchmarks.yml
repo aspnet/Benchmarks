@@ -14,12 +14,15 @@ jobs:
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
     variables:
+      # behavioral settings
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
+      # debug settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}}"
+      logRequestDetails: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}}"
 
   kestrelServer:
     source:
@@ -28,11 +31,15 @@ jobs:
       project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
     readyStateText: Application started.
     variables:
+      # behavioral settings
       mTLS: false
       tlsRenegotiation: false
+      tlsProtocols: "tls12,tls13"
+      # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
+      logRequestDetails: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
 
   dockerLinuxKestrelServer:
     sources:
@@ -65,6 +72,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        sslProtocol: tls12
 
   mTls-handshakes-httpsys:
     application:
@@ -85,6 +93,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
         certPwd: testPassword
+        sslProtocol: tls12
 
   tls-renegotiation-httpsys:
     application:
@@ -103,6 +112,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
         certPwd: testPassword
+        sslProtocol: tls12
 
 # Kestrel
   
@@ -116,6 +126,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        sslProtocol: tls12
 
   mTls-handshakes-kestrel:
     application:
@@ -132,6 +143,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
         certPwd: testPassword
+        sslProtocol: tls12
 
   tls-renegotiation-kestrel:
     application:
@@ -149,6 +161,7 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
         certPwd: testPassword
+        sslProtocol: tls12
 
 # Kestrel in Docker
   tls-handshakes-docker-openssl-332:
@@ -167,6 +180,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        sslProtocol: tls12
 
   tls-handshakes-docker-openssl-111:
     application:
@@ -184,6 +198,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        sslProtocol: tls12
 
   tls-handshakes-docker-openssl-3015:
     application:
@@ -201,3 +216,4 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        sslProtocol: tls12
