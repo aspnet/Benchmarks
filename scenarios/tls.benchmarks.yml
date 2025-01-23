@@ -43,7 +43,7 @@ jobs:
     dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
     dockerImageName: kestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
-    port: "{{dockerServerPort}}"
+    port: $(dockerServerPort)
     readyStateText: Application started.
     beforeScript: "openssl version"
     environmentVariables:
@@ -160,7 +160,7 @@ scenarios:
       job: httpclient
       variables:
         path: /hello-world
-        serverPort: "{{dockerServerPort}}"
+        serverPort: $(dockerServerPort)
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
