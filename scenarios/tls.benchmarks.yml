@@ -5,7 +5,6 @@
 
 variables:
   serverPort: 5000
-  dockerServerPort: 8080
 
 jobs:
   httpSysServer:
@@ -43,11 +42,11 @@ jobs:
     dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
     dockerImageName: kestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
-    port: $(dockerServerPort)
+    port: 8080
     readyStateText: Application started.
     beforeScript: "openssl version"
     environmentVariables:
-      urls: "https://*:{{dockerServerPort}}" # any ip, port 8080
+      urls: "https://*:8080" # any ip, port 8080
       mTLS: false
       tlsRenegotiation: false
       certValidationConsoleEnabled: false
@@ -160,7 +159,7 @@ scenarios:
       job: httpclient
       variables:
         path: /hello-world
-        serverPort: $(dockerServerPort)
+        serverPort: 8080
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
