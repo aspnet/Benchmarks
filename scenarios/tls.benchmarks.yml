@@ -154,7 +154,7 @@ scenarios:
 # Kestrel in Docker
   tls-handshakes-docker-openssl-default:
     application:
-      job: linuxDockerKestrelServer
+      job: dockerLinuxKestrelServer
       variables:
         dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
     load:
@@ -168,7 +168,7 @@ scenarios:
 
   tls-handshakes-docker-openssl-111:
     application:
-      job: linuxDockerKestrelServer
+      job: dockerLinuxKestrelServer
       variables:
         dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.openssl111
     load:
