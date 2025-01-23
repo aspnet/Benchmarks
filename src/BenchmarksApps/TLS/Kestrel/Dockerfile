@@ -1,26 +1,19 @@
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
 USER root
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-# install wget to download openssl
-RUN apt-get update && apt-get install -y wget
-# install perl as openssl dependency
-RUN apt-get update && apt-get install -y perl
-# install build-essential to get make and other build tools
-RUN apt-get update && apt-get install -y build-essential
+# Define a build argument for the OpenSSL version
+# lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+ARG OPENSSL_VERSION=1.1.1w-r1
+ARG ALPINE_BRANCH=v3.16
 
-# install openssl 1.1.1
-RUN wget -O - https://www.openssl.org/source/openssl-1.1.1w.tar.gz | tar zxf -; \
-    cd openssl-1.1.1w; \
-    ./config; \
-    make install_sw; \
-    ldconfig
-
-# Update PATH to prioritize the newly installed OpenSSL 1.1.1
-ENV PATH="/usr/local/bin:$PATH"
+# Add the specified Alpine branch repository and install OpenSSL
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/${ALPINE_BRANCH}/main" >> /etc/apk/repositories && \
+    apk add --no-cache openssl=${OPENSSL_VERSION} wget perl build-base && \
+    rm -rf /var/lib/apt/lists/*
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build

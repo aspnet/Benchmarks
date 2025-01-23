@@ -39,7 +39,7 @@ jobs:
       dockerKestrel:
         repository: https://github.com/deaglegross/benchmarks.git
         branchOrCommit: dmkorolev/idna/openssl-versioning
-    dockerFile: # provided by job
+    dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
     dockerImageName: kestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
     port: 8080
@@ -152,11 +152,15 @@ scenarios:
         certPwd: testPassword
 
 # Kestrel in Docker
-  tls-handshakes-docker-openssl-default:
+  tls-handshakes-docker-openssl-332:
     application:
       job: dockerLinuxKestrelServer
-      variables:
-        dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
+      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
+      buildArguments: 
+        # openssl version to install
+        - OPENSSL_VERSION="3.3.2-r4"
+        # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+        - ALPINE_BRANCH="v3.21"
     load:
       job: httpclient
       variables:
@@ -169,7 +173,11 @@ scenarios:
   tls-handshakes-docker-openssl-111:
     application:
       job: dockerLinuxKestrelServer
-      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.openssl111
+      buildArguments: 
+        # openssl version to install
+        - OPENSSL_VERSION="1.1.1w-r1"
+        # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+        - ALPINE_BRANCH="v3.16"
     load:
       job: httpclient
       variables:
