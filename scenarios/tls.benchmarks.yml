@@ -39,7 +39,7 @@ jobs:
       dockerKestrel:
         repository: https://github.com/deaglegross/benchmarks.git
         branchOrCommit: dmkorolev/idna/openssl-versioning
-    dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.default
+    dockerFile: # provided by job
     dockerImageName: kestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
     port: 8080
@@ -169,8 +169,7 @@ scenarios:
   tls-handshakes-docker-openssl-111:
     application:
       job: dockerLinuxKestrelServer
-      variables:
-        dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.openssl111
+      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.openssl111
     load:
       job: httpclient
       variables:
