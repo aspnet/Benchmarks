@@ -1,5 +1,4 @@
 ﻿imports:
-  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
@@ -41,6 +40,23 @@ jobs:
       statsEnabled: false
       logRequestDetails: false
     arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+
+  dockerLinuxKestrelServer:
+    sources:
+      dockerKestrel:
+        repository: https://github.com/aspnet/benchmarks.git
+        branchOrCommit: main
+    dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
+    dockerImageName: dockerKestrel
+    dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
+    port: 8080
+    readyStateText: Application started.
+    environmentVariables:
+      urls: "https://*:8080" # any ip, port 8080
+      mTLS: false
+      tlsRenegotiation: false
+      certValidationConsoleEnabled: false
+      statsEnabled: false  
 
 scenarios:
 
@@ -145,4 +161,59 @@ scenarios:
         serverScheme: https
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
         certPwd: testPassword
+        sslProtocol: tls12
+
+# Kestrel in Docker
+  tls-handshakes-docker-openssl-332:
+    application:
+      job: dockerLinuxKestrelServer
+      buildArguments: 
+        # openssl version to install
+        - OPENSSL_VERSION="3.3.2-r4"
+        # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+        - ALPINE_BRANCH="v3.21"
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
+  tls-handshakes-docker-openssl-111:
+    application:
+      job: dockerLinuxKestrelServer
+      buildArguments: 
+        # openssl version to install
+        - OPENSSL_VERSION="1.1.1w-r1"
+        # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+        - ALPINE_BRANCH="v3.16"
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
+  tls-handshakes-docker-openssl-3015:
+    application:
+      job: dockerLinuxKestrelServer
+      buildArguments: 
+        # openssl version to install
+        - OPENSSL_VERSION="3.0.15-r1"
+        # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
+        - ALPINE_BRANCH="v3.17"
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
         sslProtocol: tls12

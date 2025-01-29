@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Certificate;
@@ -8,6 +10,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+
+Console.WriteLine("Starting application...");
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -156,6 +160,7 @@ app.MapGet("/hello-world", () =>
 await app.StartAsync();
 
 Console.WriteLine("Application Info:");
+LogOpenSSLVersion();
 if (mTlsEnabled)
 {
     Console.WriteLine($"\tmTLS is enabled (client cert is required)");
@@ -219,4 +224,30 @@ static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
     }
 
     return protocols;
+}
+
+static void LogOpenSSLVersion()
+{
+    if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
+    {
+        return;
+    }
+
+    using var process = new Process()
+    {
+        StartInfo =
+        {
+            FileName = "/usr/bin/env",
+            Arguments = "openssl version",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        },
+    };
+
+    process.Start();
+    process.WaitForExit();
+    var output = process.StandardOutput.ReadToEnd();
+    Console.WriteLine(output);
 }
