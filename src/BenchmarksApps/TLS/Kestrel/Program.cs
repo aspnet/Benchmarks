@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Certificate;
@@ -227,6 +228,11 @@ static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
 
 static void LogOpenSSLVersion()
 {
+    if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
+    {
+        return;
+    }
+
     using var process = new Process()
     {
         StartInfo =
