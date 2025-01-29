@@ -16,10 +16,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Nanorm.Npgsql" Version="0.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftAspNetCoreAppPackageVersion)">
+    <!-- Disable OpenAPI documentation generation until https://github.com/dotnet/aspnetcore/issues/60026 is fixed .-->
+    <!-- <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftAspNetCoreAppPackageVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    </PackageReference> -->
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryVersion)" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryVersion)" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryVersion)" />

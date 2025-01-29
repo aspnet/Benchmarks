@@ -11,11 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Disable logging as this is not required for the benchmark
 builder.Logging.ClearProviders();
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-     options.AllowSynchronousIO = true;
-});
-
 // Load custom configuration
 var appSettings = new AppSettings();
 builder.Configuration.Bind(appSettings);
