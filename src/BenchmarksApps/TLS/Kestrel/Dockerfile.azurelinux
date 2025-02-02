@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/azurelinux/base/core:3.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-azurelinux3.0 AS base
 USER root
 WORKDIR /app
 EXPOSE 8080
