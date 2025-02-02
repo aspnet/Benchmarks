@@ -221,9 +221,8 @@ scenarios:
   tls-handshakes-docker-azurelinux:
     application:
       job: dockerLinuxKestrelServer
-      variables:
-        # openssl version is already pre-installed with base image
-        dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
+      # openssl version is already pre-installed with base image (latest)
+      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
     load:
       job: httpclient
       variables:
