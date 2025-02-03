@@ -1,6 +1,5 @@
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
-  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
@@ -49,13 +48,36 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: httpclient
+      job: bombardier
       variables:
         path: /hello-world/%09
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        sslProtocol: tls12
+
+  httpsys-header-symbols:
+    application:
+      job: httpSysServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - X-Custom: "Québec"
+
+  httpsys-hostheader-mismatch:
+    application:
+      job: httpSysServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - Host: "google.com"
 
 # Kestrel
   
@@ -63,13 +85,12 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: httpclient
+      job: bombardier
       variables:
         path: /hello-world/%09
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        sslProtocol: tls12
 
   kestrel-header-symbols:
     application:
@@ -82,3 +103,15 @@ scenarios:
         serverScheme: https
         customHeaders:
         - X-Custom: "Québec"
+    
+  kestrel-hostheader-mismatch:
+    application:
+      job: kestrelServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - Host: "google.com"
