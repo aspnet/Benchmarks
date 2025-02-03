@@ -50,7 +50,7 @@ scenarios:
     load:
       job: bombardier
       variables:
-        path: /hello-world/%09
+        path: /unknown/%09
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
@@ -87,7 +87,7 @@ scenarios:
     load:
       job: bombardier
       variables:
-        path: /hello-world/%09
+        path: /unknown/%09
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
