@@ -57,8 +57,6 @@ scenarios:
         serverScheme: https
         sslProtocol: tls12
 
-  
-
 # Kestrel
   
   kestrel-encoded-url:
@@ -77,11 +75,10 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: httpclient
+      job: bombardier
       variables:
-        path: /hello-world/%09
-        presetHeaders: connectionclose
+        path: /hello-world
         connections: 32
         serverScheme: https
-        sslProtocol: tls12
-        header: "User-Agent: Québec"
+        customHeaders:
+        - X-Custom: "Québec"
