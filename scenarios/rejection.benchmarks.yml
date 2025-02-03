@@ -1,3 +1,7 @@
+# Contains test to compare HTTP.SYS and Kestrel performance on some specific scenarios,
+# where servers (probably) should reject the request early (i.e. mismatching `Host` header)
+# to make request processing as performant as possible
+
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
