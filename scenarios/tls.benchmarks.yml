@@ -217,3 +217,18 @@ scenarios:
         connections: 32
         serverScheme: https
         sslProtocol: tls12
+
+  tls-handshakes-docker-azurelinux:
+    application:
+      job: dockerLinuxKestrelServer
+      # openssl version is already pre-installed with base image (latest)
+      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
