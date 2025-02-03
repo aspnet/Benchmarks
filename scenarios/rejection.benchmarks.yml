@@ -1,0 +1,87 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+
+jobs:
+  httpSysServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
+    readyStateText: Application started.
+    variables:
+      # behavioral settings
+      mTLS: false # enables settings on http.sys to negotiate client cert on connections
+      tlsRenegotiation: false # enables client cert validation
+      # debug settings
+      certValidationConsoleEnabled: false
+      httpSysLogs: false
+      statsEnabled: false
+      logRequestDetails: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}}"
+
+  kestrelServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
+    readyStateText: Application started.
+    variables:
+      # behavioral settings
+      mTLS: false
+      tlsRenegotiation: false
+      tlsProtocols: "tls12,tls13"
+      # debug settings
+      certValidationConsoleEnabled: false
+      statsEnabled: false
+      logRequestDetails: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+
+scenarios:
+
+# HTTP.SYS
+
+  httpsys-encoded-url:
+    application:
+      job: httpSysServer
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world/%09
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
+  
+
+# Kestrel
+  
+  kestrel-encoded-url:
+    application:
+      job: kestrelServer
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world/%09
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
+  kestrel-header-symbols:
+    application:
+      job: kestrelServer
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world/%09
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+        header: "User-Agent: Québec"
