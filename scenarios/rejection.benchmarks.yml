@@ -1,0 +1,121 @@
+# Contains test to compare HTTP.SYS and Kestrel performance on some specific scenarios,
+# where servers (probably) should reject the request early (i.e. mismatching `Host` header)
+# to make request processing as performant as possible
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+
+jobs:
+  httpSysServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
+    readyStateText: Application started.
+    variables:
+      # behavioral settings
+      mTLS: false # enables settings on http.sys to negotiate client cert on connections
+      tlsRenegotiation: false # enables client cert validation
+      # debug settings
+      certValidationConsoleEnabled: false
+      httpSysLogs: false
+      statsEnabled: false
+      logRequestDetails: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}}"
+
+  kestrelServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
+    readyStateText: Application started.
+    variables:
+      # behavioral settings
+      mTLS: false
+      tlsRenegotiation: false
+      tlsProtocols: "tls12,tls13"
+      # debug settings
+      certValidationConsoleEnabled: false
+      statsEnabled: false
+      logRequestDetails: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+
+scenarios:
+
+# HTTP.SYS
+
+  httpsys-encoded-url:
+    application:
+      job: httpSysServer
+    load:
+      job: bombardier
+      variables:
+        path: /unknown/%09
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+
+  httpsys-header-symbols:
+    application:
+      job: httpSysServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - X-Custom: "Québec"
+
+  httpsys-hostheader-mismatch:
+    application:
+      job: httpSysServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - Host: "google.com"
+
+# Kestrel
+  
+  kestrel-encoded-url:
+    application:
+      job: kestrelServer
+    load:
+      job: bombardier
+      variables:
+        path: /unknown/%09
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+
+  kestrel-header-symbols:
+    application:
+      job: kestrelServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - X-Custom: "Québec"
+    
+  kestrel-hostheader-mismatch:
+    application:
+      job: kestrelServer
+    load:
+      job: bombardier
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: https
+        customHeaders:
+        - Host: "google.com"
