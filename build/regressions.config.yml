@@ -19,7 +19,6 @@ sources:
       labels: 
         - Perf
         - perf-regression
-        - area-perf
       owners:
         - sebastienros
       template: rps
@@ -42,7 +41,6 @@ sources:
       labels: 
         - Perf
         - perf-regression
-        - area-perf
       owners:
         - sebastienros
       template: start-time
@@ -72,7 +70,6 @@ sources:
       labels: 
         - Perf
         - perf-regression
-        - area-perf
       template: rps      
       title: >-
         Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
@@ -90,7 +87,6 @@ sources:
       labels: 
         - Perf
         - perf-regression
-        - area-perf
       owners:
         - sebastienros
       template: published-size
@@ -110,7 +106,6 @@ sources:
       labels: 
         - Perf
         - perf-regression
-        - area-perf
       owners:
         - sebastienros
         - eerhardt
@@ -124,8 +119,6 @@ sources:
     daysToSkip: 0
     rules:
       - include: QueryCompilationSqliteTests.FilterOrderProject
-        labels: 
-          - area-efcore
         owners:
           - sebastienros
     regressions:
