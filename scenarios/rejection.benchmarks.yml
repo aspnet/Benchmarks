@@ -106,7 +106,7 @@ scenarios:
         connections: 32
         serverScheme: https
         customHeaders:
-        - X-Custom: "Québec"
+        - "X-Custom: Québec"
     
   kestrel-hostheader-mismatch:
     application:
@@ -118,4 +118,4 @@ scenarios:
         connections: 32
         serverScheme: https
         customHeaders:
-        - Host: "google.com"
+        - "Host: google.com"
