@@ -169,7 +169,7 @@ scenarios:
       job: dockerLinuxKestrelServer
       buildArguments: 
         # openssl version to install
-        - OPENSSL_VERSION="3.3.2-r4"
+        - OPENSSL_VERSION="3.3.3-r0"
         # lookup for openssl+branch version here https://pkgs.alpinelinux.org/packages?name=openssl&branch=v3.20&repo=&arch=x86_64
         - ALPINE_BRANCH="v3.21"
     load:
