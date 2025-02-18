@@ -2,7 +2,7 @@
 
 # Install dotnet tools
 RUN dotnet tool install --framework net8.0 -g Microsoft.Crank.AzureDevOpsWorker --version "0.2.0-*"
-RUN dotnet tool install --framework net8.0 -g Microsoft.Crank.Controller --version "0.2.0-*"
+RUN dotnet tool install --framework net8.0 -g Microsoft.Crank.Controller --version "0.2.0-alpha.25056.1"
 
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
