@@ -120,6 +120,26 @@ parameters:
   - displayName: "Kestrel Linux: TLS Renegotiation"
     arguments: --scenario tls-renegotiation-kestrel $(tlsJobs) --property scenario=KestrelTLSRenegotiation --application.options.requiredOperatingSystem linux
 
+# TLS (IDNA Relay)
+
+  - displayName: "[IDNA] HttpSys Windows: TLS Handshakes"
+    arguments: --scenario tls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSHandshakes --profile idna-intel-win-relay
+
+  - displayName: "[IDNA] HttpSys Windows: mTLS Handshakes"
+    arguments: --scenario mTls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysMutualTLSHandshakes --profile idna-intel-win-relay
+
+  - displayName: "[IDNA] HttpSys Windows: TLS Renegotiation"
+    arguments: --scenario tls-renegotiation-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSRenegotiation --profile idna-intel-win-relay
+
+  - displayName: "[IDNA] Kestrel Linux: TLS Handshakes"
+    arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSHandshakes idna-intel-lin-relay
+    
+  - displayName: "[IDNA] Kestrel Linux: mTLS Handshakes"
+    arguments: --scenario mTls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelMutualTLSHandshakes idna-intel-lin-relay
+
+  - displayName: "[IDNA] Kestrel Linux: TLS Renegotiation"
+    arguments: --scenario tls-renegotiation-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSRenegotiation idna-intel-lin-relay
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@2
