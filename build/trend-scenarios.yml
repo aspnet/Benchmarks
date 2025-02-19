@@ -120,6 +120,46 @@ parameters:
   - displayName: "Kestrel Linux: TLS Renegotiation"
     arguments: --scenario tls-renegotiation-kestrel $(tlsJobs) --property scenario=KestrelTLSRenegotiation --application.options.requiredOperatingSystem linux
 
+# TLS (IDNA Relay)
+
+  - displayName: "[IDNA] HttpSys Windows: TLS Handshakes"
+    arguments: --scenario tls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSHandshakes --profile idna-intel-win-relay
+
+  - displayName: "[IDNA] HttpSys Windows: mTLS Handshakes"
+    arguments: --scenario mTls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysMutualTLSHandshakes --profile idna-intel-win-relay
+
+  - displayName: "[IDNA] HttpSys Windows: TLS Renegotiation"
+    arguments: --scenario tls-renegotiation-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSRenegotiation --profile idna-intel-win-relay
+
+  - displayName: "[IDNA] Kestrel Linux: TLS Handshakes"
+    arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSHandshakes idna-intel-lin-relay
+    
+  - displayName: "[IDNA] Kestrel Linux: mTLS Handshakes"
+    arguments: --scenario mTls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelMutualTLSHandshakes idna-intel-lin-relay
+
+  - displayName: "[IDNA] Kestrel Linux: TLS Renegotiation"
+    arguments: --scenario tls-renegotiation-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSRenegotiation idna-intel-lin-relay
+
+# Rejection
+
+  - displayName: "HttpSys Windows: Encoded URL symbols"
+    arguments: --scenario httpsys-encoded-url $(rejectionJobs) --property scenario=RejectionEncodedUrlHttpSys --application.options.requiredOperatingSystem windows
+
+  - displayName: "HttpSys Windows: Invalid Header"
+    arguments: --scenario httpsys-header-symbols $(rejectionJobs) --property scenario=RejectionInvalidHeaderHttpSys --application.options.requiredOperatingSystem windows
+
+  - displayName: "HttpSys Windows: Host Header Mismatch"
+    arguments: --scenario httpsys-hostheader-mismatch $(rejectionJobs) --property scenario=RejectionHostHeaderMismatchHttpSys --application.options.requiredOperatingSystem windows
+
+  - displayName: "Kestrel Linux: Encoded URL symbols"
+    arguments: --scenario kestrel-encoded-url $(rejectionJobs) --property scenario=RejectionEncodedUrlKestrel --application.options.requiredOperatingSystem linux
+
+  - displayName: "Kestrel Linux: Invalid Header"
+    arguments: --scenario kestrel-header-symbols $(rejectionJobs) --property scenario=RejectionInvalidHeaderKestrel --application.options.requiredOperatingSystem linux
+
+  - displayName: "Kestrel Linux: Host Header Mismatch"
+    arguments: --scenario kestrel-hostheader-mismatch $(rejectionJobs) --property scenario=RejectionHostHeaderMismatchKestrel --application.options.requiredOperatingSystem linux
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@2
