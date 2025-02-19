@@ -50,6 +50,106 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  idna-intel-lin-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.12
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azuredb
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/idnaintellin
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azureclient
+        aliases:
+          - warmup
+          - secondary
+
+  idna-amd-lin-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.13
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azuredb
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/idnaamdlin
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azureclient
+        aliases:
+          - warmup
+          - secondary
+
+  idna-intel-win-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.14
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azuredb
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/idnaintelwin
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azureclient
+        aliases:
+          - warmup
+          - secondary
+
+  idna-amd-win-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.15
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azuredb
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/idnaamdwin
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azureclient
+        aliases:
+          - warmup
+          - secondary
   
   aspnet-azurearm64-lin:
     variables:
