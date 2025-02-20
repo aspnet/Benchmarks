@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 // behavioral
-var httpSysLoggingEnabled = bool.TryParse(builder.Configuration["httpSysLogs"], out var httpSysLogsEnabled) && httpSysLogsEnabled;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
@@ -17,6 +16,13 @@ var httpsIpPort = listeningEndpoints.Split(";").First(x => x.Contains("https")).
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"], out var logRequestDetailsConfig) && logRequestDetailsConfig;
+
+// existing netsh bindings to restore after the benchmark run
+if (!NetShWrapper.BindingExists(httpsIpPort, out var originalCertThumbprint, out var originalAppId))
+{
+    Console.WriteLine("WARNING: no binding existed, performing a new self-signed certificate generation and binding...");
+    throw new ApplicationException($"SslCert binding should exist for '{httpsIpPort}' before. Infrastructure error.");
+}
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
@@ -81,7 +87,8 @@ if (mTlsEnabled)
 
         try
         {
-            NetShWrapper.DisableHttpSysMutualTls(ipPort: httpsIpPort);
+            NetShWrapper.DeleteBinding(ipPort: httpsIpPort);
+            NetShWrapper.SetCertBinding(ipPort: httpsIpPort, certThumbprint: originalCertThumbprint, appId: originalAppId);
         }
         catch
         {
@@ -93,9 +100,8 @@ if (mTlsEnabled)
     try
     {
         // if not executed, following command (enable http.sys mutual tls) will fail because binding exists
-        NetShWrapper.DisableHttpSysMutualTlsIfExists(ipPort: httpsIpPort);
-
-        NetShWrapper.EnableHttpSysMutualTls(ipPort: httpsIpPort);
+        NetShWrapper.DeleteBindingIfExists(ipPort: httpsIpPort);
+        NetShWrapper.SetTestCertBinding(ipPort: httpsIpPort, enableClientCertNegotiation: true);
     }
     catch
     {
@@ -138,10 +144,7 @@ if (tlsRenegotiationEnabled)
 
 await app.StartAsync();
 
-if (httpSysLoggingEnabled)
-{
-    NetShWrapper.Show();
-}
+NetShWrapper.Show();
 
 Console.WriteLine("Application Info:");
 if (mTlsEnabled)

@@ -20,10 +20,9 @@ jobs:
       tlsRenegotiation: false # enables client cert validation
       # debug settings
       certValidationConsoleEnabled: false
-      httpSysLogs: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
 
   kestrelServer:
     source:
@@ -81,7 +80,6 @@ scenarios:
       variables:
         mTLS: true # enables settings on http.sys to negotiate client cert on connections
         tlsRenegotiation: true # enables client cert validation
-        httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
         serverPort: 8080 # IMPORTANT: not to intersect with other tests in case http.sys configuration impacts other benchmarks
     load:
@@ -102,7 +100,6 @@ scenarios:
       variables:
         mTLS: false
         tlsRenegotiation: true
-        httpSysLogs: false # only for debug purposes
         certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient

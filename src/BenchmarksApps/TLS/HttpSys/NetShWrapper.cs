@@ -1,15 +1,16 @@
 ﻿using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 namespace HttpSys
 {
     public static class NetShWrapper
     {
-        public static void DisableHttpSysMutualTlsIfExists(string ipPort)
+        public static void DeleteBindingIfExists(string ipPort)
         {
             try
             {
-                DisableHttpSysMutualTls(ipPort);
+                DeleteBinding(ipPort);
             }
             catch
             {
@@ -17,7 +18,7 @@ namespace HttpSys
             }
         }
 
-        public static void DisableHttpSysMutualTls(string ipPort)
+        public static void DeleteBinding(string ipPort)
         {
             Console.WriteLine("Disabling mTLS for http.sys");
 
@@ -27,14 +28,42 @@ namespace HttpSys
             Console.WriteLine("Disabled http.sys settings for mTLS");
         }
 
+        public static bool BindingExists(string ipPort, out string certThumbprint, out string appId)
+        {
+            certThumbprint = string.Empty;
+            appId = string.Empty;
+
+            var bindings = ExecuteNetShCommand("http show sslcert");
+            if (string.IsNullOrEmpty(bindings) || !bindings.Contains(ipPort))
+            {
+                return false;
+            }
+
+            // Extract the certificate thumbprint
+            var thumbprintMatch = Regex.Match(bindings, @"Certificate Hash\s+:\s+([a-fA-F0-9]+)");
+            if (thumbprintMatch.Success)
+            {
+                certThumbprint = thumbprintMatch.Groups[1].Value;
+            }
+
+            // Extract the application ID
+            var appIdMatch = Regex.Match(bindings, @"Application ID\s+:\s+{([a-fA-F0-9-]+)}");
+            if (appIdMatch.Success)
+            {
+                appId = appIdMatch.Groups[1].Value;
+            }
+
+            return true;
+        }
+
         public static void Show()
         {
             ExecuteNetShCommand("http show sslcert", alwaysLogOutput: true);
         }
 
-        public static void EnableHttpSysMutualTls(string ipPort)
+        public static void SetTestCertBinding(string ipPort, bool enableClientCertNegotiation)
         {
-            Console.WriteLine("Setting up mTLS for http.sys");
+            Console.WriteLine("Setting up binding for testCert for http.sys");
 
             var certificate = LoadCertificate();
             Console.WriteLine("Loaded `testCert.pfx` from local file system");
@@ -47,17 +76,28 @@ namespace HttpSys
             }
 
             string certThumbprint = certificate.Thumbprint;
-            string appId = Guid.NewGuid().ToString();
+            SetCertBinding(ipPort, certThumbprint, enableClientCertNegotiation: enableClientCertNegotiation);
 
-            string command = $"http add sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}} clientcertnegotiation=enable";
-            ExecuteNetShCommand(command);
-
-            Console.WriteLine("Configured http.sys settings for mTLS");
+            Console.WriteLine("Configured binding for testCert for http.sys");
         }
 
-        private static void ExecuteNetShCommand(string command, bool alwaysLogOutput = false)
+        public static void SetCertBinding(string ipPort, string certThumbprint, string appId = null, bool enableClientCertNegotiation = false)
         {
-            ProcessStartInfo processInfo = new ProcessStartInfo("netsh", command)
+            var negotiateClientCert = enableClientCertNegotiation ? "enable" : "disable";
+            if (string.IsNullOrEmpty(appId))
+            {
+                appId = "00000000-0000-0000-0000-000000000000";
+            }
+            string command = $"http add sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}} clientcertnegotiation={negotiateClientCert}";
+            ExecuteNetShCommand(command);
+        }
+
+        private static string ExecuteNetShCommand(string command, bool alwaysLogOutput = false)
+            => ExecuteCommand("netsh", command, alwaysLogOutput);
+
+        private static string ExecuteCommand(string fileName, string command, bool alwaysLogOutput = false)
+        {
+            ProcessStartInfo processInfo = new ProcessStartInfo(fileName, command)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -65,7 +105,7 @@ namespace HttpSys
                 CreateNoWindow = true
             };
 
-            Console.WriteLine($"Executing command: `netsh {command}`");
+            Console.WriteLine($"Executing command: `{fileName} {command}`");
             using Process process = Process.Start(processInfo)!;
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
@@ -77,8 +117,10 @@ namespace HttpSys
 
             if (process.ExitCode != 0)
             {
-                throw new InvalidOperationException($"netsh command execution failure: {output}");
+                throw new InvalidOperationException($"{fileName} command execution failure: {output}");
             }
+
+            return output;
         }
 
         private static X509Certificate2 LoadCertificate()
