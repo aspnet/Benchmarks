@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 #if DATABASE
 using Npgsql;
 #endif
@@ -84,6 +85,11 @@ namespace PlatformBenchmarks
 #endif
 
             var hostBuilder = new WebHostBuilder()
+                .ConfigureLogging(l =>
+                {
+                    l.AddConsole();
+                    l.SetMinimumLevel(LogLevel.Trace);
+                })
                 .UseBenchmarksConfiguration(config)
                 .UseKestrel((context, options) =>
                 {
