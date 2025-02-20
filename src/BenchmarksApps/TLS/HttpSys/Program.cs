@@ -20,7 +20,7 @@ var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"]
 // existing netsh bindings to restore after the benchmark run
 if (!NetShWrapper.BindingExists(httpsIpPort, out var originalCertThumbprint, out var originalAppId))
 {
-    Console.WriteLine("WARNING: no binding existed, performing a new self-signed certificate generation and binding...");
+    Console.WriteLine("WARNING: no binding existed...");
     throw new ApplicationException($"SslCert binding should exist for '{httpsIpPort}' before. Infrastructure error.");
 }
 
@@ -89,6 +89,7 @@ if (mTlsEnabled)
         {
             NetShWrapper.DeleteBinding(ipPort: httpsIpPort);
             NetShWrapper.SetCertBinding(ipPort: httpsIpPort, certThumbprint: originalCertThumbprint, appId: originalAppId);
+            NetShWrapper.Show();
         }
         catch
         {
