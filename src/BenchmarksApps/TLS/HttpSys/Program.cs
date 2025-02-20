@@ -20,8 +20,12 @@ var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"]
 // existing netsh bindings to restore after the benchmark run
 if (!NetShWrapper.BindingExists(httpsIpPort, out var originalCertThumbprint, out var originalAppId))
 {
-    Console.WriteLine("WARNING: no binding existed...");
-    throw new ApplicationException($"SslCert binding should exist for '{httpsIpPort}' before. Infrastructure error.");
+    Console.WriteLine($"No binding existed. Need to self-sign it and bind to '{httpsIpPort}'");
+    if (!NetShWrapper.TrySelfSignCertificate(httpsIpPort, out originalCertThumbprint))
+    {
+        throw new ApplicationException($"Failed to setup ssl binding for '{httpsIpPort}'. Please unblock the VM.");
+    }
+    NetShWrapper.SetCertBinding(httpsIpPort, originalCertThumbprint);
 }
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)

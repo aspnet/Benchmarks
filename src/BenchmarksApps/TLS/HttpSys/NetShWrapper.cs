@@ -81,6 +81,33 @@ namespace HttpSys
             Console.WriteLine("Configured binding for testCert for http.sys");
         }
 
+        public static bool TrySelfSignCertificate(string ipPort, out string certThumbprint)
+        {
+            certThumbprint = string.Empty;
+            try
+            {
+                // Extract the IP address from ipPort
+                string ipAddress = ipPort.Split(':')[0];
+
+                // Generate a self-signed certificate using PowerShell
+                string command = $"New-SelfSignedCertificate -CertStoreLocation cert:\\LocalMachine\\My -DnsName {ipAddress}";
+                string output = ExecutePowershellCommand(command);
+
+                // Extract the thumbprint from the output
+                var lines = output.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+                var lastLine = lines[^1];
+                certThumbprint = lastLine.Split(" ", StringSplitOptions.RemoveEmptyEntries)[0];
+
+                Console.WriteLine($"Self-signed certificate for {ipAddress}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to self-sign the certificate: " + ex.Message);
+                return false;
+            }
+        }
+
         public static void SetCertBinding(string ipPort, string certThumbprint, string appId = null, bool enableClientCertNegotiation = false)
         {
             var negotiateClientCert = enableClientCertNegotiation ? "enable" : "disable";
@@ -90,7 +117,11 @@ namespace HttpSys
             }
             string command = $"http add sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}} clientcertnegotiation={negotiateClientCert}";
             ExecuteNetShCommand(command);
+            Console.WriteLine($"Performed cert bindign for {ipPort}");
         }
+
+        private static string ExecutePowershellCommand(string command, bool alwaysLogOutput = false)
+            => ExecuteCommand("powershell.exe", command, alwaysLogOutput);
 
         private static string ExecuteNetShCommand(string command, bool alwaysLogOutput = false)
             => ExecuteCommand("netsh", command, alwaysLogOutput);
