@@ -123,22 +123,22 @@ parameters:
 # TLS (IDNA Relay)
 
   - displayName: "[IDNA] HttpSys Windows: TLS Handshakes"
-    arguments: --scenario tls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSHandshakes --profile idna-intel-win-relay --application.options.requiredOperatingSystem windows
+    arguments: --scenario tls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSHandshakes --profile idna-intel-win-relay --relay --application.options.requiredOperatingSystem windows
 
   - displayName: "[IDNA] HttpSys Windows: mTLS Handshakes"
-    arguments: --scenario mTls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysMutualTLSHandshakes --profile idna-intel-win-relay --application.options.requiredOperatingSystem windows
+    arguments: --scenario mTls-handshakes-httpsys $(tlsJobs) --property scenario=IDNAHttpSysMutualTLSHandshakes --profile idna-intel-win-relay --relay --application.options.requiredOperatingSystem windows
 
   - displayName: "[IDNA] HttpSys Windows: TLS Renegotiation"
-    arguments: --scenario tls-renegotiation-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSRenegotiation --profile idna-intel-win-relay --application.options.requiredOperatingSystem windows
+    arguments: --scenario tls-renegotiation-httpsys $(tlsJobs) --property scenario=IDNAHttpSysTLSRenegotiation --profile idna-intel-win-relay --relay --application.options.requiredOperatingSystem windows
 
   - displayName: "[IDNA] Kestrel Linux: TLS Handshakes"
-    arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSHandshakes --profile idna-intel-lin-relay --application.options.requiredOperatingSystem linux
+    arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSHandshakes --profile idna-intel-lin-relay --relay --application.options.requiredOperatingSystem linux
     
   - displayName: "[IDNA] Kestrel Linux: mTLS Handshakes"
-    arguments: --scenario mTls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelMutualTLSHandshakes --profile idna-intel-lin-relay --application.options.requiredOperatingSystem linux
+    arguments: --scenario mTls-handshakes-kestrel $(tlsJobs) --property scenario=IDNAKestrelMutualTLSHandshakes --profile idna-intel-lin-relay --relay --application.options.requiredOperatingSystem linux
 
   - displayName: "[IDNA] Kestrel Linux: TLS Renegotiation"
-    arguments: --scenario tls-renegotiation-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSRenegotiation --profile idna-intel-lin-relay --application.options.requiredOperatingSystem linux
+    arguments: --scenario tls-renegotiation-kestrel $(tlsJobs) --property scenario=IDNAKestrelTLSRenegotiation --profile idna-intel-lin-relay --relay --application.options.requiredOperatingSystem linux
 
 # Rejection
 
