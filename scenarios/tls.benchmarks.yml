@@ -161,6 +161,20 @@ scenarios:
         certPwd: testPassword
         sslProtocol: tls12
 
+# Kestrel on Windows
+
+  tls-handshakes-kestrel-win:
+    application:
+      job: kestrelServer
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
 # Kestrel in Docker
   tls-handshakes-docker-openssl-332:
     application:
