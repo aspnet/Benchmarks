@@ -95,31 +95,32 @@ namespace HttpSys
             if (negotiateClientCertEnabledRegex.Success)
             {
                 var negotiateClientCertValue = negotiateClientCertEnabledRegex.Groups[1].Value;
-                result.NegotiateClientCertificate = IsEnabled(negotiateClientCertValue);
+                result.NegotiateClientCertificate = ParseNetShFlag(negotiateClientCertValue);
             }
 
             var disableSessionId = Regex.Match(bindings, @"Disable Session ID\s+:\s+([a-zA-Z0-9 ]+)");
             if (disableSessionId.Success)
             {
                 var disableSessionIdValue = disableSessionId.Groups[1].Value;
-                result.SessionIdTlsResumptionEnabled = !IsEnabled(disableSessionIdValue);
+                result.DisableSessionIdTlsResumption = ParseNetShFlag(disableSessionIdValue);
             }
 
             var enableSessionTicket = Regex.Match(bindings, @"Enable Session Ticket\s+:\s+([a-zA-Z0-9 ]+)");
             if (enableSessionTicket.Success)
             {
                 var enableSessionTicketValue = enableSessionTicket.Groups[1].Value;
-                result.SessionTicketTlsResumptionEnabled = IsEnabled(enableSessionTicketValue);
+                result.EnableSessionTicketTlsResumption = ParseNetShFlag(enableSessionTicketValue);
             }
 
             return true;
 
-            // http will return "Disabled" or "Not Set" for properties which are not explicitly turned on
-            bool IsEnabled(string prop)
+            NetShFlag ParseNetShFlag(string prop) => prop switch
             {
-                if (prop is "Disabled" or "Not Set") return false;
-                return true;
-            }
+                "Not Set" => NetShFlag.NotSet,
+                "Disable" or "Disabled" => NetShFlag.Disabled,
+                "Enable" or "Set" => NetShFlag.Enable,
+                _ => throw new ArgumentOutOfRangeException(nameof(prop), $"unexpected netsh flag '{prop}' for ssl cert binding"),
+            };
         }
 
         public static void LogSslCertBinding(string ipPort)
@@ -142,7 +143,7 @@ namespace HttpSys
             }
 
             string certThumbprint = certificate.Thumbprint;
-            AddCertBinding(ipPort, certThumbprint, enableClientCertNegotiation: enableClientCertNegotiation);
+            AddCertBinding(ipPort, certThumbprint, clientCertNegotiation: enableClientCertNegotiation ? NetShFlag.Enable : NetShFlag.Disabled);
 
             Console.WriteLine("Configured binding for testCert for http.sys");
         }
@@ -177,39 +178,68 @@ namespace HttpSys
         public static void AddCertBinding(
             string ipPort, string certThumbprint,
             string? appId = null,
-            bool enableClientCertNegotiation = false,
-            bool disablesessionid = true,
-            bool enablesessionticket = false)
-        => CertBindingCore("add", ipPort, certThumbprint, appId, enableClientCertNegotiation, disablesessionid, enablesessionticket);
+            NetShFlag clientCertNegotiation = NetShFlag.Disabled,
+            NetShFlag disablesessionid = NetShFlag.Enable,
+            NetShFlag enablesessionticket = NetShFlag.Disabled)
+        => CertBindingCore("add", ipPort, certThumbprint, appId, clientCertNegotiation, disablesessionid, enablesessionticket);
 
-        public static void UpdateCertBinding(string ipPort, SslCertBinding binding)
-            => UpdateCertBinding(ipPort, binding.CertificateThumbprint, binding.ApplicationId, binding.NegotiateClientCertificate, !binding.SessionIdTlsResumptionEnabled, binding.SessionTicketTlsResumptionEnabled);
+        public static void UpdateCertBinding(string ipPort, SslCertBinding binding) => UpdateCertBinding(
+            ipPort,
+            binding.CertificateThumbprint,
+            binding.ApplicationId,
+            binding.NegotiateClientCertificate ,
+            binding.DisableSessionIdTlsResumption,
+            binding.EnableSessionTicketTlsResumption);
 
         public static void UpdateCertBinding(
             string ipPort, string certThumbprint,
             string? appId = null,
-            bool enableClientCertNegotiation = false,
-            bool disablesessionid = true,
-            bool enablesessionticket = false)
-        => CertBindingCore("update", ipPort, certThumbprint, appId, enableClientCertNegotiation, disablesessionid, enablesessionticket);
+            NetShFlag clientCertNegotiation = NetShFlag.Disabled,
+            NetShFlag disablesessionid = NetShFlag.Enable,
+            NetShFlag enablesessionticket = NetShFlag.Disabled)
+        => CertBindingCore("update", ipPort, certThumbprint, appId, clientCertNegotiation, disablesessionid, enablesessionticket);
 
         private static void CertBindingCore(
             string httpOperation,
             string ipPort, string certThumbprint,
             string? appId = null,
-            bool enableClientCertNegotiation = false,
-            bool disablesessionid = true,
-            bool enablesessionticket = false)
+            NetShFlag clientcertnegotiation = NetShFlag.Disabled,
+            NetShFlag disablesessionid = NetShFlag.Enable,
+            NetShFlag enablesessionticket = NetShFlag.Disabled)
         {
             if (string.IsNullOrEmpty(appId))
             {
                 appId = "00000000-0000-0000-0000-000000000000";
             }
-            string command = $"http {httpOperation} sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}} clientcertnegotiation={GetFlagValue(enableClientCertNegotiation)} disablesessionid={GetFlagValue(disablesessionid)} enablesessionticket={GetFlagValue(enablesessionticket)}";
+
+            var clientcertnegotiationFlag = GetFlagValue(clientcertnegotiation);
+            var disablesessionidFlag = GetFlagValue(disablesessionid);
+            var enablesessionticketFlag = GetFlagValue(enablesessionticket);
+            string command = $"http {httpOperation} sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}}";
+
+            if (clientcertnegotiationFlag != null)
+            {
+                command += $" clientcertnegotiation={clientcertnegotiationFlag}";
+            }
+            if (disablesessionidFlag != null)
+            {
+                command += $" disablesessionid={disablesessionidFlag}";
+            }
+            if (enablesessionticketFlag != null)
+            {
+                command += $" enablesessionticket={enablesessionticketFlag}";
+            }
+
             ExecuteNetShCommand(command);
             Console.WriteLine($"Performed cert binding for {ipPort}");
 
-            string GetFlagValue(bool flag) => flag ? "enable" : "disable";
+            string? GetFlagValue(NetShFlag flag) => flag switch
+            {
+                NetShFlag.NotSet => null,
+                NetShFlag.Disabled => "disable",
+                NetShFlag.Enable => "enable",
+                _ => throw new ArgumentOutOfRangeException(nameof(flag)),
+            };
         }
 
         private static string ExecutePowershellCommand(string command, bool alwaysLogOutput = false)

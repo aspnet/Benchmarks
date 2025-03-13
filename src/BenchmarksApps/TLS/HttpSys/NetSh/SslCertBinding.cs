@@ -9,18 +9,26 @@
         /// <summary>
         /// if mutual TLS is enabled
         /// </summary>
-        public bool NegotiateClientCertificate { get; set; }
+        public NetShFlag NegotiateClientCertificate { get; set; }
 
-        public bool SessionIdTlsResumptionEnabled { get; set; }
-        public bool SessionTicketTlsResumptionEnabled { get; set; }
+        public NetShFlag DisableSessionIdTlsResumption { get; set; }
+        public NetShFlag EnableSessionTicketTlsResumption { get; set; }
 
         public override string ToString() => $"""
             Certificate thumbprint: {CertificateThumbprint}
             Application ID: {ApplicationId}
             Negotiate client certificate: {NegotiateClientCertificate}
-            Session ID TLS resumption enabled: {SessionIdTlsResumptionEnabled}
-            Session Ticket TLS resumption enabled: {SessionTicketTlsResumptionEnabled}
+            Disable Session ID TLS Resumption: {DisableSessionIdTlsResumption}
+            Enable Session Ticket TLS Resumption: {EnableSessionTicketTlsResumption}
             -----
         """;
+    }
+
+    public enum NetShFlag
+    {
+        NotSet = 0,
+
+        Disabled = 1,
+        Enable = 2
     }
 }

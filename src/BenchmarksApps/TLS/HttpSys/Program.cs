@@ -1,4 +1,5 @@
 using HttpSys;
+using HttpSys.NetSh;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -24,14 +25,25 @@ if (!NetShWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
     {
         throw new ApplicationException($"Failed to setup ssl binding for '{httpsIpPort}'. Please unblock the VM.");
     }
-    NetShWrapper.AddCertBinding(httpsIpPort, originalCertThumbprint, disablesessionid: true, enablesessionticket: false, enableClientCertNegotiation: mTlsEnabled);
+    NetShWrapper.AddCertBinding(
+        httpsIpPort,
+        originalCertThumbprint,
+        disablesessionid: NetShFlag.Enable,
+        enablesessionticket: NetShFlag.Disabled,
+        clientCertNegotiation: mTlsEnabled ? NetShFlag.Enable : NetShFlag.Disabled);
 }
 
 Console.WriteLine("Current netsh ssl certificate binding: " + sslCertBinding);
-if (sslCertBinding.SessionIdTlsResumptionEnabled || sslCertBinding.SessionTicketTlsResumptionEnabled)
+if (sslCertBinding.DisableSessionIdTlsResumption != NetShFlag.Enable || sslCertBinding.EnableSessionTicketTlsResumption != NetShFlag.Disabled)
 {
-    Console.WriteLine($"SslCert bind to '{httpsIpPort}' has TLS resumption enabled. Need to turn it off for pure TLS benchmarks.");
-    NetShWrapper.UpdateCertBinding(httpsIpPort, sslCertBinding.CertificateThumbprint, appId: sslCertBinding.ApplicationId, disablesessionid: true, enablesessionticket: false, enableClientCertNegotiation: mTlsEnabled);
+    Console.WriteLine($"SslCert bind to '{httpsIpPort}' does not have TLS Resumption disabled. Need to turn it off for pure TLS benchmarks.");
+    NetShWrapper.UpdateCertBinding(
+        httpsIpPort,
+        sslCertBinding.CertificateThumbprint,
+        appId: sslCertBinding.ApplicationId,
+        disablesessionid: NetShFlag.Enable,
+        enablesessionticket: NetShFlag.Disabled,
+        clientCertNegotiation: mTlsEnabled ? NetShFlag.Enable : NetShFlag.Disabled);
 }
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
@@ -141,9 +153,11 @@ Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
 Console.WriteLine("Application stopped.");
 
-if (NetShWrapper.TryGetSslCertBinding(httpsIpPort, out sslCertBinding) && sslCertBinding.NegotiateClientCertificate)
+if (NetShWrapper.TryGetSslCertBinding(httpsIpPort, out sslCertBinding) && mTlsEnabled)
 {
     // update the sslCert binding to disable "negotiate client cert" (aka mTLS) to not break other tests.
     Console.WriteLine($"Rolling back mTLS setting for sslCert binding at '{httpsIpPort}'");
+
+    sslCertBinding.NegotiateClientCertificate = NetShFlag.Disabled;
     NetShWrapper.UpdateCertBinding(httpsIpPort, sslCertBinding);
 }
