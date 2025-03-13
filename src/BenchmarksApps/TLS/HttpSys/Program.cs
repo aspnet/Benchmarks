@@ -28,7 +28,7 @@ if (!NetShWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
 }
 else if (sslCertBinding.SessionIdTlsResumptionEnabled || sslCertBinding.SessionTicketTlsResumptionEnabled)
 {
-    Console.WriteLine($"SslCert bind to '{httpsIpPort}' has TLS resumption enabled. Need to turn it off.");
+    Console.WriteLine($"SslCert bind to '{httpsIpPort}' has TLS resumption enabled. Need to turn it off for pure TLS benchmarks.");
     NetShWrapper.UpdateCertBinding(httpsIpPort, sslCertBinding.CertificateThumbprint, appId: sslCertBinding.ApplicationId, disablesessionid: true, enablesessionticket: false, enableClientCertNegotiation: mTlsEnabled);
 }
 
