@@ -221,10 +221,10 @@ namespace HttpSys
             {
                 command += $" clientcertnegotiation={clientcertnegotiationFlag}";
             }
-            if (disablesessionidFlag != null)
-            {
-                command += $" disablesessionid={disablesessionidFlag}";
-            }
+            //if (disablesessionidFlag != null)
+            //{
+            //    command += $" disablesessionid={disablesessionidFlag}";
+            //}
             if (enablesessionticketFlag != null)
             {
                 command += $" enablesessionticket={enablesessionticketFlag}";
