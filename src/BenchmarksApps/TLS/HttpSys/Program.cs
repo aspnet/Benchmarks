@@ -119,7 +119,7 @@ if (tlsRenegotiationEnabled)
 
 await app.StartAsync();
 
-NetShWrapper.Show();
+NetShWrapper.LogSslCertBinding(httpsIpPort);
 
 Console.WriteLine("Application Info:");
 if (mTlsEnabled)

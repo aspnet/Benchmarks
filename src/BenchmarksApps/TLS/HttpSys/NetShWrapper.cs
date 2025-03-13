@@ -102,7 +102,6 @@ namespace HttpSys
             if (disableSessionId.Success)
             {
                 var disableSessionIdValue = disableSessionId.Groups[1].Value;
-                Console.WriteLine("Debug: Disable Session ID = " + disableSessionIdValue);
                 result.SessionIdTlsResumptionEnabled = !IsEnabled(disableSessionIdValue);
             }
 
@@ -110,7 +109,6 @@ namespace HttpSys
             if (enableSessionTicket.Success)
             {
                 var enableSessionTicketValue = enableSessionTicket.Groups[1].Value;
-                Console.WriteLine("Debug: Enable Session Ticket = " + enableSessionTicketValue);
                 result.SessionTicketTlsResumptionEnabled = IsEnabled(enableSessionTicketValue);
             }
 
@@ -124,9 +122,9 @@ namespace HttpSys
             }
         }
 
-        public static void Show()
+        public static void LogSslCertBinding(string ipPort)
         {
-            ExecuteNetShCommand("http show sslcert", alwaysLogOutput: true);
+            ExecuteNetShCommand($"http show sslcert ipport={ipPort}", alwaysLogOutput: true);
         }
 
         public static void SetTestCertBinding(string ipPort, bool enableClientCertNegotiation)
