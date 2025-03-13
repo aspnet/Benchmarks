@@ -6,8 +6,11 @@
 
 variables:
   serverPort: 5000
-  httpSysBeforeScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0; Restart-Service -Name Http -Force; Write-Host 'Disabled TLS Resumption'"
-  httpSysAfterScript: powershell -Command "Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore; Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore; Restart-Service -Name Http -Force; Write-Host 'Rollbacked HTTP.SYS'"
+
+  # these scripts allow to disable (or rollback changes) to the SChannel registry
+  # this allows to disable TLS resumption on windows level
+  disableTlsResumptionScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0; Restart-Service -Name Http -Force; Write-Host 'Disabled TLS Resumption'"
+  rollbackTlsResumptionScript: powershell -Command "Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore; Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore; Restart-Service -Name Http -Force; Write-Host 'Rollbacked HTTP.SYS'"
 
 jobs:
   httpSysServer:
@@ -67,8 +70,8 @@ scenarios:
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
-      beforeScript: "{{httpSysBeforeScript}}"
-      afterScript: "{{httpSysAfterScript}}"
+      beforeScript: "{{disableTlsResumptionScript}}"
+      afterScript: "{{rollbackTlsResumptionScript}}"
     load:
       job: httpclient
       variables:
@@ -81,6 +84,8 @@ scenarios:
   mTls-handshakes-httpsys:
     application:
       job: httpSysServer
+      beforeScript: "{{disableTlsResumptionScript}}"
+      afterScript: "{{rollbackTlsResumptionScript}}"
       variables:
         mTLS: true # enables settings on http.sys to negotiate client cert on connections
         tlsRenegotiation: true # enables client cert validation
@@ -101,6 +106,8 @@ scenarios:
   tls-renegotiation-httpsys:
     application:
       job: httpSysServer
+      beforeScript: "{{disableTlsResumptionScript}}"
+      afterScript: "{{rollbackTlsResumptionScript}}"
       variables:
         mTLS: false
         tlsRenegotiation: true
