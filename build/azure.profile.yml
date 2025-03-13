@@ -122,7 +122,6 @@ profiles:
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azureclient
-          # - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - warmup
           - secondary
