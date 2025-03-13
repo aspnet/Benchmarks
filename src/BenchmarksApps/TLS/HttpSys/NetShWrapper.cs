@@ -102,6 +102,7 @@ namespace HttpSys
             if (disableSessionId.Success)
             {
                 var disableSessionIdValue = disableSessionId.Groups[1].Value;
+                Console.WriteLine("Debug: Disable Session ID = " + disableSessionIdValue);
                 result.SessionIdTlsResumptionEnabled = !IsEnabled(disableSessionIdValue);
             }
 
@@ -109,12 +110,13 @@ namespace HttpSys
             if (enableSessionTicket.Success)
             {
                 var enableSessionTicketValue = enableSessionTicket.Groups[1].Value;
+                Console.WriteLine("Debug: Enable Session Ticket = " + enableSessionTicketValue);
                 result.SessionTicketTlsResumptionEnabled = IsEnabled(enableSessionTicketValue);
             }
 
             return true;
 
-            // http will return "Disabled" or "Not Set" for properties which are disabled
+            // http will return "Disabled" or "Not Set" for properties which are not explicitly turned on
             bool IsEnabled(string prop)
             {
                 if (prop is "Disabled" or "Not Set") return false;
