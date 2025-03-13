@@ -9,7 +9,7 @@ variables:
 
   # these scripts allow to disable (or rollback changes) to the SChannel registry
   # this allows to disable TLS resumption on windows level
-  disableTlsResumptionScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0; Restart-Service -Name Http -Force;"
+  disableTlsResumptionScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0 -ErrorAction Ignore; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0 -ErrorAction Ignore; Restart-Service -Name Http -Force;"
   rollbackTlsResumptionScript: powershell -Command "Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore; Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore; Restart-Service -Name Http -Force;"
 
 jobs:
