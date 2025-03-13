@@ -68,3 +68,27 @@ groups:
         template: containers-scenarios.yml
         profiles:
         - aspnet-azurearm64-lin
+
+  - jobs:
+      
+      - name: IDNA Azure Amd Linux
+        template: trend-scenarios.yml
+        profiles:
+        - idna-amd-lin-relay
+
+      - name: IDNA Azure Intel Linux
+        template: trend-scenarios.yml
+        profiles:
+        - idna-intel-lin-relay
+
+  - jobs:
+      
+      - name: IDNA Azure Amd Windows
+        template: trend-scenarios.yml
+        profiles:
+        - idna-amd-win-relay
+
+      - name: IDNA Azure Intel Windows
+        template: trend-scenarios.yml
+        profiles:
+        - idna-intel-win-relay
