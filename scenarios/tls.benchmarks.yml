@@ -6,6 +6,8 @@
 
 variables:
   serverPort: 5000
+  httpSysBeforeScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0; Restart-Service -Name Http -Force; Write-Host 'Disabled TLS Resumption'"
+  httpSysAfterScript: powershell -Command "Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore; Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore; Restart-Service -Name Http -Force; Write-Host 'Rollbacked HTTP.SYS'"
 
 jobs:
   httpSysServer:
@@ -65,12 +67,8 @@ scenarios:
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
-      beforeScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0; Restart-Service -Name Http -Force; Write-Host 'Disabled TLS Resumption'"
-      # afterScript: /
-      #   Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore
-      #   Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore
-      #   Restart-Service -Name Http -Force
-      #   echo "Rollbacked HTTP.SYS Registry to default"
+      beforeScript: "{{httpSysBeforeScript}}"
+      afterScript: "{{httpSysAfterScript}}"
     load:
       job: httpclient
       variables:
