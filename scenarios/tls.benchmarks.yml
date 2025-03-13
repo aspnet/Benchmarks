@@ -65,11 +65,12 @@ scenarios:
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
-      beforeScript: reg add "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" /v MaximumCacheSize /t REG_DWORD /d 0 /f
-      afterScript: |
-        Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore
-        Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore
-        Restart-Service -Name Http -Force
+      beforeScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0; Restart-Service -Name Http -Force; Write-Host 'Disabled TLS Resumption'"
+      # afterScript: /
+      #   Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore
+      #   Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name EnableSessionTicket -ErrorAction Ignore
+      #   Restart-Service -Name Http -Force
+      #   echo "Rollbacked HTTP.SYS Registry to default"
     load:
       job: httpclient
       variables:
