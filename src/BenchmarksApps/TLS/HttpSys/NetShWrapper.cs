@@ -230,7 +230,7 @@ namespace HttpSys
                 command += $" enablesessionticket={enablesessionticketFlag}";
             }
 
-            ExecuteNetShCommand(command);
+            ExecuteNetShCommand(command, alwaysLogOutput: true);
             Console.WriteLine($"Performed cert binding for {ipPort}");
 
             string? GetFlagValue(NetShFlag flag) => flag switch
@@ -248,7 +248,7 @@ namespace HttpSys
         private static string ExecuteNetShCommand(string command, bool alwaysLogOutput = false)
             => ExecuteCommand("netsh", command, alwaysLogOutput);
 
-        private static string ExecuteCommand(string fileName, string command, bool alwaysLogOutput = false)
+        private static string ExecuteCommand(string fileName, string command, bool logOutput = false)
         {
             ProcessStartInfo processInfo = new ProcessStartInfo(fileName, command)
             {
@@ -263,7 +263,7 @@ namespace HttpSys
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
-            if (alwaysLogOutput)
+            if (logOutput)
             {
                 Console.WriteLine(output);
             }
