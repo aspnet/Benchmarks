@@ -60,7 +60,6 @@ builder.WebHost.UseKestrel(options =>
                 // forcefully disable TLS resumption
                 options.OnAuthenticate = (connectionContext, sslServerAuthOptions) =>
                 {
-                    Console.WriteLine("Dis-allowed TLS resumption");
                     sslServerAuthOptions.AllowTlsResume = false;
                 };
 
