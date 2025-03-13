@@ -221,14 +221,20 @@ namespace HttpSys
             {
                 command += $" clientcertnegotiation={clientcertnegotiationFlag}";
             }
+
+            // below options are supported only in later versions of HTTP.SYS
+            // you can identify if it is available by running `netsh http add sslcert help`
+            // ---
+            // workaround is to control SChannel settings via registry
+
             //if (disablesessionidFlag != null)
             //{
             //    command += $" disablesessionid={disablesessionidFlag}";
             //}
-            if (enablesessionticketFlag != null)
-            {
-                command += $" enablesessionticket={enablesessionticketFlag}";
-            }
+            //if (enablesessionticketFlag != null)
+            //{
+            //    command += $" enablesessionticket={enablesessionticketFlag}";
+            //}
 
             ExecuteNetShCommand(command, alwaysLogOutput: true);
             Console.WriteLine($"Performed cert binding for {ipPort}");
