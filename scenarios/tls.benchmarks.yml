@@ -66,9 +66,9 @@ scenarios:
     application:
       job: httpSysServer
       beforeScript: /
-        powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0";
-        powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0";
-        powershell -Command "Restart-Service -Name Http -Force";
+        pwsh -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0";
+        pwsh -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0";
+        pwsh -Command "Restart-Service -Name Http -Force";
         echo "Disabled HTTP.SYS TLS Resumption"
       afterScript: /
         Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL" -Name ServerCacheTime -ErrorAction Ignore
