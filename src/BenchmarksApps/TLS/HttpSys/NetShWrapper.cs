@@ -118,7 +118,7 @@ namespace HttpSys
             {
                 "Not Set" => NetShFlag.NotSet,
                 "Disable" or "Disabled" => NetShFlag.Disabled,
-                "Enable" or "Set" => NetShFlag.Enable,
+                "Enable" or "Enabled" or "Set" => NetShFlag.Enable,
                 _ => throw new ArgumentOutOfRangeException(nameof(prop), $"unexpected netsh flag '{prop}' for ssl cert binding"),
             };
         }
