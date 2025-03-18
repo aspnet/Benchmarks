@@ -71,7 +71,7 @@ profiles:
           - main
       load:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azureclient
+          - https://aspnetperf.servicebus.windows.net/idnaamdlin
         aliases:
           - warmup
           - secondary
@@ -96,7 +96,7 @@ profiles:
           - main
       load:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azureclient
+          - https://aspnetperf.servicebus.windows.net/idnaintellin
         aliases:
           - warmup
           - secondary
@@ -121,7 +121,7 @@ profiles:
           - main
       load:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azureclient
+          - https://aspnetperf.servicebus.windows.net/idnaamdlin
         aliases:
           - warmup
           - secondary
@@ -146,7 +146,7 @@ profiles:
           - main
       load:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azureclient
+          - https://aspnetperf.servicebus.windows.net/idnaintellin
         aliases:
           - warmup
           - secondary

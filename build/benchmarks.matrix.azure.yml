@@ -76,6 +76,8 @@ groups:
         profiles:
         - idna-amd-lin-relay
 
+  - jobs:
+
       - name: IDNA Azure Intel Linux
         template: trend-scenarios.yml
         profiles:
