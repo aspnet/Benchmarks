@@ -179,3 +179,66 @@ jobs:
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
       
+# GROUP 6
+
+- job: IDNA_Azure_Amd_Linux
+  displayName: 6- IDNA Azure Amd Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Containers_Azure_Intel_Linux, Containers_Azure_Arm64_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-amd-lin-relay "
+      
+# GROUP 7
+
+- job: IDNA_Azure_Intel_Linux
+  displayName: 7- IDNA Azure Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [IDNA_Azure_Amd_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-intel-lin-relay "
+      
+# GROUP 8
+
+- job: IDNA_Azure_Amd_Windows
+  displayName: 8- IDNA Azure Amd Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [IDNA_Azure_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-amd-win-relay "
+      
+- job: IDNA_Azure_Intel_Windows
+  displayName: 8- IDNA Azure Intel Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [IDNA_Azure_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-intel-win-relay "
+      
+
