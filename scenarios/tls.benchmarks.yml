@@ -7,6 +7,11 @@
 variables:
   serverPort: 5000
 
+  # these scripts allow to disable (or rollback changes) to the SChannel registry
+  # this allows to disable TLS resumption on windows level
+  disableTlsResumptionScript: powershell -Command "New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name MaximumCacheSize -PropertyType DWord -Value 0 -ErrorAction Ignore; New-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\' -Name ServerCacheTime -PropertyType DWord -Value 0 -ErrorAction Ignore; Restart-Service -Name Http -Force;"
+  rollbackTlsResumptionScript: powershell -Command "Remove-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL' -Name MaximumCacheSize -ErrorAction Ignore; Remove-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL' -Name ServerCacheTime -ErrorAction Ignore; Restart-Service -Name Http -Force;"
+
 jobs:
   httpSysServer:
     source:
@@ -65,6 +70,8 @@ scenarios:
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
+      beforeScript: "{{disableTlsResumptionScript}}"
+      afterScript: "{{rollbackTlsResumptionScript}}"
     load:
       job: httpclient
       variables:
@@ -77,6 +84,8 @@ scenarios:
   mTls-handshakes-httpsys:
     application:
       job: httpSysServer
+      beforeScript: "{{disableTlsResumptionScript}}"
+      afterScript: "{{rollbackTlsResumptionScript}}"
       variables:
         mTLS: true # enables settings on http.sys to negotiate client cert on connections
         tlsRenegotiation: true # enables client cert validation
@@ -97,6 +106,8 @@ scenarios:
   tls-renegotiation-httpsys:
     application:
       job: httpSysServer
+      beforeScript: "{{disableTlsResumptionScript}}"
+      afterScript: "{{rollbackTlsResumptionScript}}"
       variables:
         mTLS: false
         tlsRenegotiation: true
