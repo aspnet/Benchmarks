@@ -65,7 +65,7 @@ steps:
   - task: PublishToAzureServiceBus@2
     displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
-    timeoutInMinutes: 10
+    timeoutInMinutes: 15
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
