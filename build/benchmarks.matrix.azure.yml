@@ -72,25 +72,25 @@ groups:
   - jobs:
       
       - name: IDNA Azure Amd Linux
-        template: trend-scenarios.yml
+        template: tls-scenarios.yml
         profiles:
         - idna-amd-lin
 
   - jobs:
 
       - name: IDNA Azure Intel Linux
-        template: trend-scenarios.yml
+        template: tls-scenarios.yml
         profiles:
         - idna-intel-lin
 
   - jobs:
       
       - name: IDNA Azure Amd Windows
-        template: trend-scenarios.yml
+        template: tls-scenarios.yml
         profiles:
         - idna-amd-win
 
       - name: IDNA Azure Intel Windows
-        template: trend-scenarios.yml
+        template: tls-scenarios.yml
         profiles:
         - idna-intel-win

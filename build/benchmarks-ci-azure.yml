@@ -188,7 +188,7 @@ jobs:
   dependsOn: [Containers_Azure_Intel_Linux, Containers_Azure_Arm64_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: tls-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
@@ -204,7 +204,7 @@ jobs:
   dependsOn: [IDNA_Azure_Amd_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: tls-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
@@ -220,7 +220,7 @@ jobs:
   dependsOn: [IDNA_Azure_Intel_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: tls-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
@@ -234,7 +234,7 @@ jobs:
   dependsOn: [IDNA_Azure_Intel_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: tls-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
