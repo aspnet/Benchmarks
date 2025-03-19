@@ -193,7 +193,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-lin-relay "
+      arguments: "$(ciProfile) --profile idna-amd-lin "
       
 # GROUP 7
 
@@ -209,7 +209,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-lin-relay "
+      arguments: "$(ciProfile) --profile idna-intel-lin "
       
 # GROUP 8
 
@@ -225,7 +225,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-win-relay "
+      arguments: "$(ciProfile) --profile idna-amd-win "
       
 - job: IDNA_Azure_Intel_Windows
   displayName: 8- IDNA Azure Intel Windows
@@ -239,6 +239,6 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-win-relay "
+      arguments: "$(ciProfile) --profile idna-intel-win "
       
 

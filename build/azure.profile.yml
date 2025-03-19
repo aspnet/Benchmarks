@@ -51,6 +51,31 @@ profiles:
           - warmup
           - secondary
 
+  idna-intel-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.12
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - http://10.0.4.6:5001
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - http://10.0.4.12:5001
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://10.0.4.13:5001 # idna-amd-lin
+        aliases:
+          - warmup
+          - secondary
+
   idna-intel-lin-relay:
     variables:
       serverPort: 5000
@@ -72,6 +97,31 @@ profiles:
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
+        aliases:
+          - warmup
+          - secondary
+
+  idna-amd-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.13
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - http://10.0.4.6:5001
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - http://10.0.4.13:5001
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://10.0.4.12:5001 # idna-intel-lin
         aliases:
           - warmup
           - secondary
@@ -101,6 +151,31 @@ profiles:
           - warmup
           - secondary
 
+  idna-intel-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.14
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - http://10.0.4.6:5001
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - http://10.0.4.14:5001
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://10.0.4.13:5001 # idna-amd-lin
+        aliases:
+          - warmup
+          - secondary
+
   idna-intel-win-relay:
     variables:
       serverPort: 5000
@@ -122,6 +197,31 @@ profiles:
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
+        aliases:
+          - warmup
+          - secondary
+
+  idna-amd-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.15
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - http://10.0.4.6:5001
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - http://10.0.4.15:5001
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://10.0.4.12:5001 # idna-intel-lin
         aliases:
           - warmup
           - secondary
