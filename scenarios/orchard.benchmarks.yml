@@ -32,7 +32,7 @@ jobs:
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseTablePrefix: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__RecipeName: "Blog"
     buildArguments:
-      - /p:AspNetCoreTargetFrameworks={{job.Framework}}
+      - /p:AspNetCoreTargetFrameworks={{job.Framework}} /p:CommonTargetFrameworks={{job.Framework}}
 
   postgresql:
     source:
