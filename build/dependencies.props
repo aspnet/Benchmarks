@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <NpgsqlVersion60>6.0.12</NpgsqlVersion60>
-    <NpgsqlVersion70>7.0.8</NpgsqlVersion70>
-    <NpgsqlVersion80>8.0.5</NpgsqlVersion80>
-    <NpgsqlVersion90>8.0.5</NpgsqlVersion90>
+    <NpgsqlVersion60>6.0.13</NpgsqlVersion60>
+    <NpgsqlVersion70>7.0.10</NpgsqlVersion70>
+    <NpgsqlVersion80>8.0.7</NpgsqlVersion80>
+    <NpgsqlVersion90>9.0.3</NpgsqlVersion90>
 
     <MicrosoftDataSqlClientVersion60>5.2.2</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.2.2</MicrosoftDataSqlClientVersion70>
@@ -12,8 +12,8 @@
 
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.29</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.18</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.10</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion90>9.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion90>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion90>9.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion90>
 
     <PomeloEntityFrameworkCoreMySqlVersion60>6.0.3</PomeloEntityFrameworkCoreMySqlVersion60>
     <PomeloEntityFrameworkCoreMySqlVersion70>7.0.0</PomeloEntityFrameworkCoreMySqlVersion70>
