@@ -19,6 +19,8 @@
 
     <!-- enable interceptors language feature for Dapper globally (this by itself doesn't add AOT) -->
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Dapper.AOT</InterceptorsNamespaces>
+    <!-- for parity on down-level SDKs -->
+    <InterceptorsPreviewNamespaces>$(InterceptorsNamespaces)</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
 </Project>
