@@ -16,6 +16,9 @@
     <!-- Create database build configurations -->
     <Configurations>Debug;Release;Debug_Database;Release_Database</Configurations>
     <IsDatabase Condition="$(Configuration.EndsWith('_Database'))">true</IsDatabase>
+
+    <!-- enable interceptors language feature for Dapper globally (this by itself doesn't add AOT) -->
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Dapper.AOT</InterceptorsNamespaces>
   </PropertyGroup>
 
 </Project>

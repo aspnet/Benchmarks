@@ -4,6 +4,7 @@ using Minimal.Models;
 
 namespace Minimal.Database;
 
+[DapperAot, CacheCommand, StrictTypes]
 public class Db
 {
     private static readonly Comparison<Fortune> FortuneSortComparison = (a, b) => string.CompareOrdinal(a.Message, b.Message);
@@ -28,6 +29,7 @@ public class Db
         return await ReadSingleRow(db);
     }
 
+    [QueryColumns("id", "randomnumber")]
     static Task<World> ReadSingleRow(DbConnection db)
     {
         return db.QueryFirstOrDefaultAsync<World>(
@@ -83,6 +85,7 @@ public class Db
         return results;
     }
 
+    [QueryColumns("id", "message")]
     public async Task<List<Fortune>> LoadFortunesRows()
     {
         List<Fortune> result;

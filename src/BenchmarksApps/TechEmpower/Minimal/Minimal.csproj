@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+    <PackageReference Include="Dapper.AOT" Version="$(DapperAotVersion)" />
     <PackageReference Include="RazorSlices" Version="$(RazorSlicesVersion)" />
   </ItemGroup>
 
