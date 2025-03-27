@@ -21,6 +21,7 @@ public sealed class Db : IAsyncDisposable
 #endif
     }
 
+    [DapperAot, CacheCommand, StrictTypes, QueryColumns("id", "message")]
     public async Task<List<Fortune>> LoadFortunesRowsDapper()
     {
         await using var connection = _dataSource.CreateConnection();

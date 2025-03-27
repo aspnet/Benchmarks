@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Dapper;
 
 namespace Benchmarks.Data
 {
@@ -13,7 +14,7 @@ namespace Benchmarks.Data
         public int Id { get; set; }
 
         [IgnoreDataMember]
-        [NotMapped]
+        [NotMapped, DbValue(Ignore = true)]
         public int _Id { get; set; }
 
         [Column("randomnumber")]
