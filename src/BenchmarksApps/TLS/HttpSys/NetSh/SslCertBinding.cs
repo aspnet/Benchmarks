@@ -24,11 +24,12 @@
         """;
     }
 
+    [Flags]
     public enum NetShFlag
     {
-        NotSet = 0,
+        NotSet      = 0,
 
-        Disabled = 1,
-        Enable = 2
+        Disabled    = 1,
+        Enable      = 2,
     }
 }

@@ -20,15 +20,17 @@ var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"]
 
 var mTLSNetShFlag = mTlsEnabled ? NetShFlag.Enable : NetShFlag.Disabled;
 
+var netshWrapper = new NetShWrapper();
+
 // verify there is an netsh http sslcert binding for specified ip:port
-if (!NetShWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
+if (!netshWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
 {
     Console.WriteLine($"No binding existed. Need to self-sign it and bind to '{httpsIpPort}'");
-    if (!NetShWrapper.TrySelfSignCertificate(httpsIpPort, out var originalCertThumbprint))
+    if (!netshWrapper.TrySelfSignCertificate(httpsIpPort, out var originalCertThumbprint))
     {
         throw new ApplicationException($"Failed to setup ssl binding for '{httpsIpPort}'. Please unblock the VM.");
     }
-    NetShWrapper.AddCertBinding(
+    netshWrapper.AddCertBinding(
         httpsIpPort,
         originalCertThumbprint,
         disablesessionid: NetShFlag.Enable,
@@ -36,17 +38,18 @@ if (!NetShWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
         clientCertNegotiation: mTLSNetShFlag);
 }
 
-Console.WriteLine("Current netsh ssl certificate binding: " + sslCertBinding);
+Console.WriteLine("Current netsh ssl certificate binding: \n" + sslCertBinding);
 
 if (
     // those flags can be set only on later versions of HTTP.SYS; so only considering mTLS here
-    // sslCertBinding.DisableSessionIdTlsResumption != NetShFlag.Enable || sslCertBinding.EnableSessionTicketTlsResumption != NetShFlag.Disabled ||
-    sslCertBinding.NegotiateClientCertificate != mTLSNetShFlag)
+    (netshWrapper.SupportsDisableSessionId && sslCertBinding.DisableSessionIdTlsResumption != NetShFlag.Enable)
+    || (netshWrapper.SupportsEnableSessionTicket && (sslCertBinding.EnableSessionTicketTlsResumption == NetShFlag.Enable))
+    || sslCertBinding.NegotiateClientCertificate != mTLSNetShFlag)
 {
     Console.WriteLine($"Need to prepare ssl-cert binding for the run.");
-    Console.WriteLine($"Expected configuration: mTLS={mTLSNetShFlag}");
+    Console.WriteLine($"Expected configuration: mTLS={mTLSNetShFlag}; disableSessionId={NetShFlag.Enable}; enableSessionTicket={NetShFlag.Disabled}");
 
-    NetShWrapper.UpdateCertBinding(
+    netshWrapper.UpdateCertBinding(
         httpsIpPort,
         sslCertBinding.CertificateThumbprint,
         appId: sslCertBinding.ApplicationId,
@@ -140,7 +143,7 @@ if (tlsRenegotiationEnabled)
 
 await app.StartAsync();
 
-NetShWrapper.LogSslCertBinding(httpsIpPort);
+netshWrapper.LogSslCertBinding(httpsIpPort);
 
 Console.WriteLine("Application Info:");
 if (mTlsEnabled)
@@ -162,11 +165,11 @@ Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
 Console.WriteLine("Application stopped.");
 
-if (NetShWrapper.TryGetSslCertBinding(httpsIpPort, out sslCertBinding) && mTLSNetShFlag == NetShFlag.Enable)
+if (netshWrapper.TryGetSslCertBinding(httpsIpPort, out sslCertBinding) && mTLSNetShFlag == NetShFlag.Enable)
 {
     // update the sslCert binding to disable "negotiate client cert" (aka mTLS) to not break other tests.
     Console.WriteLine($"Rolling back mTLS setting for sslCert binding at '{httpsIpPort}'");
 
     sslCertBinding.NegotiateClientCertificate = NetShFlag.Disabled;
-    NetShWrapper.UpdateCertBinding(httpsIpPort, sslCertBinding);
+    netshWrapper.UpdateCertBinding(httpsIpPort, sslCertBinding);
 }
