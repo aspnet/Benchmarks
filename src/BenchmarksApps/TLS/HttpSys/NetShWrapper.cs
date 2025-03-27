@@ -5,9 +5,37 @@ using HttpSys.NetSh;
 
 namespace HttpSys
 {
-    public static class NetShWrapper
+    public class NetShWrapper
     {
-        public static void DeleteBindingIfExists(string ipPort)
+        public bool SupportsDisableSessionId { get; }
+        public bool SupportsEnableSessionTicket { get; }
+
+        public NetShWrapper()
+        {
+            var sslCertCapabilitiesText = ExecuteNetShCommand($"http add sslcert help");
+            if (string.IsNullOrEmpty(sslCertCapabilitiesText))
+            {
+                throw new InvalidOperationException("Failed to determine http.sys capabilities");
+            }
+
+            if (sslCertCapabilitiesText.Contains("disablesessionid"))
+            {
+                SupportsDisableSessionId = true;
+            }
+
+            if (sslCertCapabilitiesText.Contains("enablesessionticket"))
+            {
+                SupportsEnableSessionTicket = true;
+            }
+
+            Console.WriteLine($"""
+                Http.SYS Capabilities:
+                    - SupportsDisableSessionId: {SupportsDisableSessionId} (if not supported, renegotiation will most likely be enabled by default)
+                    - SupportsEnableSessionTicket: {SupportsEnableSessionTicket}
+            """);
+        }
+
+        public void DeleteBindingIfExists(string ipPort)
         {
             try
             {
@@ -19,7 +47,7 @@ namespace HttpSys
             }
         }
 
-        public static void DeleteBinding(string ipPort)
+        public void DeleteBinding(string ipPort)
         {
             Console.WriteLine("Disabling mTLS for http.sys");
 
@@ -29,9 +57,7 @@ namespace HttpSys
             Console.WriteLine("Disabled http.sys settings for mTLS");
         }
 
-
-
-        public static bool TryGetSslCertBinding(string ipPort, out SslCertBinding result)
+        public bool TryGetSslCertBinding(string ipPort, out SslCertBinding result)
         {
             result = new SslCertBinding();
 
@@ -71,7 +97,7 @@ namespace HttpSys
                 Max Settings Per Frame       : 2796202
                 Max Settings Per Minute      : 4294967295
              */
-            var bindings = ExecuteNetShCommand($"http show sslcert ipport={ipPort}");
+            var bindings = ExecuteNetShCommand($"http show sslcert ipport={ipPort}", ignoreErrorExit: true);
             if (string.IsNullOrEmpty(bindings) || !bindings.Contains(ipPort))
             {
                 return false;
@@ -123,12 +149,12 @@ namespace HttpSys
             };
         }
 
-        public static void LogSslCertBinding(string ipPort)
+        public void LogSslCertBinding(string ipPort)
         {
             ExecuteNetShCommand($"http show sslcert ipport={ipPort}", alwaysLogOutput: true);
         }
 
-        public static void SetTestCertBinding(string ipPort, bool enableClientCertNegotiation)
+        public void SetTestCertBinding(string ipPort, bool enableClientCertNegotiation)
         {
             Console.WriteLine("Setting up binding for testCert for http.sys");
 
@@ -148,7 +174,7 @@ namespace HttpSys
             Console.WriteLine("Configured binding for testCert for http.sys");
         }
 
-        public static bool TrySelfSignCertificate(string ipPort, out string certThumbprint)
+        public bool TrySelfSignCertificate(string ipPort, out string certThumbprint)
         {
             certThumbprint = string.Empty;
             try
@@ -175,7 +201,7 @@ namespace HttpSys
             }
         }
 
-        public static void AddCertBinding(
+        public void AddCertBinding(
             string ipPort, string certThumbprint,
             string? appId = null,
             NetShFlag clientCertNegotiation = NetShFlag.Disabled,
@@ -183,7 +209,7 @@ namespace HttpSys
             NetShFlag enablesessionticket = NetShFlag.Disabled)
         => CertBindingCore("add", ipPort, certThumbprint, appId, clientCertNegotiation, disablesessionid, enablesessionticket);
 
-        public static void UpdateCertBinding(string ipPort, SslCertBinding binding) => UpdateCertBinding(
+        public void UpdateCertBinding(string ipPort, SslCertBinding binding) => UpdateCertBinding(
             ipPort,
             binding.CertificateThumbprint,
             binding.ApplicationId,
@@ -191,7 +217,7 @@ namespace HttpSys
             binding.DisableSessionIdTlsResumption,
             binding.EnableSessionTicketTlsResumption);
 
-        public static void UpdateCertBinding(
+        public void UpdateCertBinding(
             string ipPort, string certThumbprint,
             string? appId = null,
             NetShFlag clientCertNegotiation = NetShFlag.Disabled,
@@ -199,7 +225,7 @@ namespace HttpSys
             NetShFlag enablesessionticket = NetShFlag.Disabled)
         => CertBindingCore("update", ipPort, certThumbprint, appId, clientCertNegotiation, disablesessionid, enablesessionticket);
 
-        private static void CertBindingCore(
+        private void CertBindingCore(
             string httpOperation,
             string ipPort, string certThumbprint,
             string? appId = null,
@@ -224,17 +250,15 @@ namespace HttpSys
 
             // below options are supported only in later versions of HTTP.SYS
             // you can identify if it is available by running `netsh http add sslcert help`
-            // ---
-            // workaround is to control SChannel settings via registry
 
-            //if (disablesessionidFlag != null)
-            //{
-            //    command += $" disablesessionid={disablesessionidFlag}";
-            //}
-            //if (enablesessionticketFlag != null)
-            //{
-            //    command += $" enablesessionticket={enablesessionticketFlag}";
-            //}
+            if (SupportsDisableSessionId && disablesessionidFlag != null)
+            {
+                command += $" disablesessionid={disablesessionidFlag}";
+            }
+            if (SupportsEnableSessionTicket && enablesessionticketFlag != null)
+            {
+                command += $" enablesessionticket={enablesessionticketFlag}";
+            }
 
             ExecuteNetShCommand(command, alwaysLogOutput: true);
             Console.WriteLine($"Performed cert binding for {ipPort}");
@@ -248,13 +272,13 @@ namespace HttpSys
             };
         }
 
-        private static string ExecutePowershellCommand(string command, bool alwaysLogOutput = false)
-            => ExecuteCommand("powershell.exe", command, alwaysLogOutput);
+        private static string ExecutePowershellCommand(string command, bool ignoreErrorExit = false, bool alwaysLogOutput = false)
+            => ExecuteCommand("powershell.exe", command, ignoreErrorExit, alwaysLogOutput);
 
-        private static string ExecuteNetShCommand(string command, bool alwaysLogOutput = false)
-            => ExecuteCommand("netsh", command, alwaysLogOutput);
+        private static string ExecuteNetShCommand(string command, bool ignoreErrorExit = false, bool alwaysLogOutput = false)
+            => ExecuteCommand("netsh", command, ignoreErrorExit, alwaysLogOutput);
 
-        private static string ExecuteCommand(string fileName, string command, bool logOutput = false)
+        private static string ExecuteCommand(string fileName, string command, bool ignoreErrorExit = false, bool logOutput = false)
         {
             ProcessStartInfo processInfo = new ProcessStartInfo(fileName, command)
             {
@@ -274,7 +298,7 @@ namespace HttpSys
                 Console.WriteLine(output);
             }
 
-            if (process.ExitCode != 0)
+            if (!ignoreErrorExit && process.ExitCode != 0)
             {
                 throw new InvalidOperationException($"{fileName} command execution failure: {output}");
             }
