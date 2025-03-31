@@ -251,11 +251,11 @@ scenarios:
       # buildArguments:
       # - SSL_LOGGING_ENABLED=false
     load:
-      job: httpclient
+      job: wrk
       variables:
         path: /hello-world
         serverPort: 8080
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        sslProtocol: tls12
+        # sslProtocol: tls12
