@@ -247,8 +247,8 @@ scenarios:
   tls-handshakes-docker-nginx:
     application:
       job: dockerLinuxNginxServer
-      buildArguments:
-        - SSL_LOGGING_ENABLED=false
+      # buildArguments:
+      # - SSL_LOGGING_ENABLED=false
     load:
       job: httpclient
       variables:
