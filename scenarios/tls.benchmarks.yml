@@ -1,6 +1,7 @@
 ﻿imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://github.com/dotnet/crank/blob/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml?raw=true
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
   - https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true
 
