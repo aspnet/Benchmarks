@@ -1,6 +1,4 @@
 #!/bin/bash
-# Log the application start to stdout
-echo "$(date) - Application started."
-
-# Start Nginx
-nginx -g "daemon off;"
+export SSL_LOGGING_ENABLED=${SSL_LOGGING_ENABLED}
+echo "$(date) - Application started. Logging: $LOGGING"
+nginx -g "daemon off;" # start nginx

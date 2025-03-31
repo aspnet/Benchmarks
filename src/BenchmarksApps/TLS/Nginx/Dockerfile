@@ -1,5 +1,11 @@
 FROM nginx:latest
 
+# Define build argument
+ARG SSL_LOGGING_ENABLED=false
+
+# Set environment variable from ARG
+ENV SSL_LOGGING_ENABLED=${SSL_LOGGING_ENABLED}
+
 # Copy configuration and SSL certificates
 COPY config/nginx.conf /etc/nginx/nginx.conf
 COPY config/cert.pem /etc/nginx/certs/cert.pem
