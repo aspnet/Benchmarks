@@ -58,6 +58,19 @@ jobs:
       certValidationConsoleEnabled: false
       statsEnabled: false  
 
+  dockerLinuxNginxServer:
+    sources:
+      dockerNginx:
+        repository: https://github.com/aspnet/benchmarks.git
+        branchOrCommit: main
+    dockerFile: dockerNginx/src/BenchmarksApps/TLS/Nginx/Dockerfile
+    dockerImageName: dockerNginx
+    dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS/Nginx
+    port: 8080
+    readyStateText: Application started.
+    environmentVariables:
+      urls: "https://*:8080" # any ip, port 8080
+
 scenarios:
 
 # HTTP.SYS
@@ -221,6 +234,19 @@ scenarios:
       job: dockerLinuxKestrelServer
       # openssl version is already pre-installed with base image (latest)
       dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
+  tls-handshakes-docker-nginx:
+    application:
+      job: dockerLinuxNginxServer
     load:
       job: httpclient
       variables:
