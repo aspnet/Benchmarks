@@ -1,11 +1,5 @@
 FROM nginx:latest
 
-# Define the ARG variable
-ARG SSL_LOGGING_ENABLED=false
-
-# Set the ENV variable based on the ARG variable
-ENV SSL_LOGGING_ENABLED=${SSL_LOGGING_ENABLED}
-
 # Copy configuration and SSL certificates
 COPY config/nginx.conf /etc/nginx/nginx.conf
 COPY config/cert.pem /etc/nginx/certs/cert.pem

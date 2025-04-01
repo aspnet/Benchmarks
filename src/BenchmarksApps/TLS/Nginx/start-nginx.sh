@@ -1,3 +1,3 @@
 #!/bin/bash
-echo "$(date) - Application started. Logging: $LOGGING"
+echo "$(date) - Application started."
 nginx -g "daemon off;" # start nginx
