@@ -1,10 +1,15 @@
 FROM nginx:latest
 
-# Copy configuration and SSL certificates
+# or 4096 key length
+ARG CERT_KEY_LENGTH=2048 
+
+# Copy configuration
 COPY config/nginx.conf /etc/nginx/nginx.conf
-COPY config/cert.pem /etc/nginx/certs/cert.pem
-COPY config/key.pem /etc/nginx/certs/key.pem
-COPY start-nginx.sh /start-nginx.sh
+COPY config/start-nginx.sh /start-nginx.sh
+
+# Copy SSL certificates
+COPY ../Certificates/${CERT_KEY_LENGTH}/cert.pem /etc/nginx/certs/cert.pem
+COPY ../Certificates/${CERT_KEY_LENGTH}/key.pem /etc/nginx/certs/key.pem
 
 # Make the script executable
 RUN chmod +x /start-nginx.sh
