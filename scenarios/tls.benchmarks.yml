@@ -23,7 +23,8 @@ jobs:
       certValidationConsoleEnabled: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+      certPublicKeyLength: 2048
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --certPublicKeyLength {{certPublicKeyLength}}"
 
   kestrelServer:
     source:
@@ -79,6 +80,8 @@ scenarios:
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
+      variables:
+        certPublicKeyLength: 2048
     load:
       job: httpclient
       variables:
@@ -92,14 +95,12 @@ scenarios:
     application:
       job: httpSysServer
       variables:
+        certPublicKeyLength: 2048
         mTLS: true # enables settings on http.sys to negotiate client cert on connections
         tlsRenegotiation: true # enables client cert validation
-        certValidationConsoleEnabled: false # only for debug purposes
-        serverPort: 8080 # IMPORTANT: not to intersect with other tests in case http.sys configuration impacts other benchmarks
     load:
       job: httpclient
       variables:
-        serverPort: 8080 # in sync with server
         path: /hello-world
         presetHeaders: connectionclose
         connections: 32
@@ -112,9 +113,8 @@ scenarios:
     application:
       job: httpSysServer
       variables:
-        mTLS: false
+        certPublicKeyLength: 2048
         tlsRenegotiation: true
-        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:
