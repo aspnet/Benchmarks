@@ -250,6 +250,7 @@ scenarios:
       job: dockerLinuxNginxServer
       buildArguments:
       - CERT_KEY_LENGTH=2048
+      dockerContextDirectory: ../
     load:
       job: httpclient
       variables:
