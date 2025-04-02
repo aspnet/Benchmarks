@@ -13,11 +13,12 @@
             NetShFlag enableSessionTicket = NetShFlag.Disabled)
         {
             // we will anyway reconfigure the netsh certificate binding, so we can delete it firstly
-            _netshWrapper.DeleteBindingIfExists(httpsIpPort);
-
+            // and also delete a certificate which is bound to the netsh
             if (_netshWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
             {
-                throw new NetshException($"Binding already exists ({httpsIpPort}). It was unable to be deleted, and run can not proceed without proper configuration. SslCertBinding: " + sslCertBinding);
+                Console.WriteLine($"Deleting certificate (thumbprint='{sslCertBinding.CertificateThumbprint}') from the localmachine(my) store");
+                SslCertificatesConfigurator.RemoveCertificate(sslCertBinding.CertificateThumbprint);
+                _netshWrapper.DeleteBindingIfExists(httpsIpPort);
             }
 
             if (!_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
@@ -47,6 +48,12 @@
             int certPublicKeyLength = 4096)
         {
             _netshWrapper.DeleteBindingIfExists(httpsIpPort);
+            if (!string.IsNullOrEmpty(_certThumbprint))
+            {
+                Console.WriteLine($"Deleting certificate (thumbprint='{_certThumbprint}') from the localmachine(my) store");
+                SslCertificatesConfigurator.RemoveCertificate(_certThumbprint);
+            }
+
             _netshWrapper.AddCertBinding(
                 httpsIpPort,
                 _certThumbprint,

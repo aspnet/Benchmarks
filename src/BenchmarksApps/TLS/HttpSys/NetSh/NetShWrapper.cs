@@ -48,12 +48,8 @@ namespace HttpSys.NetSh
 
         public void DeleteBinding(string ipPort)
         {
-            Console.WriteLine("Disabling mTLS for http.sys");
-
             var command = $"http delete sslcert ipport={ipPort}";
             ExecuteNetShCommand(command);
-
-            Console.WriteLine("Disabled http.sys settings for mTLS");
         }
 
         public bool TryGetSslCertBinding(string ipPort, out SslCertBinding result)
