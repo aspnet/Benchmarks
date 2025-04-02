@@ -66,7 +66,7 @@ jobs:
         branchOrCommit: main
     dockerFile: dockerNginx/src/BenchmarksApps/TLS/Nginx/Dockerfile
     dockerImageName: dockerNginx
-    dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS/Nginx
+    dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS
     port: 8080
     readyStateText: Application started.
     environmentVariables:
@@ -250,7 +250,6 @@ scenarios:
       job: dockerLinuxNginxServer
       buildArguments:
       - CERT_KEY_LENGTH=2048
-      dockerContextDirectory: ../
     load:
       job: httpclient
       variables:
