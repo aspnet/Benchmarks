@@ -16,14 +16,14 @@
             // and also delete a certificate which is bound to the netsh
             if (_netshWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
             {
-                Console.WriteLine($"Deleting certificate (thumbprint='{sslCertBinding.CertificateThumbprint}') from the localmachine(my) store");
-                SslCertificatesConfigurator.RemoveCertificate(sslCertBinding.CertificateThumbprint);
+                _certThumbprint = sslCertBinding.CertificateThumbprint;
                 _netshWrapper.DeleteBindingIfExists(httpsIpPort);
             }
 
-            if (!_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
+            if (string.IsNullOrEmpty(_certThumbprint) // only need to self-sign if we dont have a cert in a store, otherwise just reuse it
+                && !_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
             {
-                throw new ApplicationException($"Failed to setup ssl binding for '{httpsIpPort}'. Please unblock the VM.");
+                throw new ApplicationException($"Failed to setup ssl binding for '{httpsIpPort}'.");
             }
 
             _netshWrapper.AddCertBinding(
@@ -48,10 +48,10 @@
             int certPublicKeyLength = 4096)
         {
             _netshWrapper.DeleteBindingIfExists(httpsIpPort);
-            if (!string.IsNullOrEmpty(_certThumbprint))
+            if (string.IsNullOrEmpty(_certThumbprint) // again - if cert already exists, we can just reuse it
+                && !_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
             {
-                Console.WriteLine($"Deleting certificate (thumbprint='{_certThumbprint}') from the localmachine(my) store");
-                SslCertificatesConfigurator.RemoveCertificate(_certThumbprint);
+                throw new ApplicationException($"Failed to self-sign a cert for '{httpsIpPort}'.");
             }
 
             _netshWrapper.AddCertBinding(
