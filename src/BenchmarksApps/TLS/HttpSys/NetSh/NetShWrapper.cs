@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
-using HttpSys.NetSh;
 
-namespace HttpSys
+namespace HttpSys.NetSh
 {
     public class NetShWrapper
     {
@@ -41,9 +40,9 @@ namespace HttpSys
             {
                 DeleteBinding(ipPort);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore
+                Console.WriteLine($"Failed to delete binding on port {ipPort}: " + ex);
             }
         }
 
@@ -51,7 +50,7 @@ namespace HttpSys
         {
             Console.WriteLine("Disabling mTLS for http.sys");
 
-            string command = $"http delete sslcert ipport={ipPort}";
+            var command = $"http delete sslcert ipport={ipPort}";
             ExecuteNetShCommand(command);
 
             Console.WriteLine("Disabled http.sys settings for mTLS");
@@ -168,23 +167,23 @@ namespace HttpSys
                 store.Close();
             }
 
-            string certThumbprint = certificate.Thumbprint;
+            var certThumbprint = certificate.Thumbprint;
             AddCertBinding(ipPort, certThumbprint, clientCertNegotiation: enableClientCertNegotiation ? NetShFlag.Enable : NetShFlag.Disabled);
 
             Console.WriteLine("Configured binding for testCert for http.sys");
         }
 
-        public bool TrySelfSignCertificate(string ipPort, out string certThumbprint)
+        public bool TrySelfSignCertificate(string ipPort, int certPublicKeyLength, out string certThumbprint)
         {
             certThumbprint = string.Empty;
             try
             {
                 // Extract the IP address from ipPort
-                string ipAddress = ipPort.Split(':')[0];
+                var ipAddress = ipPort.Split(':')[0];
 
                 // Generate a self-signed certificate using PowerShell
-                string command = $"New-SelfSignedCertificate -CertStoreLocation cert:\\LocalMachine\\My -DnsName {ipAddress}";
-                string output = ExecutePowershellCommand(command);
+                var command = $"New-SelfSignedCertificate -CertStoreLocation cert:\\LocalMachine\\My -DnsName {ipAddress} -KeyAlgorithm RSA -KeyLength {certPublicKeyLength}";
+                var output = ExecutePowershellCommand(command);
 
                 // Extract the thumbprint from the output
                 var lines = output.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
@@ -241,7 +240,7 @@ namespace HttpSys
             var clientcertnegotiationFlag = GetFlagValue(clientcertnegotiation);
             var disablesessionidFlag = GetFlagValue(disablesessionid);
             var enablesessionticketFlag = GetFlagValue(enablesessionticket);
-            string command = $"http {httpOperation} sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}}";
+            var command = $"http {httpOperation} sslcert ipport={ipPort} certstorename=MY certhash={certThumbprint} appid={{{appId}}}";
 
             if (clientcertnegotiationFlag != null)
             {
@@ -280,7 +279,7 @@ namespace HttpSys
 
         private static string ExecuteCommand(string fileName, string command, bool ignoreErrorExit = false, bool logOutput = false)
         {
-            ProcessStartInfo processInfo = new ProcessStartInfo(fileName, command)
+            var processInfo = new ProcessStartInfo(fileName, command)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -289,8 +288,8 @@ namespace HttpSys
             };
 
             Console.WriteLine($"Executing command: `{fileName} {command}`");
-            using Process process = Process.Start(processInfo)!;
-            string output = process.StandardOutput.ReadToEnd();
+            using var process = Process.Start(processInfo)!;
+            var output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
             if (logOutput)
