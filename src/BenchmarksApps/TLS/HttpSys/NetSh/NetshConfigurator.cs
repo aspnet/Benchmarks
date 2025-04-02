@@ -16,12 +16,11 @@
             // and also delete a certificate which is bound to the netsh
             if (_netshWrapper.TryGetSslCertBinding(httpsIpPort, out var sslCertBinding))
             {
-                _certThumbprint = sslCertBinding.CertificateThumbprint;
+                SslCertificatesConfigurator.RemoveCertificate(sslCertBinding.CertificateThumbprint);
                 _netshWrapper.DeleteBindingIfExists(httpsIpPort);
             }
 
-            if (string.IsNullOrEmpty(_certThumbprint) // only need to self-sign if we dont have a cert in a store, otherwise just reuse it
-                && !_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
+            if (!_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
             {
                 throw new ApplicationException($"Failed to setup ssl binding for '{httpsIpPort}'.");
             }
@@ -41,15 +40,18 @@
             return sslCertBinding;
         }
 
-        public static void LogCurrentSslCertBinding(string httpsIpPort) => _netshWrapper.LogSslCertBinding(httpsIpPort);
+        public static void LogCurrentSslCertBinding(string httpsIpPort)
+            => _netshWrapper.LogSslCertBinding(httpsIpPort);
 
         public static void ResetNetshConfiguration(
             string httpsIpPort,
             int certPublicKeyLength = 4096)
         {
+            // delete cert binding and cert itself. We want it to be as clean and deterministic as possible (even if more actions are performed)
             _netshWrapper.DeleteBindingIfExists(httpsIpPort);
-            if (string.IsNullOrEmpty(_certThumbprint) // again - if cert already exists, we can just reuse it
-                && !_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
+            SslCertificatesConfigurator.RemoveCertificate(_certThumbprint);
+
+            if (!_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
             {
                 throw new ApplicationException($"Failed to self-sign a cert for '{httpsIpPort}'.");
             }
