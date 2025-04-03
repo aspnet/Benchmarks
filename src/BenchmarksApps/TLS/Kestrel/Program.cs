@@ -19,6 +19,10 @@ builder.Logging.ClearProviders();
 // behavioral
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
+var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
+var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
+
+// endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
 var supportedTlsVersions = ParseSslProtocols(builder.Configuration["tlsProtocols"]);
 
@@ -49,8 +53,11 @@ builder.WebHost.UseKestrel(options =>
 
         serverOptions.Listen(endpoint, listenOptions =>
         {
+            var certificatePath = Path.Combine("certificates", $"testCert-{certPublicKeyLength}.pfx");
+            Console.WriteLine($"Using certificate: {certificatePath}");
+
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-            listenOptions.UseHttps("testCert.pfx", "testPassword", options =>
+            listenOptions.UseHttps(certificatePath, "testPassword", options =>
             {
                 if (supportedTlsVersions is not null)
                 {

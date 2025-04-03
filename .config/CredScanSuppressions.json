@@ -18,11 +18,27 @@
       "_justification": "Legitimate development X.509 Certificate Private Key"
     },
     {
-      "file": "src/BenchmarksApps/TLS/HttpSys/testCert.pfx",
+      "file": "src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx",
       "_justification": "Legitimate development X.509 Certificate Private Key"
     },
     {
-      "file": "src/BenchmarksApps/TLS/Kestrel/testCert.pfx",
+      "file": "src/BenchmarksApps/TLS/Certificates/2048/cert.pem",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/TLS/Certificates/2048/key.pem",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/TLS/Certificates/4096/testCert-4096.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/TLS/Certificates/4096/cert.pem",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/TLS/Certificates/4096/key.pem",
       "_justification": "Legitimate development X.509 Certificate Private Key"
     },
     {
