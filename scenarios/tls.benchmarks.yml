@@ -131,6 +131,8 @@ scenarios:
   tls-handshakes-kestrel:
     application:
       job: kestrelServer
+      variables:
+        certPublicKeyLength: 2048
     load:
       job: httpclient
       variables:
@@ -144,8 +146,8 @@ scenarios:
     application:
       job: kestrelServer
       variables:
+        certPublicKeyLength: 2048
         mTLS: true
-        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:
@@ -161,9 +163,9 @@ scenarios:
     application:
       job: kestrelServer
       variables:
+        certPublicKeyLength: 2048
         mTLS: false
         tlsRenegotiation: true
-        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:

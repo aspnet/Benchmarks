@@ -12,6 +12,8 @@ var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabl
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
 var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
+
+// endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
 var httpsIpPort = listeningEndpoints.Split(";").First(x => x.Contains("https")).Replace("https://", "");
 
