@@ -106,7 +106,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -123,7 +123,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -156,7 +156,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -174,7 +174,7 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         certPwd: testPassword
         sslProtocol: tls12
 
