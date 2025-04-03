@@ -5,6 +5,8 @@
         private static readonly NetShWrapper _netshWrapper = new();
         private static string _certThumbprint;
 
+        private static string _resetCertThumbprint;
+
         public static SslCertBinding PreConfigureNetsh(
             string httpsIpPort,
             int certPublicKeyLength = 2048,
@@ -43,22 +45,29 @@
         public static void LogCurrentSslCertBinding(string httpsIpPort)
             => _netshWrapper.LogSslCertBinding(httpsIpPort);
 
-        public static void ResetNetshConfiguration(
-            string httpsIpPort,
-            int certPublicKeyLength = 4096)
+        public static void PrepareResetNetsh(string httpsIpPort, int certPublicKeyLength = 4096)
+        {
+            if (!_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _resetCertThumbprint))
+            {
+                throw new ApplicationException($"Failed to self-sign a cert for '{httpsIpPort}'.");
+            }
+        }
+
+        public static void ResetNetshConfiguration(string httpsIpPort)
         {
             // delete cert binding and cert itself. We want it to be as clean and deterministic as possible (even if more actions are performed)
             _netshWrapper.DeleteBindingIfExists(httpsIpPort);
             SslCertificatesConfigurator.RemoveCertificate(_certThumbprint);
 
-            if (!_netshWrapper.TrySelfSignCertificate(httpsIpPort, certPublicKeyLength, out _certThumbprint))
+            if (string.IsNullOrEmpty(_resetCertThumbprint))
             {
-                throw new ApplicationException($"Failed to self-sign a cert for '{httpsIpPort}'.");
+                throw new ApplicationException($"Reset certificate is not prepared for '{httpsIpPort}'.");
             }
 
+            // reset certificate was prepared in advance - just bind it at this moment
             _netshWrapper.AddCertBinding(
                 httpsIpPort,
-                _certThumbprint,
+                _resetCertThumbprint,
                 disablesessionid: NetShFlag.NotSet,
                 enablesessionticket: NetShFlag.NotSet,
                 clientCertNegotiation: NetShFlag.NotSet);

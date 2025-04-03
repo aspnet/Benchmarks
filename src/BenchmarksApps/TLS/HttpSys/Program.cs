@@ -29,6 +29,9 @@ var sslCertConfiguration = NetshConfigurator.PreConfigureNetsh(
     disablesessionid: NetShFlag.Enable,
     enableSessionTicket: NetShFlag.Disabled);
 
+// because app shutdown is on a timeout, we need to prepare the reset (pre-generate certificate)
+NetshConfigurator.PrepareResetNetsh(httpsIpPort, certPublicKeyLength: 4096);
+
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
 {
@@ -137,5 +140,5 @@ await app.WaitForShutdownAsync();
 Console.WriteLine("Application stopped.");
 
 Console.WriteLine("Starting netsh rollback configuration...");
-NetshConfigurator.ResetNetshConfiguration(httpsIpPort, certPublicKeyLength: 4096); // a default value
+NetshConfigurator.ResetNetshConfiguration(httpsIpPort);
 Console.WriteLine($"Reset netsh (ipport={httpsIpPort}) completed.");
