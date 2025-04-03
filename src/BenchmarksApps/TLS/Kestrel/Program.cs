@@ -54,6 +54,7 @@ builder.WebHost.UseKestrel(options =>
         serverOptions.Listen(endpoint, listenOptions =>
         {
             var certificatePath = Path.Combine("certificates", $"testCert-{certPublicKeyLength}.pfx");
+            Console.WriteLine($"Using certificate: {certificatePath}");
 
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
             listenOptions.UseHttps(certificatePath, "testPassword", options =>
