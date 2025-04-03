@@ -22,9 +22,7 @@
 
   <ItemGroup>
     <Folder Include="certificates\" />
-  </ItemGroup>
 
-  <ItemGroup>
     <None Include="..\Certificates\2048\testCert-2048.pfx" Link="certificates\testCert-2048.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
