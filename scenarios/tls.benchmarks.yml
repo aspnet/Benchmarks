@@ -106,7 +106,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -123,7 +125,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -156,7 +160,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -174,7 +180,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
         certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
