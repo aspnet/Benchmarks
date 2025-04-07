@@ -1,6 +1,7 @@
 ﻿imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://github.com/dotnet/crank/blob/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml?raw=true
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
   - https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true
 
@@ -18,11 +19,12 @@ jobs:
       # behavioral settings
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
+      certPublicKeyLength: 2048 # controls cert with such a length is used for the test
       # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --certPublicKeyLength {{certPublicKeyLength}}"
 
   kestrelServer:
     source:
@@ -35,11 +37,12 @@ jobs:
       mTLS: false
       tlsRenegotiation: false
       tlsProtocols: "tls12,tls13"
+      certPublicKeyLength: 2048 # controls cert with such a length is used for the test
       # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --certPublicKeyLength {{certPublicKeyLength}}"
 
   dockerLinuxKestrelServer:
     sources:
@@ -58,6 +61,19 @@ jobs:
       certValidationConsoleEnabled: false
       statsEnabled: false  
 
+  dockerLinuxNginxServer:
+    sources:
+      dockerNginx:
+        repository: https://github.com/aspnet/benchmarks.git
+        branchOrCommit: main
+    dockerFile: dockerNginx/src/BenchmarksApps/TLS/Nginx/Dockerfile
+    dockerImageName: dockerNginx
+    dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS
+    port: 8080
+    readyStateText: Application started.
+    environmentVariables:
+      urls: "https://*:8080" # any ip, port 8080
+
 scenarios:
 
 # HTTP.SYS
@@ -65,6 +81,8 @@ scenarios:
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
+      variables:
+        certPublicKeyLength: 2048
     load:
       job: httpclient
       variables:
@@ -78,19 +96,19 @@ scenarios:
     application:
       job: httpSysServer
       variables:
+        certPublicKeyLength: 2048
         mTLS: true # enables settings on http.sys to negotiate client cert on connections
         tlsRenegotiation: true # enables client cert validation
-        certValidationConsoleEnabled: false # only for debug purposes
-        serverPort: 8080 # IMPORTANT: not to intersect with other tests in case http.sys configuration impacts other benchmarks
     load:
       job: httpclient
       variables:
-        serverPort: 8080 # in sync with server
         path: /hello-world
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -98,9 +116,8 @@ scenarios:
     application:
       job: httpSysServer
       variables:
-        mTLS: false
+        certPublicKeyLength: 2048
         tlsRenegotiation: true
-        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:
@@ -108,7 +125,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/HttpSys/testCert.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -117,6 +136,8 @@ scenarios:
   tls-handshakes-kestrel:
     application:
       job: kestrelServer
+      variables:
+        certPublicKeyLength: 2048
     load:
       job: httpclient
       variables:
@@ -130,8 +151,8 @@ scenarios:
     application:
       job: kestrelServer
       variables:
+        certPublicKeyLength: 2048
         mTLS: true
-        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:
@@ -139,7 +160,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -147,9 +170,9 @@ scenarios:
     application:
       job: kestrelServer
       variables:
+        certPublicKeyLength: 2048
         mTLS: false
         tlsRenegotiation: true
-        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:
@@ -157,7 +180,9 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
 
@@ -221,6 +246,21 @@ scenarios:
       job: dockerLinuxKestrelServer
       # openssl version is already pre-installed with base image (latest)
       dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
+  tls-handshakes-docker-nginx:
+    application:
+      job: dockerLinuxNginxServer
+      buildArguments:
+      - CERT_KEY_LENGTH=2048
     load:
       job: httpclient
       variables:

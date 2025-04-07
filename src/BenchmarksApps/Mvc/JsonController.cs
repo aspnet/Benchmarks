@@ -51,7 +51,7 @@ namespace Benchmarks.Controllers
         public string ContentType { get; set; }
         public string Id { get; set; }
         public bool Managed { get; set; }
-        public string[] Tags { get; set; }
+        public List<string> Tags { get; set; }
 
         public static List<Entry> Create(int n)
         {
@@ -70,7 +70,7 @@ namespace Benchmarks.Controllers
                 },
                 ContentType = "application/xml",
                 Id = "https://benchmarktest.id/item/value" + i,
-                Tags = new[] { "test", "perf", "json" },
+                Tags = [ "test", "perf", "json" ],
             }).ToList();
         }
     }
