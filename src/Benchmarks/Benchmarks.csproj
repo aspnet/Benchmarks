@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+    <PackageReference Include="Dapper.AOT" Version="$(DapperAotVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

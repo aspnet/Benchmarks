@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+    <PackageReference Include="Dapper.AOT" Version="$(DapperAotVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net8.0'">

@@ -12,6 +12,7 @@ public sealed class DapperDb
     public DapperDb(AppSettings appSettings)
         => _connectionString = appSettings.ConnectionString;
 
+    [DapperAot, CacheCommand, StrictTypes, QueryColumns("id", "message")]
     public async Task<List<FortuneUtf16>> LoadFortunesRows()
     {
         List<FortuneUtf16> result;

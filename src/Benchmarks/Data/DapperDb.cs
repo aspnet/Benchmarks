@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
+    [DapperAot, CacheCommand, StrictTypes]
     public class DapperDb : IDb
     {
         private static readonly Comparison<World> WorldSortComparison = (a, b) => a.Id.CompareTo(b.Id);
@@ -38,6 +39,7 @@ namespace Benchmarks.Data
             }
         }
 
+        [QueryColumns("id", "randomnumber")]
         Task<World> ReadSingleRow(DbConnection db)
         {
             return db.QueryFirstOrDefaultAsync<World>(
@@ -92,6 +94,7 @@ namespace Benchmarks.Data
 
         }
 
+        [QueryColumns("id", "message")]
         public async Task<IEnumerable<FortuneUtf16>> LoadFortunesRows()
         {
             List<FortuneUtf16> result;

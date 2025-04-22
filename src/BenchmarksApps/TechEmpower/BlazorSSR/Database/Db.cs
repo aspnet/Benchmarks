@@ -17,6 +17,7 @@ public sealed class Db : IAsyncDisposable
         _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
     }
 
+    [DapperAot, CacheCommand, StrictTypes, QueryColumns("id", "message")]
     public async Task<List<Fortune>> LoadFortunesRowsDapper()
     {
         await using var connection = _dataSource.CreateConnection();

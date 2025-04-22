@@ -41,7 +41,8 @@
     <MicrosoftIISTestingVersion90>9.0.0-*</MicrosoftIISTestingVersion90>
     <MicrosoftIISTestingVersion100>10.0.0-*</MicrosoftIISTestingVersion100>
 
-    <DapperVersion>2.1.35</DapperVersion>
+    <DapperVersion>2.1.66</DapperVersion>
+    <DapperAotVersion>1.0.48</DapperAotVersion>
     <RazorSlicesVersion>0.8.1</RazorSlicesVersion>
     <SystemCommandLineVersion>2.0.0-beta4.22272.1</SystemCommandLineVersion>
     <MicrosoftCrankEventSourcesVersion>0.2.0-alpha.24114.2</MicrosoftCrankEventSourcesVersion>
