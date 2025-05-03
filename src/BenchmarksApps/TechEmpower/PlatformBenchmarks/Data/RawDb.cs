@@ -20,7 +20,7 @@ namespace PlatformBenchmarks
             = new(new MemoryCacheOptions { ExpirationScanFrequency = TimeSpan.FromMinutes(60) });
 
 #if NET7_0_OR_GREATER
-        private readonly NpgsqlDataSource _dataSource;
+        private readonly NpgsqlDataSource _dataSource, _updateDataSource, _readOnlyDataSource;
 #else
         private readonly string _connectionString;
 #endif
@@ -32,6 +32,15 @@ namespace PlatformBenchmarks
             _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
 #elif NET7_0
             _dataSource = NpgsqlDataSource.Create(appSettings.ConnectionString);
+
+            // For the update benchmark, we use two different connection pools for read/update, to avoid head-of-line
+            // perf issues.
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(appSettings.ConnectionString);
+
+            dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = 18;
+            _readOnlyDataSource = dataSourceBuilder.Build();
+            dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = 9;
+            _updateDataSource = dataSourceBuilder.Build();
 #else
             _connectionString = appSettings.ConnectionString;
 #endif
@@ -172,14 +181,12 @@ namespace PlatformBenchmarks
         }
 #endif
 
+#if NET7_0_OR_GREATER
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
             var results = new World[count];
 
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
-
-#if NET7_0_OR_GREATER
+            using (var connection = await _readOnlyDataSource.OpenConnectionAsync())
             using (var batch = new NpgsqlBatch(connection))
             {
                 // Inserts a PG Sync message between each statement in the batch, required for compliance with
@@ -205,7 +212,33 @@ namespace PlatformBenchmarks
                     await reader.NextResultAsync();
                 }
             }
+
+            using (var connection = await _updateDataSource.OpenConnectionAsync())
+            using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), connection))
+            {
+                for (var i = 0; i < results.Length; i++)
+                {
+                    var randomNumber = _random.Next(1, 10001);
+
+                    updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = results[i].Id });
+                    updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = randomNumber });
+
+                    results[i].RandomNumber = randomNumber;
+                }
+
+                await updateCmd.ExecuteNonQueryAsync();
+            }
+
+            return results;
+        }
 #else
+        public async Task<World[]> LoadMultipleUpdatesRows(int count)
+        {
+            var results = new World[count];
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
             var (queryCmd, queryParameter) = CreateReadCommand(connection);
             using (queryCmd)
             {
@@ -215,7 +248,6 @@ namespace PlatformBenchmarks
                     queryParameter.TypedValue = _random.Next(1, 10001);
                 }
             }
-#endif
 
             using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), connection))
             {
@@ -234,6 +266,7 @@ namespace PlatformBenchmarks
 
             return results;
         }
+#endif
 
         public async Task<List<FortuneUtf8>> LoadFortunesRows()
         {
