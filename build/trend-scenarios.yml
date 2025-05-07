@@ -132,13 +132,13 @@ parameters:
     arguments: --scenario httpsys-hostheader-mismatch $(rejectionJobs) --property scenario=RejectionHostHeaderMismatchHttpSys --application.options.requiredOperatingSystem windows
 
   - displayName: "Kestrel Linux: Encoded URL symbols"
-    arguments: --scenario kestrel-encoded-url $(rejectionJobs) --property scenario=RejectionEncodedUrlKestrel --application.options.requiredOperatingSystem linux
+    arguments: --scenario kestrel-encoded-url $(rejectionJobs) --property scenario=RejectionEncodedUrlKestrel
 
   - displayName: "Kestrel Linux: Invalid Header"
-    arguments: --scenario kestrel-header-symbols $(rejectionJobs) --property scenario=RejectionInvalidHeaderKestrel --application.options.requiredOperatingSystem linux
+    arguments: --scenario kestrel-header-symbols $(rejectionJobs) --property scenario=RejectionInvalidHeaderKestrel
 
   - displayName: "Kestrel Linux: Host Header Mismatch"
-    arguments: --scenario kestrel-hostheader-mismatch $(rejectionJobs) --property scenario=RejectionHostHeaderMismatchKestrel --application.options.requiredOperatingSystem linux
+    arguments: --scenario kestrel-hostheader-mismatch $(rejectionJobs) --property scenario=RejectionHostHeaderMismatchKestrel
 
 steps:
 - ${{ each s in parameters.scenarios }}:
