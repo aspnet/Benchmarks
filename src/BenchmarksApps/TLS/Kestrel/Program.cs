@@ -59,6 +59,11 @@ builder.WebHost.UseKestrel(options =>
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
             listenOptions.UseHttps(certificatePath, "testPassword", options =>
             {
+                options.OnAuthenticate = (ctx, authOptions) =>
+                {
+                    Console.WriteLine("Established connection " + ctx.ConnectionId);
+                };
+
                 if (supportedTlsVersions is not null)
                 {
                     options.SslProtocols = supportedTlsVersions.Value;
