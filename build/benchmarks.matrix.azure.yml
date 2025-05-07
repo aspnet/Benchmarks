@@ -4,6 +4,7 @@
 queues:
   - azure
   - azurearm64
+  - cobaltcloud
 
 schedule: "0 9/12 * * *"
 

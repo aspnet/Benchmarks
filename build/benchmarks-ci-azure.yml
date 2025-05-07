@@ -69,7 +69,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: 
+      serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile cobalt-cloud-lin "
       
@@ -113,7 +113,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: 
+      serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile cobalt-cloud-lin "
       
@@ -157,7 +157,7 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: 
+      serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile cobalt-cloud-lin "
       
@@ -201,7 +201,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: 
+      serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile cobalt-cloud-lin "
       
@@ -245,7 +245,7 @@ jobs:
   - template: containers-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: 
+      serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile cobalt-cloud-lin "
       
