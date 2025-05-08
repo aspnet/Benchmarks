@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -39,6 +38,20 @@ if (mTlsEnabled && tlsRenegotiationEnabled)
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
 
+builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
+{
+    var allowedHosts = new HashSet<string>();
+    foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+    {
+        var urlPrefix = UrlPrefix.Create(endpoint);
+        allowedHosts.Add(urlPrefix.Host);
+    }
+
+    options.AllowedHosts = allowedHosts.ToArray();
+    options.IncludeFailureMessage = false; // Suppress the failure message in response body
+    options.AllowEmptyHosts = true;
+});
+
 builder.WebHost.UseKestrel(options =>
 {
     foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
@@ -56,14 +69,16 @@ builder.WebHost.UseKestrel(options =>
             var certificatePath = Path.Combine("certificates", $"testCert-{certPublicKeyLength}.pfx");
             Console.WriteLine($"Using certificate: {certificatePath}");
 
-            // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-            listenOptions.UseHttps(certificatePath, "testPassword", options =>
-            {
-                options.OnAuthenticate = (ctx, authOptions) =>
-                {
-                    Console.WriteLine("Established connection " + ctx.ConnectionId);
-                };
+            var certPath =
+#if DEBUG
+            Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, certificatePath); // exe location
+#else
+            certificatePath;
+#endif
 
+            // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
+            listenOptions.UseHttps(certPath, "testPassword", options =>
+            {
                 if (supportedTlsVersions is not null)
                 {
                     options.SslProtocols = supportedTlsVersions.Value;
@@ -102,6 +117,8 @@ builder.WebHost.UseKestrel(options =>
 });
 
 var app = builder.Build();
+
+app.UseHostFiltering();
 
 bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
 {
