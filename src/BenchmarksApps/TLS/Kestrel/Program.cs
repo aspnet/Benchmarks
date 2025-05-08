@@ -47,6 +47,7 @@ builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptio
         allowedHosts.Add(urlPrefix.Host);
     }
 
+    Console.WriteLine("Allowed Hosts: " + string.Join(';', allowedHosts));
     options.AllowedHosts = allowedHosts.ToArray();
     options.IncludeFailureMessage = false; // Suppress the failure message in response body
     options.AllowEmptyHosts = true;
