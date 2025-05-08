@@ -6,21 +6,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.4
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.4:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.5:5001
         aliases:
           - warmup
@@ -31,21 +31,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.4
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azureserver
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azureclient
         aliases:
           - warmup
@@ -56,21 +56,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.12
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.12:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.13:5001 # idna-amd-lin
         aliases:
           - warmup
@@ -81,21 +81,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.12
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintellin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
         aliases:
           - warmup
@@ -106,21 +106,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.13
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.13:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.12:5001 # idna-intel-lin
         aliases:
           - warmup
@@ -131,21 +131,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.13
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintellin
         aliases:
           - warmup
@@ -156,21 +156,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.14
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.14:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.13:5001 # idna-amd-lin
         aliases:
           - warmup
@@ -181,21 +181,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.14
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintelwin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
         aliases:
           - warmup
@@ -206,21 +206,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.15
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.15:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.12:5001 # idna-intel-lin
         aliases:
           - warmup
@@ -231,46 +231,46 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.15
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdwin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintellin
         aliases:
           - warmup
           - secondary
-  
+
   aspnet-azurearm64-lin:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.7
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.9:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.7:5001
         variables:
           databaseServer: 10.0.4.9
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.8:5001
         aliases:
           - warmup
@@ -281,22 +281,72 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.7
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azurearm64db
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azurearm64server
         variables:
           databaseServer: 10.0.4.9
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azurearm64client
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.2.2.15
+      cores: 4
+    jobs:
+      db:
+        endpoints:
+          - http://10.2.2.14:5001
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - http://10.2.2.15:5001
+        variables:
+          databaseServer: 10.2.2.14
+        aliases:
+          - main
+      load:
+        endpoints:
+          - http://10.2.2.13:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.2.2.15
+      cores: 4
+    jobs:
+      db:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlindb
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver
+        variables:
+          databaseServer: 10.2.2.14
+        aliases:
+          - main
+      load:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinclient
         aliases:
           - warmup
           - secondary
