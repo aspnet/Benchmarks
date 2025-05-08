@@ -58,7 +58,7 @@ scenarios:
         path: /unknown/%09
         presetHeaders: connectionclose
         connections: 32
-        serverScheme: https
+        serverScheme: http
 
   httpsys-header-symbols:
     application:
@@ -68,7 +68,7 @@ scenarios:
       variables:
         path: /hello-world
         connections: 32
-        serverScheme: https
+        serverScheme: http
         customHeaders:
         - "X-Custom: Québec"
 
@@ -80,7 +80,7 @@ scenarios:
       variables:
         path: /hello-world
         connections: 32
-        serverScheme: https
+        serverScheme: http
         customHeaders:
         - "Host: google.com"
 
@@ -95,7 +95,7 @@ scenarios:
         path: /unknown/%09
         presetHeaders: connectionclose
         connections: 32
-        serverScheme: https
+        serverScheme: http
 
   kestrel-header-symbols:
     application:
@@ -105,7 +105,7 @@ scenarios:
       variables:
         path: /hello-world
         connections: 32
-        serverScheme: https
+        serverScheme: http
         customHeaders:
         - "X-Custom: Québec"
     
@@ -117,6 +117,6 @@ scenarios:
       variables:
         path: /hello-world
         connections: 32
-        serverScheme: https
+        serverScheme: http
         customHeaders:
         - "Host: google.com"
