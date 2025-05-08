@@ -4,7 +4,6 @@
 queues:
   - azure
   - azurearm64
-  - cobaltcloud
 
 schedule: "0 9/12 * * *"
 
@@ -22,11 +21,6 @@ groups:
       profiles:
       - aspnet-azurearm64-lin
 
-    - name: Trends Database Cobalt Cloud Linux
-      template: trend-database-scenarios.yml
-      profiles:
-      - cobalt-cloud-lin
-
   - jobs:
 
     - name: Trends Azure Linux
@@ -38,11 +32,6 @@ groups:
       template: trend-scenarios.yml
       profiles:
       - aspnet-azurearm64-lin
-
-    - name: Trends Cobalt Cloud Linux
-      template: trend-scenarios.yml
-      profiles:
-      - cobalt-cloud-lin
 
   - jobs:
 
@@ -56,11 +45,6 @@ groups:
       profiles:
       - aspnet-azurearm64-lin
 
-    - name: Baselines Database Cobalt Cloud Linux
-      template: baselines-database-scenarios.yml
-      profiles:
-      - cobalt-cloud-lin
-
   - jobs:
 
     - name: Baselines Azure Linux
@@ -72,11 +56,6 @@ groups:
       template: baselines-scenarios.yml
       profiles:
       - aspnet-azurearm64-lin
-
-    - name: Baselines Cobalt Cloud Linux
-      template: baselines-scenarios.yml
-      profiles:
-      - cobalt-cloud-lin
   
   - jobs:
       
@@ -89,11 +68,6 @@ groups:
         template: containers-scenarios.yml
         profiles:
         - aspnet-azurearm64-lin
-
-      - name: Containers Cobalt Cloud Linux
-        template: containers-scenarios.yml
-        profiles:
-        - cobalt-cloud-lin
 
   - jobs:
       
