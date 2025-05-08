@@ -4,6 +4,7 @@
 
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
@@ -89,7 +90,7 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /unknown/%09
         presetHeaders: connectionclose
@@ -100,7 +101,7 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /hello-world
         connections: 32
@@ -112,7 +113,7 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /hello-world
         connections: 32
