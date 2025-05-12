@@ -55,7 +55,7 @@ scenarios:
     load:
       job: bombardier
       variables:
-        path: /unknown/%09
+        path: /unknown/%GG
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
@@ -92,7 +92,7 @@ scenarios:
     load:
       job: httpclient
       variables:
-        path: /unknown/%09
+        path: /unknown/%GG
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
