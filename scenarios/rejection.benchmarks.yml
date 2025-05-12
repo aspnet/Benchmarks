@@ -21,6 +21,7 @@ jobs:
       # behavioral settings
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
+      certPublicKeyLength: 2048
       # debug settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
@@ -39,6 +40,7 @@ jobs:
       mTLS: false
       tlsRenegotiation: false
       tlsProtocols: "tls12,tls13"
+      certPublicKeyLength: 2048 # controls cert with such a length is used for the test
       # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
