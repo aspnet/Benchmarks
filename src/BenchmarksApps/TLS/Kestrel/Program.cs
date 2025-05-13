@@ -117,6 +117,13 @@ builder.WebHost.UseKestrel(options =>
     }
 });
 
+// to see
+builder.WebHost.ConfigureLogging((_, factory) =>
+{
+    factory.SetMinimumLevel(LogLevel.Debug);
+    factory.AddConsole();
+});
+
 var app = builder.Build();
 
 app.UseHostFiltering();
