@@ -13,7 +13,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 Console.WriteLine("Starting application...");
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+// builder.Logging.ClearProviders();
+builder.Logging.SetMinimumLevel(LogLevel.Debug).AddConsole();
 
 // behavioral
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
@@ -115,13 +116,6 @@ builder.WebHost.UseKestrel(options =>
             }
         });
     }
-});
-
-// to see
-builder.WebHost.ConfigureLogging((_, factory) =>
-{
-    factory.SetMinimumLevel(LogLevel.Debug);
-    factory.AddConsole();
 });
 
 var app = builder.Build();
