@@ -78,6 +78,9 @@ builder.WebHost.UseKestrel(options =>
             certificatePath;
 #endif
 
+            // for debug
+            listenOptions.UseConnectionLogging();
+
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
             listenOptions.UseHttps(certPath, "testPassword", options =>
             {
