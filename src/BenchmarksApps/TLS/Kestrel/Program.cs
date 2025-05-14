@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -14,13 +13,15 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 Console.WriteLine("Starting application...");
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+// builder.Logging.ClearProviders();
+builder.Logging.SetMinimumLevel(LogLevel.Debug).AddConsole();
 
 // behavioral
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
 var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
+var enableHostHeaderValidation = bool.TryParse(builder.Configuration["enableHostHeaderValidation"], out var enableHostHeaderValidationConfig) && enableHostHeaderValidationConfig;
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
@@ -39,6 +40,24 @@ if (mTlsEnabled && tlsRenegotiationEnabled)
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
 
+if (enableHostHeaderValidation)
+{
+    builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
+    {
+        var allowedHosts = new HashSet<string>();
+        foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            var urlPrefix = UrlPrefix.Create(endpoint);
+            allowedHosts.Add(urlPrefix.Host);
+        }
+
+        Console.WriteLine("Configured HostFilteringOptions. Hosts: " + string.Join(';', allowedHosts));
+        options.AllowedHosts = allowedHosts.ToArray();
+        options.IncludeFailureMessage = true; // Suppress the failure message in response body
+        options.AllowEmptyHosts = true;
+    });
+}
+
 builder.WebHost.UseKestrel(options =>
 {
     foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
@@ -56,8 +75,15 @@ builder.WebHost.UseKestrel(options =>
             var certificatePath = Path.Combine("certificates", $"testCert-{certPublicKeyLength}.pfx");
             Console.WriteLine($"Using certificate: {certificatePath}");
 
+            var certPath =
+#if DEBUG
+            Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, certificatePath); // exe location
+#else
+            certificatePath;
+#endif
+
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-            listenOptions.UseHttps(certificatePath, "testPassword", options =>
+            listenOptions.UseHttps(certPath, "testPassword", options =>
             {
                 if (supportedTlsVersions is not null)
                 {
@@ -97,6 +123,12 @@ builder.WebHost.UseKestrel(options =>
 });
 
 var app = builder.Build();
+
+if (enableHostHeaderValidation)
+{
+    Console.WriteLine("Enabled host header filtering middleware.");
+    app.UseHostFiltering();
+}
 
 bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
 {
