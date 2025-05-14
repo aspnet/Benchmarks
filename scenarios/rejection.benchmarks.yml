@@ -80,7 +80,7 @@ scenarios:
     application:
       job: httpSysServer
       variables:
-        httpSysUrlPrefix: "https://testserver.local:5000"
+        httpSysUrlPrefix: "https://testserver:{{serverPort}}"
     load:
       job: httpclient
       variables:
