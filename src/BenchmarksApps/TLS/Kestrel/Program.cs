@@ -53,7 +53,7 @@ if (enableHostHeaderValidation)
 
         Console.WriteLine("Configured HostFilteringOptions. Hosts: " + string.Join(';', allowedHosts));
         options.AllowedHosts = allowedHosts.ToArray();
-        options.IncludeFailureMessage = false; // Suppress the failure message in response body
+        options.IncludeFailureMessage = true; // Suppress the failure message in response body
         options.AllowEmptyHosts = true;
     });
 }
