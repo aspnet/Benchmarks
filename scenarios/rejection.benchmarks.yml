@@ -42,11 +42,12 @@ jobs:
       tlsRenegotiation: false
       tlsProtocols: "tls12,tls13"
       certPublicKeyLength: 2048 # controls cert with such a length is used for the test
+      enableHostHeaderValidation: false # enables host header validation middleware
       # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --enableHostHeaderValidation {{enableHostHeaderValidation}}"
 
 scenarios:
 
@@ -117,6 +118,8 @@ scenarios:
   kestrel-hostheader-mismatch:
     application:
       job: kestrelServer
+      variables:
+        enableHostHeaderValidation: true
     load:
       job: httpclient
       variables:

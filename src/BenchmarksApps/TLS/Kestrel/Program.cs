@@ -21,6 +21,7 @@ var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabl
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
 var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
+var enableHostHeaderValidation = bool.TryParse(builder.Configuration["enableHostHeaderValidation"], out var enableHostHeaderValidationConfig) && enableHostHeaderValidationConfig;
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
@@ -39,20 +40,23 @@ if (mTlsEnabled && tlsRenegotiationEnabled)
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
 
-builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
+if (enableHostHeaderValidation)
 {
-    var allowedHosts = new HashSet<string>();
-    foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+    builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
     {
-        var urlPrefix = UrlPrefix.Create(endpoint);
-        allowedHosts.Add(urlPrefix.Host);
-    }
+        var allowedHosts = new HashSet<string>();
+        foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            var urlPrefix = UrlPrefix.Create(endpoint);
+            allowedHosts.Add(urlPrefix.Host);
+        }
 
-    Console.WriteLine("Allowed Hosts: " + string.Join(';', allowedHosts));
-    options.AllowedHosts = allowedHosts.ToArray();
-    options.IncludeFailureMessage = false; // Suppress the failure message in response body
-    options.AllowEmptyHosts = true;
-});
+        Console.WriteLine("Configured HostFilteringOptions. Hosts: " + string.Join(';', allowedHosts));
+        options.AllowedHosts = allowedHosts.ToArray();
+        options.IncludeFailureMessage = false; // Suppress the failure message in response body
+        options.AllowEmptyHosts = true;
+    });
+}
 
 builder.WebHost.UseKestrel(options =>
 {
@@ -123,7 +127,11 @@ builder.WebHost.UseKestrel(options =>
 
 var app = builder.Build();
 
-app.UseHostFiltering();
+if (enableHostHeaderValidation)
+{
+    Console.WriteLine("Enabled host header filtering middleware.");
+    app.UseHostFiltering();
+}
 
 bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
 {
