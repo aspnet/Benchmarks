@@ -22,12 +22,13 @@ jobs:
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
       certPublicKeyLength: 2048
+      httpSysUrlPrefix: "" # enables host header validation on http.sys layer
       # debug settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}} --httpSysUrlPrefix {{httpSysUrlPrefix}}"
 
   kestrelServer:
     source:
@@ -77,6 +78,8 @@ scenarios:
   httpsys-hostheader-mismatch:
     application:
       job: httpSysServer
+      variables:
+        httpSysUrlPrefix: "https://testserver.local:5000"
     load:
       job: httpclient
       variables:
