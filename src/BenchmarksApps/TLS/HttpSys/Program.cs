@@ -35,14 +35,15 @@ NetshConfigurator.PrepareResetNetsh(httpsIpPort, certPublicKeyLength: 4096);
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
 {
-// meaning client can send a certificate, but it can be explicitly requested by server as well (renegotiation)
-options.ClientCertificateMethod = ClientCertificateMethod.AllowRenegotation;
+    // meaning client can send a certificate, but it can be explicitly requested by server as well (renegotiation)
+    options.ClientCertificateMethod = ClientCertificateMethod.AllowRenegotation;
 
-foreach (var listeningEndpoint in listeningEndpoints.Split(";"))
-{
-    options.UrlPrefixes.Add(listeningEndpoints);
-    Console.WriteLine("Added allowed url-prefix: " + listeningEndpoint);
-};
+    foreach (var listeningEndpoint in listeningEndpoints.Split(";"))
+    {
+        options.UrlPrefixes.Add(listeningEndpoints);
+        Console.WriteLine("Added allowed url-prefix: " + listeningEndpoint);
+    }
+});
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 
 var app = builder.Build();
