@@ -127,5 +127,5 @@ scenarios:
         path: /hello-world
         connections: 32
         serverScheme: https
-        # customHeaders:
-        # - "Host: google.com"
+        customHeaders:
+        - "Host: google.com"
