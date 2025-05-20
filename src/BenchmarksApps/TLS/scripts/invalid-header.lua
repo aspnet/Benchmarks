@@ -3,6 +3,7 @@
 local host = "localhost"
 
 init = function(args)
+  print("wrk ARGS:", #arguments, arguments[1])
   if #args > 0 then
     host = args[1]
   end
