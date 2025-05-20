@@ -13,8 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 Console.WriteLine("Starting application...");
 
 var builder = WebApplication.CreateBuilder(args);
-// builder.Logging.ClearProviders();
-builder.Logging.SetMinimumLevel(LogLevel.Debug).AddConsole();
+builder.Logging.ClearProviders();
 
 // behavioral
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
