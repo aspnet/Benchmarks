@@ -442,7 +442,7 @@ profiles:
           - main
       load:
         endpoints: 
-          - http://asp-perf-load:5001
+          - http://asp-perf-db:5001
         aliases:
           - warmup
           - secondary
