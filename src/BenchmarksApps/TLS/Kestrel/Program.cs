@@ -52,7 +52,7 @@ if (enableHostHeaderValidation)
 
         Console.WriteLine("Configured HostFilteringOptions. Hosts: " + string.Join(';', allowedHosts));
         options.AllowedHosts = allowedHosts.ToArray();
-        options.IncludeFailureMessage = true; // Suppress the failure message in response body
+        options.IncludeFailureMessage = true; // Suppresses the failure message in response body. It should be `true` to match http.sys behavior.
         options.AllowEmptyHosts = true;
     });
 }
