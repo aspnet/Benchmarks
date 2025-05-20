@@ -4,6 +4,8 @@
 
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
@@ -20,12 +22,14 @@ jobs:
       # behavioral settings
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
+      certPublicKeyLength: 2048
+      httpSysUrlPrefix: "" # enables host header validation on http.sys layer
       # debug settings
       certValidationConsoleEnabled: false
       httpSysLogs: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}} --httpSysUrlPrefix {{httpSysUrlPrefix}}"
 
   kestrelServer:
     source:
@@ -38,11 +42,13 @@ jobs:
       mTLS: false
       tlsRenegotiation: false
       tlsProtocols: "tls12,tls13"
+      certPublicKeyLength: 2048 # controls cert with such a length is used for the test
+      enableHostHeaderValidation: false # enables host header validation middleware
       # debug settings
       certValidationConsoleEnabled: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --enableHostHeaderValidation {{enableHostHeaderValidation}}"
 
 scenarios:
 
@@ -52,9 +58,9 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
-        path: /unknown/%09
+        path: /unknown/%GG
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
@@ -63,7 +69,7 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /hello-world
         connections: 32
@@ -74,8 +80,10 @@ scenarios:
   httpsys-hostheader-mismatch:
     application:
       job: httpSysServer
+      variables:
+        httpSysUrlPrefix: "https://testserver:{{serverPort}}"
     load:
-      job: bombardier
+      job: wrk
       variables:
         path: /hello-world
         connections: 32
@@ -89,9 +97,9 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
-        path: /unknown/%09
+        path: /unknown/%GG
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
@@ -100,7 +108,7 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /hello-world
         connections: 32
@@ -111,8 +119,10 @@ scenarios:
   kestrel-hostheader-mismatch:
     application:
       job: kestrelServer
+      variables:
+        enableHostHeaderValidation: true
     load:
-      job: bombardier
+      job: wrk
       variables:
         path: /hello-world
         connections: 32

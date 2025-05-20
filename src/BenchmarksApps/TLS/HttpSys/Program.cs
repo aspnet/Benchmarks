@@ -12,6 +12,7 @@ var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabl
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
 var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
+var urlPrefix = builder.Configuration["httpSysUrlPrefix"];
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
@@ -37,6 +38,14 @@ builder.WebHost.UseHttpSys(options =>
 {
     // meaning client can send a certificate, but it can be explicitly requested by server as well (renegotiation)
     options.ClientCertificateMethod = ClientCertificateMethod.AllowRenegotation;
+
+    if (!string.IsNullOrEmpty(urlPrefix))
+    {
+        // Specific "hostname" to listen on.
+        // This turns on host validation on http.sys layer
+        options.UrlPrefixes.Add(urlPrefix);
+        Console.WriteLine("Set specific url-prefix for Http.Sys: " + urlPrefix);
+    }
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 
