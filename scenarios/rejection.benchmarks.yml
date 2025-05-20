@@ -69,13 +69,11 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: httpclient
+      job: wrk
       variables:
-        path: /hello-world
         connections: 32
         serverScheme: https
-        customHeaders:
-        - "X-Custom: Québec"
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua
 
   httpsys-hostheader-mismatch:
     application:
@@ -108,13 +106,11 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: httpclient
+      job: wrk
       variables:
-        path: /hello-world
         connections: 32
         serverScheme: https
-        customHeaders:
-        - "X-Custom: Québec"
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua
     
   kestrel-hostheader-mismatch:
     application:
