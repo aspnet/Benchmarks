@@ -73,7 +73,7 @@ scenarios:
       variables:
         connections: 32
         serverScheme: https
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua?raw=true
 
   httpsys-hostheader-mismatch:
     application:
@@ -110,7 +110,7 @@ scenarios:
       variables:
         connections: 32
         serverScheme: https
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua?raw=true
     
   kestrel-hostheader-mismatch:
     application:
