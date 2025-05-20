@@ -110,6 +110,7 @@ scenarios:
       variables:
         connections: 32
         serverScheme: https
+        scriptArguments: "{{serverAddress}}:{{serverPort}}"
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua?raw=true
     
   kestrel-hostheader-mismatch:
