@@ -5,6 +5,7 @@
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
@@ -82,7 +83,7 @@ scenarios:
       variables:
         httpSysUrlPrefix: "https://testserver:{{serverPort}}"
     load:
-      job: httpclient
+      job: wrk
       variables:
         path: /hello-world
         connections: 32
@@ -121,7 +122,7 @@ scenarios:
       variables:
         enableHostHeaderValidation: true
     load:
-      job: httpclient
+      job: wrk
       variables:
         path: /hello-world
         connections: 32
