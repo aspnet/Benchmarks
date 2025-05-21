@@ -5,6 +5,7 @@
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.PipeliningClient/pipelining.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
@@ -69,11 +70,13 @@ scenarios:
     application:
       job: httpSysServer
     load:
-      job: wrk
+      job: pipelining
       variables:
+        path: /hello-world
         connections: 32
         serverScheme: https
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua?raw=true
+        customHeaders:
+        - "Invalid Header: value"
 
   httpsys-hostheader-mismatch:
     application:
@@ -106,11 +109,14 @@ scenarios:
     application:
       job: kestrelServer
     load:
-      job: wrk
+      job: pipelining
       variables:
+        path: /hello-world
         connections: 32
         serverScheme: https
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TLS/scripts/invalid-header.lua?raw=true
+        customHeaders:
+        - "Invalid Header: value"
+        
     
   kestrel-hostheader-mismatch:
     application:
