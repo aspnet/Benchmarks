@@ -19,7 +19,7 @@ var httpOnly = bool.TryParse(builder.Configuration["httpOnly"], out var httpOnly
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
-var httpsIpPort = listeningEndpoints.Split(";").First(x => x.Contains("https")).Replace("https://", "");
+var httpsIpPort = listeningEndpoints.Split(";").FirstOrDefault(x => x.Contains("https"))?.Replace("https://", "");
 
 // debug
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
@@ -29,7 +29,7 @@ var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"]
 if (!httpOnly)
 {
     var sslCertConfiguration = NetshConfigurator.PreConfigureNetsh(
-    httpsIpPort,
+    httpsIpPort!,
     certPublicKeyLength: certPublicKeyLength,
     clientCertNegotiation: mTlsEnabled ? NetShFlag.Enable : NetShFlag.Disabled,
     disablesessionid: NetShFlag.Enable,
@@ -134,7 +134,7 @@ await app.StartAsync();
 
 if (!httpOnly)
 {
-    NetshConfigurator.LogCurrentSslCertBinding(httpsIpPort);
+    NetshConfigurator.LogCurrentSslCertBinding(httpsIpPort!);
 }
 
 Console.WriteLine("Application Info:");
