@@ -100,7 +100,6 @@ scenarios:
       variables:
         httpSysUrlPrefix: "http://testserver:{{serverPort}}"
         serverScheme: http
-        httpOnly: true
     load:
       job: wrk
       variables:
@@ -156,7 +155,6 @@ scenarios:
       variables:
         enableHostHeaderValidation: true
         serverScheme: http
-        httpOnly: true
     load:
       job: wrk
       variables:

@@ -21,13 +21,25 @@ var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiat
 var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
 var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
 var enableHostHeaderValidation = bool.TryParse(builder.Configuration["enableHostHeaderValidation"], out var enableHostHeaderValidationConfig) && enableHostHeaderValidationConfig;
-
-// for investigation purposes you can disable https, but the point of TLS apps is to measure TLS scenarios
-var httpOnly = bool.TryParse(builder.Configuration["httpOnly"], out var httpOnlyConfig) && httpOnlyConfig;
+var supportedTlsVersions = ParseSslProtocols(builder.Configuration["tlsProtocols"]);
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
-var supportedTlsVersions = ParseSslProtocols(builder.Configuration["tlsProtocols"]);
+
+// determine if listening is expected only on HTTP scheme
+var httpOnly = true;
+foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+{
+    var urlPrefix = UrlPrefix.Create(endpoint);
+    if (urlPrefix.Scheme == "https")
+    {
+        httpOnly = false;
+    }
+}
+if (httpOnly)
+{
+    Console.WriteLine("[Note] Server scheme is HTTP, not HTTPS.");
+}
 
 // debug
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
