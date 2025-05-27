@@ -20,6 +20,7 @@ jobs:
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
     variables:
+      serverScheme: https
       # behavioral settings
       mTLS: false # enables settings on http.sys to negotiate client cert on connections
       tlsRenegotiation: false # enables client cert validation
@@ -30,7 +31,7 @@ jobs:
       httpSysLogs: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}} --httpSysUrlPrefix {{httpSysUrlPrefix}}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --httpSysLogs {{httpSysLogs}} --logRequestDetails {{logRequestDetails}} --httpSysUrlPrefix {{httpSysUrlPrefix}}"
 
   kestrelServer:
     source:
@@ -39,6 +40,7 @@ jobs:
       project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
     readyStateText: Application started.
     variables:
+      serverScheme: https
       # behavioral settings
       mTLS: false
       tlsRenegotiation: false
@@ -49,7 +51,7 @@ jobs:
       certValidationConsoleEnabled: false
       statsEnabled: false
       logRequestDetails: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --enableHostHeaderValidation {{enableHostHeaderValidation}}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --tlsProtocols {{tlsProtocols}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}} --logRequestDetails {{logRequestDetails}} --enableHostHeaderValidation {{enableHostHeaderValidation}}"
 
 scenarios:
 
@@ -92,6 +94,21 @@ scenarios:
         customHeaders:
         - "Host: google.com"
 
+  httpsys-hostheader-mismatch-notls:
+    application:
+      job: httpSysServer
+      variables:
+        httpSysUrlPrefix: "http://testserver:{{serverPort}}"
+        serverScheme: http
+    load:
+      job: wrk
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: http
+        customHeaders:
+        - "Host: google.com"
+
 # Kestrel
   
   kestrel-encoded-url:
@@ -129,5 +146,20 @@ scenarios:
         path: /hello-world
         connections: 32
         serverScheme: https
+        customHeaders:
+        - "Host: google.com"
+
+  kestrel-hostheader-mismatch-notls:
+    application:
+      job: kestrelServer
+      variables:
+        enableHostHeaderValidation: true
+        serverScheme: http
+    load:
+      job: wrk
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: http
         customHeaders:
         - "Host: google.com"

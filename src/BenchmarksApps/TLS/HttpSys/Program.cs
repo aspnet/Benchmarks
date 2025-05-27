@@ -16,22 +16,30 @@ var urlPrefix = builder.Configuration["httpSysUrlPrefix"];
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
-var httpsIpPort = listeningEndpoints.Split(";").First(x => x.Contains("https")).Replace("https://", "");
+var httpsIpPort = listeningEndpoints.Split(";").FirstOrDefault(x => x.Contains("https"))?.Replace("https://", "");
+var httpOnly = httpsIpPort is null; // in case TLS is disabled. Only for debug purposes - this app is designed to measure TLS scenario
+if (httpOnly)
+{
+    Console.WriteLine("[Note] Server scheme is HTTP, not HTTPS.");
+}
 
 // debug
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var logRequestDetails = bool.TryParse(builder.Configuration["logRequestDetails"], out var logRequestDetailsConfig) && logRequestDetailsConfig;
 
-var sslCertConfiguration = NetshConfigurator.PreConfigureNetsh(
-    httpsIpPort,
+if (!httpOnly)
+{
+    var sslCertConfiguration = NetshConfigurator.PreConfigureNetsh(
+    httpsIpPort!,
     certPublicKeyLength: certPublicKeyLength,
     clientCertNegotiation: mTlsEnabled ? NetShFlag.Enable : NetShFlag.Disabled,
     disablesessionid: NetShFlag.Enable,
     enableSessionTicket: NetShFlag.Disabled);
 
-// because app shutdown is on a timeout, we need to prepare the reset (pre-generate certificate)
-NetshConfigurator.PrepareResetNetsh(httpsIpPort, certPublicKeyLength: 4096);
+    // because app shutdown is on a timeout, we need to prepare the reset (pre-generate certificate)
+    NetshConfigurator.PrepareResetNetsh(httpsIpPort, certPublicKeyLength: 4096);
+}
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
@@ -126,7 +134,10 @@ if (tlsRenegotiationEnabled)
 
 await app.StartAsync();
 
-NetshConfigurator.LogCurrentSslCertBinding(httpsIpPort);
+if (!httpOnly)
+{
+    NetshConfigurator.LogCurrentSslCertBinding(httpsIpPort!);
+}
 
 Console.WriteLine("Application Info:");
 if (mTlsEnabled)
@@ -148,6 +159,9 @@ Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
 Console.WriteLine("Application stopped.");
 
-Console.WriteLine("Starting netsh rollback configuration...");
-NetshConfigurator.ResetNetshConfiguration(httpsIpPort);
-Console.WriteLine($"Reset netsh (ipport={httpsIpPort}) completed.");
+if (!httpOnly)
+{
+    Console.WriteLine("Starting netsh rollback configuration...");
+    NetshConfigurator.ResetNetshConfiguration(httpsIpPort);
+    Console.WriteLine($"Reset netsh (ipport={httpsIpPort}) completed.");
+}
