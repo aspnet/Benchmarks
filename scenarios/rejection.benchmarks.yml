@@ -92,6 +92,21 @@ scenarios:
         customHeaders:
         - "Host: google.com"
 
+  httpsys-hostheader-mismatch-notls:
+    application:
+      job: httpSysServer
+      variables:
+        httpSysUrlPrefix: "http://testserver:{{serverPort}}"
+        httpOnly: true
+    load:
+      job: wrk
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: http
+        customHeaders:
+        - "Host: google.com"
+
 # Kestrel
   
   kestrel-encoded-url:
@@ -129,5 +144,20 @@ scenarios:
         path: /hello-world
         connections: 32
         serverScheme: https
+        customHeaders:
+        - "Host: google.com"
+
+  kestrel-hostheader-mismatch-notls:
+    application:
+      job: kestrelServer
+      variables:
+        enableHostHeaderValidation: true
+        httpOnly: true
+    load:
+      job: wrk
+      variables:
+        path: /hello-world
+        connections: 32
+        serverScheme: http
         customHeaders:
         - "Host: google.com"
