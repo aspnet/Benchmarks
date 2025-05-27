@@ -99,6 +99,7 @@ scenarios:
       job: httpSysServer
       variables:
         httpSysUrlPrefix: "http://testserver:{{serverPort}}"
+        serverScheme: http
         httpOnly: true
     load:
       job: wrk
