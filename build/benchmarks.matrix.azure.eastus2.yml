@@ -1,0 +1,68 @@
+# This file describes all the scenarios which are run continuously on AzDo.
+# It generates the file benchmarks.yml. See this file for instructions.
+
+queues:
+  - cobaltcloud
+
+schedule: "0 9/12 * * *"
+
+groups:
+  - jobs:
+    - name: Trends Database Cobalt Cloud Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin
+
+  - jobs:
+    - name: Trends Cobalt Cloud Linux
+      template: trend-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin
+
+  - jobs:
+    - name: Baselines Database Cobalt Cloud Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin
+
+  - jobs:
+    - name: Baselines Cobalt Cloud Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin
+  
+  - jobs:
+      - name: Containers Cobalt Cloud Linux
+        template: containers-scenarios.yml
+        profiles:
+        - cobalt-cloud-lin
+
+  - jobs:
+    - name: Trends Database Cobalt Cloud Linux AL3
+      template: trend-database-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin-al3
+
+  - jobs:
+    - name: Trends Cobalt Cloud Linux AL3
+      template: trend-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin-al3
+
+  - jobs:
+    - name: Baselines Database Cobalt Cloud Linux AL3
+      template: baselines-database-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin-al3
+
+  - jobs:
+    - name: Baselines Cobalt Cloud Linux AL3
+      template: baselines-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin-al3
+  
+  - jobs:
+      - name: Containers Cobalt Cloud Linux AL3
+        template: containers-scenarios.yml
+        profiles:
+        - cobalt-cloud-lin-al3
