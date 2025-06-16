@@ -305,7 +305,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.2.2.15
-      cores: 4
+      cores: 16
     jobs:
       db:
         endpoints:
@@ -330,7 +330,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.2.2.15
-      cores: 4
+      cores: 16
     jobs:
       db:
         endpoints:
@@ -340,6 +340,56 @@ profiles:
       application:
         endpoints:
           - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver
+        variables:
+          databaseServer: 10.2.2.14
+        aliases:
+          - main
+      load:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinclient
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin-al3:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.2.2.16
+      cores: 16
+    jobs:
+      db:
+        endpoints:
+          - http://10.2.2.14:5001
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - http://10.2.2.15:5001
+        variables:
+          databaseServer: 10.2.2.14
+        aliases:
+          - main
+      load:
+        endpoints:
+          - http://10.2.2.13:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin-al3-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.2.2.16
+      cores: 16
+    jobs:
+      db:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlindb
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver_azurelinux3
         variables:
           databaseServer: 10.2.2.14
         aliases:
