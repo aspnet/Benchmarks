@@ -364,7 +364,7 @@ profiles:
           - extra
       application:
         endpoints:
-          - http://10.2.2.15:5001
+          - http://10.2.2.16:5001
         variables:
           databaseServer: 10.2.2.14
         aliases:
