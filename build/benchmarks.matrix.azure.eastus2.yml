@@ -32,10 +32,16 @@ groups:
       - cobalt-cloud-lin
   
   - jobs:
-      - name: Containers Cobalt Cloud Linux
-        template: containers-scenarios.yml
-        profiles:
-        - cobalt-cloud-lin
+    - name: Containers Cobalt Cloud Linux
+      template: containers-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin
+  
+  - jobs:
+    - name: Mvc Cobalt Cloud Linux
+      template: mvc-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin
 
   - jobs:
     - name: Trends Database Cobalt Cloud Linux AL3
@@ -62,7 +68,13 @@ groups:
       - cobalt-cloud-lin-al3
   
   - jobs:
-      - name: Containers Cobalt Cloud Linux AL3
-        template: containers-scenarios.yml
-        profiles:
-        - cobalt-cloud-lin-al3
+    - name: Containers Cobalt Cloud Linux AL3
+      template: containers-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin-al3
+
+  - jobs:
+    - name: Mvc Cobalt Cloud Linux AL3
+      template: mvc-scenarios.yml
+      profiles:
+      - cobalt-cloud-lin-al3
