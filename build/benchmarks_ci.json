@@ -102,7 +102,7 @@
     "scenarios": [
         {
             "name": "Baselines",
-            "template": "baselines.yml",
+            "template": "baselines-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -115,7 +115,7 @@
         },
         {
             "name": "Baselines Database",
-            "template": "baselines-database.yml",
+            "template": "baselines-database-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -128,7 +128,7 @@
         },
         {
             "name": "Blazor",
-            "template": "blazor.yml",
+            "template": "blazor-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -138,7 +138,7 @@
         },
         {
             "name": "Build",
-            "template": "build.yml",
+            "template": "build-perf-scenarios.yml",
             "type": 1,
             "target_machines": [
                 "gold-lin",
@@ -150,7 +150,7 @@
         },
         {
             "name": "Containers",
-            "template": "containers.yml",
+            "template": "containers-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -160,7 +160,7 @@
         },
         {
             "name": "Crossgen",
-            "template": "crossgen.yml",
+            "template": "crossgen2-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -173,7 +173,7 @@
         },
         {
             "name": "Custom Proxies",
-            "template": "custom-proxies.yml",
+            "template": "proxies-custom-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -183,7 +183,7 @@
         },
         {
             "name": "EF Core",
-            "template": "ef-core.yml",
+            "template": "efcore-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-win",
@@ -193,7 +193,7 @@
         },
         {
             "name": "Frameworks",
-            "template": "frameworks.yml",
+            "template": "frameworks-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -204,7 +204,7 @@
         },
         {
             "name": "Frameworks Database",
-            "template": "frameworks-database.yml",
+            "template": "frameworks-database-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -215,7 +215,7 @@
         },
         {
             "name": "GC",
-            "template": "gc.yml",
+            "template": "gc-scenarios.yml",
             "type": 1,
             "target_machines": [
                 "gold-lin",
@@ -227,7 +227,7 @@
         },
         {
             "name": "Grpc",
-            "template": "grpc.yml",
+            "template": "grpc-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -239,7 +239,7 @@
         },
         {
             "name": "HttpClient",
-            "template": "httpclient.yml",
+            "template": "httpclient-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -251,7 +251,7 @@
         },
         {
             "name": "MVC",
-            "template": "mvc.yml",
+            "template": "mvc-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -263,7 +263,7 @@
         },
         {
             "name": "NativeAOT",
-            "template": "nativeaot.yml",
+            "template": "nativeaot-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -275,7 +275,7 @@
         },
         {
             "name": "PGO",
-            "template": "pgo.yml",
+            "template": "pgo-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -287,7 +287,7 @@
         },
         {
             "name": "Proxies",
-            "template": "proxies.yml",
+            "template": "proxies-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -297,7 +297,7 @@
         },
         {
             "name": "SignalR",
-            "template": "signalr.yml",
+            "template": "signalr-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -309,7 +309,7 @@
         },
         {
             "name": "Single File",
-            "template": "single-file.yml",
+            "template": "singlefile-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -321,7 +321,7 @@
         },
         {
             "name": "SslStream",
-            "template": "sslstream.yml",
+            "template": "sslstream-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -331,7 +331,7 @@
         },
         {
             "name": "Trends",
-            "template": "trends.yml",
+            "template": "trend-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",
@@ -344,7 +344,7 @@
         },
         {
             "name": "Trends Database",
-            "template": "trends-database.yml",
+            "template": "trend-database-scenarios.yml",
             "type": 3,
             "target_machines": [
                 "gold-lin",
@@ -357,7 +357,7 @@
         },
         {
             "name": "WebSockets",
-            "template": "websockets.yml",
+            "template": "websocket-scenarios.yml",
             "type": 2,
             "target_machines": [
                 "gold-lin",

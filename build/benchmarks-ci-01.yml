@@ -38,7 +38,7 @@ jobs:
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: proxies.yml
+  - template: proxies-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -52,7 +52,7 @@ jobs:
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: proxies.yml
+  - template: proxies-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -66,7 +66,7 @@ jobs:
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: grpc.yml
+  - template: grpc-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -80,7 +80,7 @@ jobs:
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: grpc.yml
+  - template: grpc-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -96,7 +96,7 @@ jobs:
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: pgo.yml
+  - template: pgo-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -110,7 +110,7 @@ jobs:
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: pgo.yml
+  - template: pgo-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -124,7 +124,7 @@ jobs:
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: grpc.yml
+  - template: grpc-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -138,7 +138,7 @@ jobs:
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: baselines.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -154,7 +154,7 @@ jobs:
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: baselines-database.yml
+  - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -168,7 +168,7 @@ jobs:
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: httpclient.yml
+  - template: httpclient-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -182,7 +182,7 @@ jobs:
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: httpclient.yml
+  - template: httpclient-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -196,7 +196,7 @@ jobs:
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: signalr.yml
+  - template: signalr-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -212,7 +212,7 @@ jobs:
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: baselines.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -226,7 +226,7 @@ jobs:
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: baselines.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -240,7 +240,7 @@ jobs:
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: mvc.yml
+  - template: mvc-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -254,7 +254,7 @@ jobs:
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: nativeaot.yml
+  - template: nativeaot-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -270,7 +270,7 @@ jobs:
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: signalr.yml
+  - template: signalr-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -284,7 +284,7 @@ jobs:
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: signalr.yml
+  - template: signalr-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -298,7 +298,7 @@ jobs:
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: nativeaot.yml
+  - template: nativeaot-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -312,7 +312,7 @@ jobs:
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: trends.yml
+  - template: trend-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -328,7 +328,7 @@ jobs:
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: nativeaot.yml
+  - template: nativeaot-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -342,7 +342,7 @@ jobs:
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: nativeaot.yml
+  - template: nativeaot-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -356,7 +356,7 @@ jobs:
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: frameworks.yml
+  - template: frameworks-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -370,7 +370,7 @@ jobs:
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: gc.yml
+  - template: gc-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -386,7 +386,7 @@ jobs:
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: frameworks.yml
+  - template: frameworks-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -400,7 +400,7 @@ jobs:
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: frameworks.yml
+  - template: frameworks-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -414,7 +414,7 @@ jobs:
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: single-file.yml
+  - template: singlefile-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -428,7 +428,7 @@ jobs:
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: single-file.yml
+  - template: singlefile-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -444,7 +444,7 @@ jobs:
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: trends-database.yml
+  - template: trend-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -458,7 +458,7 @@ jobs:
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: trends-database.yml
+  - template: trend-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -472,7 +472,7 @@ jobs:
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: websockets.yml
+  - template: websocket-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -486,7 +486,7 @@ jobs:
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: websockets.yml
+  - template: websocket-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -502,7 +502,7 @@ jobs:
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: websockets.yml
+  - template: websocket-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -516,7 +516,7 @@ jobs:
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: websockets.yml
+  - template: websocket-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -530,7 +530,7 @@ jobs:
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: crossgen.yml
+  - template: crossgen2-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -544,7 +544,7 @@ jobs:
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: build.yml
+  - template: build-perf-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -560,7 +560,7 @@ jobs:
   dependsOn: [WebSockets_Gold_Lin, WebSockets_Intel_Lin, Crossgen_Amd_Lin2, Build_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: custom-proxies.yml
+  - template: proxies-custom-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -574,7 +574,7 @@ jobs:
   dependsOn: [WebSockets_Gold_Lin, WebSockets_Intel_Lin, Crossgen_Amd_Lin2, Build_Gold_Win]
   condition: succeededOrFailed()
   steps:
-  - template: custom-proxies.yml
+  - template: proxies-custom-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
