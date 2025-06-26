@@ -34,7 +34,7 @@ jobs:
 - job: Proxies_Gold_Lin
   displayName: 1- Proxies Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
@@ -48,7 +48,7 @@ jobs:
 - job: Proxies_Intel_Lin
   displayName: 1- Proxies Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
@@ -62,7 +62,7 @@ jobs:
 - job: Grpc_Gold_Win
   displayName: 1- Grpc Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
@@ -76,7 +76,7 @@ jobs:
 - job: Grpc_Intel_Win
   displayName: 1- Grpc Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
@@ -92,7 +92,7 @@ jobs:
 - job: PGO_Intel_Lin
   displayName: 2- PGO Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -106,7 +106,7 @@ jobs:
 - job: PGO_Intel_Win
   displayName: 2- PGO Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -120,7 +120,7 @@ jobs:
 - job: Grpc_Gold_Lin
   displayName: 2- Grpc Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -134,7 +134,7 @@ jobs:
 - job: Baselines_Gold_Win
   displayName: 2- Baselines Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Proxies_Gold_Lin, Proxies_Intel_Lin, Grpc_Gold_Win, Grpc_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -150,7 +150,7 @@ jobs:
 - job: Baselines_Database_Amd_Lin2
   displayName: 3- Baselines Database Amd Lin2
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -164,7 +164,7 @@ jobs:
 - job: HttpClient_Gold_Lin
   displayName: 3- HttpClient Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -178,7 +178,7 @@ jobs:
 - job: HttpClient_Intel_Lin
   displayName: 3- HttpClient Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -192,7 +192,7 @@ jobs:
 - job: SignalR_Intel_Win
   displayName: 3- SignalR Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [PGO_Intel_Lin, PGO_Intel_Win, Grpc_Gold_Lin, Baselines_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -208,7 +208,7 @@ jobs:
 - job: Baselines_Gold_Lin
   displayName: 4- Baselines Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -222,7 +222,7 @@ jobs:
 - job: Baselines_Intel_Lin
   displayName: 4- Baselines Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -236,7 +236,7 @@ jobs:
 - job: MVC_Intel_Win
   displayName: 4- MVC Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -250,7 +250,7 @@ jobs:
 - job: NativeAOT_Gold_Win
   displayName: 4- NativeAOT Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Database_Amd_Lin2, HttpClient_Gold_Lin, HttpClient_Intel_Lin, SignalR_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -266,7 +266,7 @@ jobs:
 - job: SignalR_Gold_Lin
   displayName: 5- SignalR Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -280,7 +280,7 @@ jobs:
 - job: SignalR_Intel_Lin
   displayName: 5- SignalR Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -294,7 +294,7 @@ jobs:
 - job: NativeAOT_Intel_Win
   displayName: 5- NativeAOT Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -308,7 +308,7 @@ jobs:
 - job: Trends_Gold_Win
   displayName: 5- Trends Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Baselines_Gold_Lin, Baselines_Intel_Lin, MVC_Intel_Win, NativeAOT_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -324,7 +324,7 @@ jobs:
 - job: NativeAOT_Gold_Lin
   displayName: 6- NativeAOT Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -338,7 +338,7 @@ jobs:
 - job: NativeAOT_Intel_Lin
   displayName: 6- NativeAOT Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -352,7 +352,7 @@ jobs:
 - job: Frameworks_Amd_Lin2
   displayName: 6- Frameworks Amd Lin2
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -366,7 +366,7 @@ jobs:
 - job: GC_Gold_Win
   displayName: 6- GC Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -382,7 +382,7 @@ jobs:
 - job: Frameworks_Gold_Lin
   displayName: 7- Frameworks Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -396,7 +396,7 @@ jobs:
 - job: Frameworks_Intel_Lin
   displayName: 7- Frameworks Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -410,7 +410,7 @@ jobs:
 - job: Single_File_Gold_Win
   displayName: 7- Single File Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -424,7 +424,7 @@ jobs:
 - job: Single_File_Intel_Win
   displayName: 7- Single File Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -440,7 +440,7 @@ jobs:
 - job: Trends_Database_Gold_Lin
   displayName: 8- Trends Database Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -454,7 +454,7 @@ jobs:
 - job: Trends_Database_Intel_Lin
   displayName: 8- Trends Database Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -468,7 +468,7 @@ jobs:
 - job: WebSockets_Gold_Win
   displayName: 8- WebSockets Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -482,7 +482,7 @@ jobs:
 - job: WebSockets_Intel_Win
   displayName: 8- WebSockets Intel Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Frameworks_Gold_Lin, Frameworks_Intel_Lin, Single_File_Gold_Win, Single_File_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -498,7 +498,7 @@ jobs:
 - job: WebSockets_Gold_Lin
   displayName: 9- WebSockets Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -512,7 +512,7 @@ jobs:
 - job: WebSockets_Intel_Lin
   displayName: 9- WebSockets Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -526,7 +526,7 @@ jobs:
 - job: Crossgen_Amd_Lin2
   displayName: 9- Crossgen Amd Lin2
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -540,7 +540,7 @@ jobs:
 - job: Build_Gold_Win
   displayName: 9- Build Gold Win
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [Trends_Database_Gold_Lin, Trends_Database_Intel_Lin, WebSockets_Gold_Win, WebSockets_Intel_Win]
   condition: succeededOrFailed()
   steps:
@@ -556,7 +556,7 @@ jobs:
 - job: Custom_Proxies_Gold_Lin
   displayName: 10- Custom Proxies Gold Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [WebSockets_Gold_Lin, WebSockets_Intel_Lin, Crossgen_Amd_Lin2, Build_Gold_Win]
   condition: succeededOrFailed()
   steps:
@@ -570,7 +570,7 @@ jobs:
 - job: Custom_Proxies_Intel_Lin
   displayName: 10- Custom Proxies Intel Lin
   pool: server
-  timeoutInMinutes: 
+  timeoutInMinutes: 120
   dependsOn: [WebSockets_Gold_Lin, WebSockets_Intel_Lin, Crossgen_Amd_Lin2, Build_Gold_Win]
   condition: succeededOrFailed()
   steps:
