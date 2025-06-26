@@ -39,7 +39,7 @@ jobs:
 - job: {{job.name | replace: ' ', '_'}}
   displayName: {{ n }}- {{job.name}}
   pool: server
-  timeoutInMinutes: {%if job.timeout == blank%}{{defaultTimeout}}{%else%}{{job.timeout}}{%endif%}
+  timeoutInMinutes: {{ job.timeout | default: defaultTimeout }}
   dependsOn: [{%for previousJob in previousGroup.jobs%}{{previousJob.name | replace: ' ', '_'}}{%if forloop.last == false%}, {%endif%}{%endfor%}]
   condition: succeededOrFailed()
   steps:
