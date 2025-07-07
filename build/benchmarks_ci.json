@@ -1,0 +1,371 @@
+{
+    "metadata": {
+        "name": "CI Benchmarks Configuration",
+        "description": "Combined machines and scenarios for continuous integration benchmarks",
+        "version": "1.0",
+        "schedule": "0 3/12 * * *",
+        "queues": [
+            "citrine1",
+            "citrine2",
+            "citrine3",
+            "mono"
+        ],
+        "yaml_generation": {
+            "target_yaml_count": 2,
+            "schedule_offset_hours": 6
+        }
+    },
+    "machines": [
+        {
+            "name": "intel-lin",
+            "machine_type": "sut",
+            "preferred_partners": [
+                "intel-load",
+                "intel-load2",
+                "intel-db"
+            ],
+            "profile_name": "intel-lin-app"
+        },
+        {
+            "name": "intel-win",
+            "machine_type": "sut",
+            "preferred_partners": [
+                "intel-load2",
+                "intel-load",
+                "intel-db"
+            ],
+            "profile_name": "intel-win-app"
+        },
+        {
+            "name": "intel-load",
+            "machine_type": "load",
+            "preferred_partners": [],
+            "profile_name": "intel-load-load"
+        },
+        {
+            "name": "intel-load2",
+            "machine_type": "load",
+            "preferred_partners": [],
+            "profile_name": "intel-load2-load"
+        },
+        {
+            "name": "intel-db",
+            "machine_type": "db",
+            "preferred_partners": [],
+            "profile_name": "intel-db-db"
+        },
+        {
+            "name": "amd-lin2",
+            "machine_type": "sut",
+            "preferred_partners": [],
+            "profile_name": "amd-lin2-app"
+        },
+        {
+            "name": "gold-lin",
+            "machine_type": "sut",
+            "preferred_partners": [
+                "gold-load",
+                "gold-load2",
+                "gold-db"
+            ],
+            "profile_name": "gold-lin-app"
+        },
+        {
+            "name": "gold-win",
+            "machine_type": "sut",
+            "preferred_partners": [
+                "gold-load2",
+                "gold-load",
+                "gold-db"
+            ],
+            "profile_name": "gold-win-app"
+        },
+        {
+            "name": "gold-load",
+            "machine_type": "load",
+            "preferred_partners": [],
+            "profile_name": "gold-load-load"
+        },
+        {
+            "name": "gold-load2",
+            "machine_type": "load",
+            "preferred_partners": [],
+            "profile_name": "gold-load2-load"
+        },
+        {
+            "name": "gold-db",
+            "machine_type": "db",
+            "preferred_partners": [],
+            "profile_name": "gold-db-db"
+        }
+    ],
+    "scenarios": [
+        {
+            "name": "Baselines",
+            "template": "baselines-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "Baselines Database",
+            "template": "baselines-database-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Blazor",
+            "template": "blazor-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin"
+            ],
+            "estimated_runtime": null
+        },
+        {
+            "name": "Build",
+            "template": "build-perf-scenarios.yml",
+            "type": 1,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 1.0
+        },
+        {
+            "name": "Containers",
+            "template": "containers-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin"
+            ],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Crossgen",
+            "template": "crossgen2-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 5.0
+        },
+        {
+            "name": "Custom Proxies",
+            "template": "proxies-custom-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin"
+            ],
+            "estimated_runtime": 5.0
+        },
+        {
+            "name": "EF Core",
+            "template": "efcore-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-win",
+                "intel-win"
+            ],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Frameworks",
+            "template": "frameworks-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Frameworks Database",
+            "template": "frameworks-database-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "GC",
+            "template": "gc-scenarios.yml",
+            "type": 1,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Grpc",
+            "template": "grpc-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 70.0
+        },
+        {
+            "name": "HttpClient",
+            "template": "httpclient-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": null
+        },
+        {
+            "name": "MVC",
+            "template": "mvc-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "NativeAOT",
+            "template": "nativeaot-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "PGO",
+            "template": "pgo-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Proxies",
+            "template": "proxies-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin"
+            ],
+            "estimated_runtime": 150.0
+        },
+        {
+            "name": "SignalR",
+            "template": "signalr-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "Single File",
+            "template": "singlefile-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 10.0
+        },
+        {
+            "name": "SslStream",
+            "template": "sslstream-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "intel-lin"
+            ],
+            "estimated_runtime": null
+        },
+        {
+            "name": "Trends",
+            "template": "trend-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends Database",
+            "template": "trend-database-scenarios.yml",
+            "type": 3,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win",
+                "amd-lin2"
+            ],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "WebSockets",
+            "template": "websocket-scenarios.yml",
+            "type": 2,
+            "target_machines": [
+                "gold-lin",
+                "gold-win",
+                "intel-lin",
+                "intel-win"
+            ],
+            "estimated_runtime": 6.0
+        }
+    ]
+}
