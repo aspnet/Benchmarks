@@ -15,6 +15,13 @@ public sealed class Db : IAsyncDisposable
         ArgumentException.ThrowIfNullOrEmpty(appSettings.ConnectionString);
 
         // Debug: Log the connection string to see what we're actually getting
+        Console.WriteLine("Env vars: ");
+        foreach (var env in Environment.GetEnvironmentVariables())
+        {
+            Console.WriteLine(env.ToString());
+        }
+        Console.WriteLine("----------");
+
         Console.WriteLine($"ConnectionString: '{appSettings.ConnectionString}'");
 
 #if NET8_0_OR_GREATER
