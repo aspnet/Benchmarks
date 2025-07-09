@@ -15,12 +15,6 @@ public sealed class Db : IAsyncDisposable
         ArgumentException.ThrowIfNullOrEmpty(appSettings.ConnectionString);
 
         // Debug: Log the connection string to see what we're actually getting
-        Console.WriteLine("Env vars: ");
-        foreach (var env in Environment.GetEnvironmentVariables())
-        {
-            Console.WriteLine(env.ToString());
-        }
-        Console.WriteLine("----------");
         Console.WriteLine($"AppSettings.ConnectionString: '{appSettings.ConnectionString}'");
         Console.WriteLine("----------");
 
