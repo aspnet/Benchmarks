@@ -21,8 +21,8 @@ public sealed class Db : IAsyncDisposable
             Console.WriteLine(env.ToString());
         }
         Console.WriteLine("----------");
-
         Console.WriteLine($"ConnectionString: '{appSettings.ConnectionString}'");
+        Console.WriteLine("----------");
 
 #if NET8_0_OR_GREATER
         _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();

@@ -34,6 +34,13 @@ builder.Services.AddSingleton(serviceProvider =>
     return HtmlEncoder.Create(settings);
 });
 
+Console.WriteLine("everything from builder.Configuration:");
+foreach (var i in builder.Configuration.AsEnumerable())
+{
+    Console.WriteLine($"{i.Key}: '{i.Value}'");
+}
+Console.WriteLine("--------------------------------------");
+
 var app = builder.Build();
 
 if (useAntiforgery)
