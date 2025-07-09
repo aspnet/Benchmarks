@@ -4,7 +4,7 @@
 
 variables:
     serverPort: 5000
-    
+
 jobs:
   blazorssr:
     source:
@@ -17,7 +17,7 @@ jobs:
       serverScheme: http
       useAntiforgery: true
     environmentVariables:
-      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000
+      connectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000"
 
   postgresql:
     source:
@@ -86,7 +86,7 @@ scenarios:
         path: /direct/fortunes/params
 
 profiles:
-  # this profile uses the local folder as the source 
+  # this profile uses the local folder as the source
   # instead of the public repository
   source:
     agents:
