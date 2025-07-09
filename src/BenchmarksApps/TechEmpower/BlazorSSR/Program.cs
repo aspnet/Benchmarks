@@ -8,9 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders(); // Disable logging as this is not required for the benchmark
 
-// Disable logging as this is not required for the benchmark
-builder.Logging.ClearProviders();
+bool useAntiforgery = true;
+if (bool.TryParse(builder.Configuration["use-antiforgery"], out var useAntiforgeryConfig))
+{
+    useAntiforgery = useAntiforgeryConfig;
+}
 
 // Load custom configuration
 var appSettings = new AppSettings();
@@ -32,7 +36,11 @@ builder.Services.AddSingleton(serviceProvider =>
 
 var app = builder.Build();
 
-app.UseAntiforgery();
+if (useAntiforgery)
+{
+    Console.WriteLine("Antiforgery is enabled.");
+    app.UseAntiforgery();
+}
 
 app.MapRazorComponents<App>();
 
