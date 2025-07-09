@@ -14,7 +14,11 @@ public sealed class Db : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(appSettings.ConnectionString);
 
+#if NET8_0_OR_GREATER
         _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+#else
+        _dataSource = new NpgsqlDataSourceBuilder(appSettings.ConnectionString).Build();
+#endif
     }
 
     [DapperAot, CacheCommand, StrictTypes, QueryColumns("id", "message")]
