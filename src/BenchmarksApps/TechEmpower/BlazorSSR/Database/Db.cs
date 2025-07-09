@@ -21,7 +21,7 @@ public sealed class Db : IAsyncDisposable
             Console.WriteLine(env.ToString());
         }
         Console.WriteLine("----------");
-        Console.WriteLine($"ConnectionString: '{appSettings.ConnectionString}'");
+        Console.WriteLine($"AppSettings.ConnectionString: '{appSettings.ConnectionString}'");
         Console.WriteLine("----------");
 
 #if NET8_0_OR_GREATER
