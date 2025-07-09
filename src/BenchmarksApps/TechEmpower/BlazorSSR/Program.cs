@@ -20,6 +20,13 @@ if (bool.TryParse(builder.Configuration["use-antiforgery"], out var useAntiforge
 var appSettings = new AppSettings();
 builder.Configuration.Bind(appSettings);
 
+Console.WriteLine("everything from builder.Configuration:");
+foreach (var i in builder.Configuration.AsEnumerable())
+{
+    Console.WriteLine($"{i.Key}: '{i.Value}'");
+}
+Console.WriteLine("--------------------------------------");
+
 // Add services to the container.
 builder.Services.AddDbContextPool<AppDbContext>(options => options
     .UseNpgsql(appSettings.ConnectionString, npgsql => npgsql.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
@@ -33,13 +40,6 @@ builder.Services.AddSingleton(serviceProvider =>
     settings.AllowCharacter('\u2014'); // allow EM DASH through
     return HtmlEncoder.Create(settings);
 });
-
-Console.WriteLine("everything from builder.Configuration:");
-foreach (var i in builder.Configuration.AsEnumerable())
-{
-    Console.WriteLine($"{i.Key}: '{i.Value}'");
-}
-Console.WriteLine("--------------------------------------");
 
 var app = builder.Build();
 
