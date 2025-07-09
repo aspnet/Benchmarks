@@ -12,10 +12,10 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/TechEmpower/BlazorSSR/BlazorSSR.csproj
     readyStateText: Application started.
-    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --with-antiforgery"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --use-antiforgery {{useAntiforgery}}"
     variables:
       serverScheme: http
-      noAntiforgery: false
+      useAntiforgery: true
     environmentVariables:
       connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000
 
