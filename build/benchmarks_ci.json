@@ -264,7 +264,7 @@
         {
             "name": "NativeAOT",
             "template": "nativeaot-scenarios.yml",
-            "type": 2,
+            "type": 3,
             "target_machines": [
                 "gold-lin",
                 "gold-win",
