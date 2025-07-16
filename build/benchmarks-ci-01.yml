@@ -259,7 +259,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-win-app --profile gold-load2-load "
+      arguments: "$(ciProfile) --profile gold-win-app --profile gold-load2-load --profile gold-db-db "
       
 # GROUP 5
 
@@ -303,7 +303,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Trends_Gold_Win
   displayName: 5- Trends Gold Win
@@ -333,7 +333,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load "
+      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load --profile gold-db-db "
       
 - job: NativeAOT_Intel_Lin
   displayName: 6- NativeAOT Intel Lin
@@ -347,21 +347,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
-      
-- job: Frameworks_Amd_Lin2
-  displayName: 6- Frameworks Amd Lin2
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
-  condition: succeededOrFailed()
-  steps:
-  - template: frameworks-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: citrine3
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile amd-lin2-app --profile intel-load2-load --profile intel-db-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: GC_Gold_Win
   displayName: 6- GC Gold Win
@@ -373,9 +359,23 @@ jobs:
   - template: gc-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: mono
+      serviceBusQueueName: citrine3
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile gold-win-app "
+      
+- job: GC_Intel_Win
+  displayName: 6- GC Intel Win
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [SignalR_Gold_Lin, SignalR_Intel_Lin, NativeAOT_Intel_Win, Trends_Gold_Win]
+  condition: succeededOrFailed()
+  steps:
+  - template: gc-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile intel-win-app "
       
 # GROUP 7
 
@@ -383,7 +383,7 @@ jobs:
   displayName: 7- Frameworks Gold Lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
+  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, GC_Gold_Win, GC_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
@@ -397,7 +397,7 @@ jobs:
   displayName: 7- Frameworks Intel Lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
+  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, GC_Gold_Win, GC_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
@@ -411,7 +411,7 @@ jobs:
   displayName: 7- Single File Gold Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
+  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, GC_Gold_Win, GC_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: singlefile-scenarios.yml
@@ -425,7 +425,7 @@ jobs:
   displayName: 7- Single File Intel Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, Frameworks_Amd_Lin2, GC_Gold_Win]
+  dependsOn: [NativeAOT_Gold_Lin, NativeAOT_Intel_Lin, GC_Gold_Win, GC_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: singlefile-scenarios.yml

@@ -465,19 +465,19 @@ jobs:
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
-- job: GC_Intel_Win
-  displayName: 8- GC Intel Win
+- job: Frameworks_Amd_Lin2
+  displayName: 8- Frameworks Amd Lin2
   pool: server
   timeoutInMinutes: 120
   dependsOn: [MVC_Gold_Lin, MVC_Intel_Lin, EF_Core_Gold_Win, EF_Core_Intel_Win]
   condition: succeededOrFailed()
   steps:
-  - template: gc-scenarios.yml
+  - template: frameworks-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app "
+      arguments: "$(ciProfile) --profile amd-lin2-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Trends_Database_Gold_Win
   displayName: 8- Trends Database Gold Win
@@ -499,7 +499,7 @@ jobs:
   displayName: 9- GC Gold Lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, GC_Intel_Win, Trends_Database_Gold_Win]
+  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, Frameworks_Amd_Lin2, Trends_Database_Gold_Win]
   condition: succeededOrFailed()
   steps:
   - template: gc-scenarios.yml
@@ -513,7 +513,7 @@ jobs:
   displayName: 9- GC Intel Lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, GC_Intel_Win, Trends_Database_Gold_Win]
+  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, Frameworks_Amd_Lin2, Trends_Database_Gold_Win]
   condition: succeededOrFailed()
   steps:
   - template: gc-scenarios.yml
@@ -527,7 +527,7 @@ jobs:
   displayName: 9- Trends Database Intel Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, GC_Intel_Win, Trends_Database_Gold_Win]
+  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, Frameworks_Amd_Lin2, Trends_Database_Gold_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -541,7 +541,7 @@ jobs:
   displayName: 9- Trends Database Amd Lin2
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, GC_Intel_Win, Trends_Database_Gold_Win]
+  dependsOn: [Trends_Gold_Lin, Trends_Intel_Lin, Frameworks_Amd_Lin2, Trends_Database_Gold_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
