@@ -635,3 +635,59 @@ profiles:
         aliases:
           - db
           - downstream
+
+  aspnet-cobalt-hosted-lin:
+    variables:
+      mainAddress: 10.57.32.73
+      secondaryAddress: 10.57.32.72
+      extraAddress: 10.57.32.74
+      serverAddress: 10.57.32.73
+      databaseServer: 10.57.32.74
+      downstreamAddress: 10.57.32.74
+      cores: 56
+    agents:
+      main:
+        endpoints:
+          - http://10.57.32.73:5001
+        aliases:
+          - application
+      secondary:
+        endpoints:
+          - http://10.57.32.72:5001
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints:
+          - http://10.57.32.74:5001
+        aliases:
+          - db
+          - downstream
+
+  aspnet-cobalt-hosted-lin-relay:
+    variables:
+      mainAddress: 10.57.32.73
+      secondaryAddress: 10.57.32.72
+      extraAddress: 10.57.32.74
+      serverAddress: 10.57.32.73
+      databaseServer: 10.57.32.74
+      downstreamAddress: 10.57.32.74
+      cores: 56
+    agents:
+      main:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlinserver
+        aliases:
+          - application
+      secondary:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlinclient
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlindb
+        aliases:
+          - db
+          - downstream
