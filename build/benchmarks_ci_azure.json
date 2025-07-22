@@ -1,0 +1,307 @@
+{
+  "metadata": {
+    "name": "Azure CI Benchmarks Configuration",
+    "description": "Combined machines and scenarios for continuous integration benchmarks on Azure",
+    "version": "1.0",
+    "schedule": "0 9/12 * * *",
+    "queues": [
+      "azure",
+      "azurearm64"
+    ],
+    "yaml_generation": {
+      "target_yaml_count": 2,
+      "schedule_offset_hours": 6
+    }
+  },
+  "machines": [
+    {
+      "name": "azure-arm64-db",
+      "capabilities": {
+        "db": {
+          "priority": 1,
+          "profiles": [
+            "azure-arm64-db-db"
+          ],
+          "default_profile": "azure-arm64-db-db"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure-arm64-db-load"
+          ],
+          "default_profile": "azure-arm64-db-load"
+        },
+        "sut": {
+          "priority": 3,
+          "profiles": [
+            "azure-arm64-db-app"
+          ],
+          "default_profile": "azure-arm64-db-app"
+        }
+      },
+      "preferred_partners": []
+    },
+    {
+      "name": "azure-arm64-client",
+      "capabilities": {
+        "load": {
+          "priority": 1,
+          "profiles": [
+            "azure-arm64-client-load"
+          ],
+          "default_profile": "azure-arm64-client-load"
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure-arm64-client-app"
+          ],
+          "default_profile": "azure-arm64-client-app"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure-arm64-client-db"
+          ],
+          "default_profile": "azure-arm64-client-db"
+        }
+      },
+      "preferred_partners": []
+    },
+    {
+      "name": "azure-arm64-server",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "azure-arm64-server-app"
+          ],
+          "default_profile": "azure-arm64-server-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure-arm64-server-load"
+          ],
+          "default_profile": "azure-arm64-server-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure-arm64-server-db"
+          ],
+          "default_profile": "azure-arm64-server-db"
+        }
+      },
+      "preferred_partners": [
+        "azure-arm64-client",
+        "azure-arm64-db"
+      ]
+    },
+    {
+      "name": "azure-client",
+      "capabilities": {
+        "load": {
+          "priority": 1,
+          "profiles": [
+            "azure-client-load"
+          ],
+          "default_profile": "azure-client-load"
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure-client-app"
+          ],
+          "default_profile": "azure-client-app"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure-client-db"
+          ],
+          "default_profile": "azure-client-db"
+        }
+      },
+      "preferred_partners": []
+    },
+    {
+      "name": "azure-db",
+      "capabilities": {
+        "db": {
+          "priority": 1,
+          "profiles": [
+            "azure-db-db"
+          ],
+          "default_profile": "azure-db-db"
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure-db-app"
+          ],
+          "default_profile": "azure-db-app"
+        },
+        "load": {
+          "priority": 3,
+          "profiles": [
+            "azure-db-load"
+          ],
+          "default_profile": "azure-db-load"
+        }
+      },
+      "preferred_partners": []
+    },
+    {
+      "name": "azure-server",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "azure-server-app"
+          ],
+          "default_profile": "azure-server-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure-server-load"
+          ],
+          "default_profile": "azure-server-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure-server-db"
+          ],
+          "default_profile": "azure-server-db"
+        }
+      },
+      "preferred_partners": [
+        "azure-client",
+        "azure-db"
+      ]
+    },
+    {
+      "name": "idna-amd-lin",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-amd-lin-app"
+          ],
+          "default_profile": "idna-amd-lin-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-amd-lin-load"
+          ],
+          "default_profile": "idna-amd-lin-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-amd-lin-db"
+          ],
+          "default_profile": "idna-amd-lin-db"
+        }
+      },
+      "preferred_partners": [
+        "idna-intel-lin",
+        "azure-db"
+      ]
+    },
+    {
+      "name": "idna-amd-win",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-amd-win-app"
+          ],
+          "default_profile": "idna-amd-win-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-amd-win-load"
+          ],
+          "default_profile": "idna-amd-win-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-amd-win-db"
+          ],
+          "default_profile": "idna-amd-win-db"
+        }
+      },
+      "preferred_partners": [
+        "idna-amd-lin",
+        "azure-db"
+      ]
+    },
+    {
+      "name": "idna-intel-lin",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-intel-lin-app"
+          ],
+          "default_profile": "idna-intel-lin-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-intel-lin-load"
+          ],
+          "default_profile": "idna-intel-lin-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-intel-lin-db"
+          ],
+          "default_profile": "idna-intel-lin-db"
+        }
+      },
+      "preferred_partners": [
+        "idna-amd-lin",
+        "azure-db"
+      ]
+    },
+    {
+      "name": "idna-intel-win",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-intel-win-app"
+          ],
+          "default_profile": "idna-intel-win-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-intel-win-load"
+          ],
+          "default_profile": "idna-intel-win-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-intel-win-db"
+          ],
+          "default_profile": "idna-intel-win-db"
+        }
+      },
+      "preferred_partners": [
+        "idna-amd-lin",
+        "azure-db"
+      ]
+    }
+  ],
+  "scenarios": []
+}

@@ -400,3 +400,498 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  # Add individual machine profiles for azure-arm64-db similar to ci.profile.yml
+  azure-arm64-db-app:
+    variables:
+      serverAddress: 10.0.4.9
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.9:5001
+        aliases:
+          - main
+
+  azure-arm64-db-db:
+    variables:
+      databaseServer: 10.0.4.9
+      downstreamAddress: 10.0.4.9
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.9:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-arm64-db-load:
+    variables:
+      secondaryAddress: 10.0.4.9
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.9:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-arm64-client
+  azure-arm64-client-app:
+    variables:
+      serverAddress: 10.0.4.8
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.8:5001
+        aliases:
+          - main
+
+  azure-arm64-client-db:
+    variables:
+      databaseServer: 10.0.4.8
+      downstreamAddress: 10.0.4.8
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.8:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-arm64-client-load:
+    variables:
+      secondaryAddress: 10.0.4.8
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.8:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-arm64-server
+  azure-arm64-server-app:
+    variables:
+      serverAddress: 10.0.4.7
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.7:5001
+        aliases:
+          - main
+
+  azure-arm64-server-db:
+    variables:
+      databaseServer: 10.0.4.7
+      downstreamAddress: 10.0.4.7
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.7:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-arm64-server-load:
+    variables:
+      secondaryAddress: 10.0.4.7
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.7:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-client
+  azure-client-app:
+    variables:
+      serverAddress: 10.0.4.5
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.5:5001
+        aliases:
+          - main
+
+  azure-client-db:
+    variables:
+      databaseServer: 10.0.4.5
+      downstreamAddress: 10.0.4.5
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.5:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-client-load:
+    variables:
+      secondaryAddress: 10.0.4.5
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.5:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-db
+  azure-db-app:
+    variables:
+      serverAddress: 10.0.4.6
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.6:5001
+        aliases:
+          - main
+
+  azure-db-db:
+    variables:
+      databaseServer: 10.0.4.6
+      downstreamAddress: 10.0.4.6
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.6:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-db-load:
+    variables:
+      secondaryAddress: 10.0.4.6
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.6:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-server
+  azure-server-app:
+    variables:
+      serverAddress: 10.0.4.4
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.4:5001
+        aliases:
+          - main
+
+  azure-server-db:
+    variables:
+      databaseServer: 10.0.4.4
+      downstreamAddress: 10.0.4.4
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.4:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-server-load:
+    variables:
+      secondaryAddress: 10.0.4.4
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.4:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-amd-lin
+  idna-amd-lin-app:
+    variables:
+      serverAddress: 10.0.4.13
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.13:5001
+        aliases:
+          - main
+
+  idna-amd-lin-db:
+    variables:
+      databaseServer: 10.0.4.13
+      downstreamAddress: 10.0.4.13
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.13:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-amd-lin-load:
+    variables:
+      secondaryAddress: 10.0.4.13
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.13:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-amd-win
+  idna-amd-win-app:
+    variables:
+      serverAddress: 10.0.4.15
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.15:5001
+        aliases:
+          - main
+
+  idna-amd-win-db:
+    variables:
+      databaseServer: 10.0.4.15
+      downstreamAddress: 10.0.4.15
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.15:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-amd-win-load:
+    variables:
+      secondaryAddress: 10.0.4.15
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.15:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-intel-lin
+  idna-intel-lin-app:
+    variables:
+      serverAddress: 10.0.4.12
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.12:5001
+        aliases:
+          - main
+
+  idna-intel-lin-db:
+    variables:
+      databaseServer: 10.0.4.12
+      downstreamAddress: 10.0.4.12
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.12:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-intel-lin-load:
+    variables:
+      secondaryAddress: 10.0.4.12
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.12:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-intel-win
+  idna-intel-win-app:
+    variables:
+      serverAddress: 10.0.4.14
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.14:5001
+        aliases:
+          - main
+
+  idna-intel-win-db:
+    variables:
+      databaseServer: 10.0.4.14
+      downstreamAddress: 10.0.4.14
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.14:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-intel-win-load:
+    variables:
+      secondaryAddress: 10.0.4.14
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.14:5001
+        aliases:
+          - warmup
+            - secondary
+
+  #############################################
+  #                                           #
+  #         EAST US 2 MACHINES                #
+  #                                           #
+  #############################################
+  # Individual machine profiles for cobalt-cloud-lin-client
+  cobalt-cloud-lin-client-app:
+    variables:
+      serverAddress: 10.2.2.13
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.2.2.13:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-client-db:
+    variables:
+      databaseServer: 10.2.2.13
+      downstreamAddress: 10.2.2.13
+    agents:
+      db:
+        endpoints:
+          - http://10.2.2.13:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-client-load:
+    variables:
+      secondaryAddress: 10.2.2.13
+    agents:
+      load:
+        endpoints:
+          - http://10.2.2.13:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-db
+  cobalt-cloud-lin-db-app:
+    variables:
+      serverAddress: 10.2.2.14
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.2.2.14:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-db-db:
+    variables:
+      databaseServer: 10.2.2.14
+      downstreamAddress: 10.2.2.14
+    agents:
+      db:
+        endpoints:
+          - http://10.2.2.14:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-db-load:
+    variables:
+      secondaryAddress: 10.2.2.14
+    agents:
+      load:
+        endpoints:
+          - http://10.2.2.14:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-server
+  cobalt-cloud-lin-server-app:
+    variables:
+      serverAddress: 10.2.2.15
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.2.2.15:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-server-db:
+    variables:
+      databaseServer: 10.2.2.15
+      downstreamAddress: 10.2.2.15
+    agents:
+      db:
+        endpoints:
+          - http://10.2.2.15:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-server-load:
+    variables:
+      secondaryAddress: 10.2.2.15
+    agents:
+      load:
+        endpoints:
+          - http://10.2.2.15:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-server-azure-linux3
+  cobalt-cloud-lin-server-azure-linux3-app:
+    variables:
+      serverAddress: 10.2.2.16
+      cores: TODO
+    agents:
+      application:
+        endpoints:
+          - http://10.2.2.16:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-server-azure-linux3-db:
+    variables:
+      databaseServer: 10.2.2.16
+      downstreamAddress: 10.2.2.16
+    agents:
+      db:
+        endpoints:
+          - http://10.2.2.16:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-server-azure-linux3-load:
+    variables:
+      secondaryAddress: 10.2.2.16
+    agents:
+      load:
+        endpoints:
+          - http://10.2.2.16:5001
+        aliases:
+          - warmup
+          - secondary
