@@ -303,5 +303,60 @@
       ]
     }
   ],
-  "scenarios": []
+  "scenarios": [
+    {
+      "name": "Baselines",
+      "template": "baselines-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 30.0
+    },
+    {
+      "name": "Baselines Database",
+      "template": "baselines-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 45.0
+    },
+    {
+      "name": "Containers",
+      "template": "containers-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 90.0
+    },
+    {
+      "name": "Trends",
+      "template": "trend-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64",
+        "idna-amd-lin",
+        "idna-amd-win",
+        "idna-intel-lin",
+        "idna-intel-win"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "Trends Database",
+      "template": "trend-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 15.0
+    }
+  ]
 }
