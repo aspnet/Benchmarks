@@ -9,7 +9,7 @@
       "azurearm64"
     ],
     "yaml_generation": {
-      "target_yaml_count": 2,
+      "target_yaml_count": 1,
       "schedule_offset_hours": 6
     }
   },
