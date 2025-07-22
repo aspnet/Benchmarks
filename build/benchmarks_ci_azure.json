@@ -15,88 +15,31 @@
   },
   "machines": [
     {
-      "name": "azure-arm64-db",
+      "name": "azure-db",
       "capabilities": {
         "db": {
           "priority": 1,
           "profiles": [
-            "azure-arm64-db-db"
+            "azure-db-db"
           ],
-          "default_profile": "azure-arm64-db-db"
+          "default_profile": "azure-db-db"
         },
         "load": {
           "priority": 2,
           "profiles": [
-            "azure-arm64-db-load"
+            "azure-db-load"
           ],
-          "default_profile": "azure-arm64-db-load"
+          "default_profile": "azure-db-load"
         },
         "sut": {
           "priority": 3,
           "profiles": [
-            "azure-arm64-db-app"
+            "azure-db-app"
           ],
-          "default_profile": "azure-arm64-db-app"
+          "default_profile": "azure-db-app"
         }
       },
       "preferred_partners": []
-    },
-    {
-      "name": "azure-arm64-client",
-      "capabilities": {
-        "load": {
-          "priority": 1,
-          "profiles": [
-            "azure-arm64-client-load"
-          ],
-          "default_profile": "azure-arm64-client-load"
-        },
-        "sut": {
-          "priority": 2,
-          "profiles": [
-            "azure-arm64-client-app"
-          ],
-          "default_profile": "azure-arm64-client-app"
-        },
-        "db": {
-          "priority": 3,
-          "profiles": [
-            "azure-arm64-client-db"
-          ],
-          "default_profile": "azure-arm64-client-db"
-        }
-      },
-      "preferred_partners": []
-    },
-    {
-      "name": "azure-arm64-server",
-      "capabilities": {
-        "sut": {
-          "priority": 1,
-          "profiles": [
-            "azure-arm64-server-app"
-          ],
-          "default_profile": "azure-arm64-server-app"
-        },
-        "load": {
-          "priority": 2,
-          "profiles": [
-            "azure-arm64-server-load"
-          ],
-          "default_profile": "azure-arm64-server-load"
-        },
-        "db": {
-          "priority": 3,
-          "profiles": [
-            "azure-arm64-server-db"
-          ],
-          "default_profile": "azure-arm64-server-db"
-        }
-      },
-      "preferred_partners": [
-        "azure-arm64-client",
-        "azure-arm64-db"
-      ]
     },
     {
       "name": "azure-client",
@@ -126,60 +69,117 @@
       "preferred_partners": []
     },
     {
-      "name": "azure-db",
-      "capabilities": {
-        "db": {
-          "priority": 1,
-          "profiles": [
-            "azure-db-db"
-          ],
-          "default_profile": "azure-db-db"
-        },
-        "sut": {
-          "priority": 2,
-          "profiles": [
-            "azure-db-app"
-          ],
-          "default_profile": "azure-db-app"
-        },
-        "load": {
-          "priority": 3,
-          "profiles": [
-            "azure-db-load"
-          ],
-          "default_profile": "azure-db-load"
-        }
-      },
-      "preferred_partners": []
-    },
-    {
-      "name": "azure-server",
+      "name": "azure-server-arm64",
       "capabilities": {
         "sut": {
           "priority": 1,
           "profiles": [
-            "azure-server-app"
+            "azure-server-arm64-app"
           ],
-          "default_profile": "azure-server-app"
+          "default_profile": "azure-server-arm64-app"
         },
         "load": {
           "priority": 2,
           "profiles": [
-            "azure-server-load"
+            "azure-server-arm64-load"
           ],
-          "default_profile": "azure-server-load"
+          "default_profile": "azure-server-arm64-load"
         },
         "db": {
           "priority": 3,
           "profiles": [
-            "azure-server-db"
+            "azure-server-arm64-db"
           ],
-          "default_profile": "azure-server-db"
+          "default_profile": "azure-server-arm64-db"
         }
       },
       "preferred_partners": [
         "azure-client",
         "azure-db"
+      ]
+    },
+    {
+      "name": "azure2-client",
+      "capabilities": {
+        "load": {
+          "priority": 1,
+          "profiles": [
+            "azure2-client-load"
+          ],
+          "default_profile": "azure2-client-load"
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure2-client-app"
+          ],
+          "default_profile": "azure2-client-app"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure2-client-db"
+          ],
+          "default_profile": "azure2-client-db"
+        }
+      },
+      "preferred_partners": []
+    },
+    {
+      "name": "azure2-db",
+      "capabilities": {
+        "db": {
+          "priority": 1,
+          "profiles": [
+            "azure2-db-db"
+          ],
+          "default_profile": "azure2-db-db"
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure2-db-app"
+          ],
+          "default_profile": "azure2-db-app"
+        },
+        "load": {
+          "priority": 3,
+          "profiles": [
+            "azure2-db-load"
+          ],
+          "default_profile": "azure2-db-load"
+        }
+      },
+      "preferred_partners": []
+    },
+    {
+      "name": "azure2-server-amd64",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "azure2-server-amd64-app"
+          ],
+          "default_profile": "azure2-server-amd64-app"
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure2-server-amd64-load"
+          ],
+          "default_profile": "azure2-server-amd64-load"
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure2-server-amd64-db"
+          ],
+          "default_profile": "azure2-server-amd64-db"
+        }
+      },
+      "preferred_partners": [
+        "azure2-client",
+        "azure2-db"
       ]
     },
     {
@@ -209,7 +209,7 @@
       },
       "preferred_partners": [
         "idna-intel-lin",
-        "azure-db"
+        "azure2-db"
       ]
     },
     {
@@ -239,7 +239,7 @@
       },
       "preferred_partners": [
         "idna-amd-lin",
-        "azure-db"
+        "azure2-db"
       ]
     },
     {
@@ -269,7 +269,7 @@
       },
       "preferred_partners": [
         "idna-amd-lin",
-        "azure-db"
+        "azure2-db"
       ]
     },
     {
@@ -299,7 +299,7 @@
       },
       "preferred_partners": [
         "idna-amd-lin",
-        "azure-db"
+        "azure2-db"
       ]
     }
   ],
