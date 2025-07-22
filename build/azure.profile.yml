@@ -401,11 +401,11 @@ profiles:
           - warmup
           - secondary
 
-  # Add individual machine profiles for azure-arm64-db similar to ci.profile.yml
-  azure-arm64-db-app:
+  # Add individual machine profiles for azure-db similar to ci.profile.yml
+  azure-db-app: # azurearm64db
     variables:
       serverAddress: 10.0.4.9
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -413,7 +413,7 @@ profiles:
         aliases:
           - main
 
-  azure-arm64-db-db:
+  azure-db-db:
     variables:
       databaseServer: 10.0.4.9
       downstreamAddress: 10.0.4.9
@@ -425,7 +425,7 @@ profiles:
           - downstream
           - extra
 
-  azure-arm64-db-load:
+  azure-db-load:
     variables:
       secondaryAddress: 10.0.4.9
     agents:
@@ -436,11 +436,11 @@ profiles:
           - warmup
           - secondary
 
-  # Individual machine profiles for azure-arm64-client
-  azure-arm64-client-app:
+  # Individual machine profiles for azure-client
+  azure-client-app: # azurearm64client
     variables:
       serverAddress: 10.0.4.8
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -448,7 +448,7 @@ profiles:
         aliases:
           - main
 
-  azure-arm64-client-db:
+  azure-client-db:
     variables:
       databaseServer: 10.0.4.8
       downstreamAddress: 10.0.4.8
@@ -460,7 +460,7 @@ profiles:
           - downstream
           - extra
 
-  azure-arm64-client-load:
+  azure-client-load:
     variables:
       secondaryAddress: 10.0.4.8
     agents:
@@ -471,11 +471,11 @@ profiles:
           - warmup
           - secondary
 
-  # Individual machine profiles for azure-arm64-server
-  azure-arm64-server-app:
+  # Individual machine profiles for azure-server-arm64
+  azure-server-arm64-app: # azurearm64server
     variables:
       serverAddress: 10.0.4.7
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -483,7 +483,7 @@ profiles:
         aliases:
           - main
 
-  azure-arm64-server-db:
+  azure-server-arm64-db:
     variables:
       databaseServer: 10.0.4.7
       downstreamAddress: 10.0.4.7
@@ -495,7 +495,7 @@ profiles:
           - downstream
           - extra
 
-  azure-arm64-server-load:
+  azure-server-arm64-load:
     variables:
       secondaryAddress: 10.0.4.7
     agents:
@@ -506,11 +506,11 @@ profiles:
           - warmup
           - secondary
 
-  # Individual machine profiles for azure-client
-  azure-client-app:
+  # Individual machine profiles for azure2-client
+  azure2-client-app:
     variables:
       serverAddress: 10.0.4.5
-      cores: TODO
+      cores: 2
     agents:
       application:
         endpoints:
@@ -518,7 +518,7 @@ profiles:
         aliases:
           - main
 
-  azure-client-db:
+  azure2-client-db:
     variables:
       databaseServer: 10.0.4.5
       downstreamAddress: 10.0.4.5
@@ -530,7 +530,7 @@ profiles:
           - downstream
           - extra
 
-  azure-client-load:
+  azure2-client-load:
     variables:
       secondaryAddress: 10.0.4.5
     agents:
@@ -541,11 +541,11 @@ profiles:
           - warmup
           - secondary
 
-  # Individual machine profiles for azure-db
-  azure-db-app:
+  # Individual machine profiles for azure2-db
+  azure2-db-app:
     variables:
       serverAddress: 10.0.4.6
-      cores: TODO
+      cores: 2
     agents:
       application:
         endpoints:
@@ -553,7 +553,7 @@ profiles:
         aliases:
           - main
 
-  azure-db-db:
+  azure2-db-db:
     variables:
       databaseServer: 10.0.4.6
       downstreamAddress: 10.0.4.6
@@ -565,7 +565,7 @@ profiles:
           - downstream
           - extra
 
-  azure-db-load:
+  azure2-db-load:
     variables:
       secondaryAddress: 10.0.4.6
     agents:
@@ -576,11 +576,11 @@ profiles:
           - warmup
           - secondary
 
-  # Individual machine profiles for azure-server
-  azure-server-app:
+  # Individual machine profiles for azure2-server-amd64
+  azure2-server-amd64-app:
     variables:
       serverAddress: 10.0.4.4
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -588,7 +588,7 @@ profiles:
         aliases:
           - main
 
-  azure-server-db:
+  azure2-server-amd64-db:
     variables:
       databaseServer: 10.0.4.4
       downstreamAddress: 10.0.4.4
@@ -600,7 +600,7 @@ profiles:
           - downstream
           - extra
 
-  azure-server-load:
+  azure2-server-amd64-load:
     variables:
       secondaryAddress: 10.0.4.4
     agents:
@@ -615,7 +615,7 @@ profiles:
   idna-amd-lin-app:
     variables:
       serverAddress: 10.0.4.13
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -650,7 +650,7 @@ profiles:
   idna-amd-win-app:
     variables:
       serverAddress: 10.0.4.15
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -685,7 +685,7 @@ profiles:
   idna-intel-lin-app:
     variables:
       serverAddress: 10.0.4.12
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -720,7 +720,7 @@ profiles:
   idna-intel-win-app:
     variables:
       serverAddress: 10.0.4.14
-      cores: TODO
+      cores: 4
     agents:
       application:
         endpoints:
@@ -760,7 +760,7 @@ profiles:
   cobalt-cloud-lin-client-app:
     variables:
       serverAddress: 10.2.2.13
-      cores: TODO
+      cores: 16
     agents:
       application:
         endpoints:
@@ -795,7 +795,7 @@ profiles:
   cobalt-cloud-lin-db-app:
     variables:
       serverAddress: 10.2.2.14
-      cores: TODO
+      cores: 16
     agents:
       application:
         endpoints:
@@ -830,7 +830,7 @@ profiles:
   cobalt-cloud-lin-server-app:
     variables:
       serverAddress: 10.2.2.15
-      cores: TODO
+      cores: 16
     agents:
       application:
         endpoints:
@@ -865,7 +865,7 @@ profiles:
   cobalt-cloud-lin-server-azure-linux3-app:
     variables:
       serverAddress: 10.2.2.16
-      cores: TODO
+      cores: 16
     agents:
       application:
         endpoints:
