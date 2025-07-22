@@ -413,3 +413,37 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  cobalt-hosted-lin-app:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 56
+    agents:
+      application:
+        endpoints:
+          - http://10.57.32.73:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-load:
+    variables:
+      secondaryAddress: 10.57.32.72
+    agents:
+      load:
+        endpoints:
+          - http://10.57.32.72:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-hosted-lin-db:
+    variables:
+      databaseServer: 10.57.32.74
+      downstreamAddress: 10.57.32.74
+    agents:
+      db:
+        endpoints:
+          - http://10.57.32.74:5001
+        aliases:
+          - downstream
+          - extra
