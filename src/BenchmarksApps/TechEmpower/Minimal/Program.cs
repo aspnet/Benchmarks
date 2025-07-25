@@ -23,6 +23,7 @@ builder.Services.AddSingleton(CreateHtmlEncoder());
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
+    options.SerializerOptions.Encoder = null;
     options.SerializerOptions.TypeInfoResolverChain.Add(CustomJsonContext.Default);
 });
 
