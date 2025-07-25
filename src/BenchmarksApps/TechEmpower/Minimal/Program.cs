@@ -18,13 +18,13 @@ var appSettings = new AppSettings();
 builder.Configuration.Bind(appSettings);
 
 // Add services to the container.
-builder.Services.AddSingleton(new Db(appSettings));
+//builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddSingleton(CreateHtmlEncoder());
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Encoder = null;
-    options.SerializerOptions.TypeInfoResolverChain.Add(CustomJsonContext.Default);
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, CustomJsonContext.Default);
 });
 
 var app = builder.Build();
@@ -37,25 +37,25 @@ app.MapGet("/json", () => new JsonMessage() { message = "Hello, World!" });
 
 app.MapGet("/json/result", () => Results.Json(new JsonMessage() { message = "Hello, World!" }));
 
-app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
+//app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
-app.MapGet("/db/result", async (Db db) => Results.Json(await db.LoadSingleQueryRow()));
+//app.MapGet("/db/result", async (Db db) => Results.Json(await db.LoadSingleQueryRow()));
 
-app.MapGet("/fortunes", async (HttpContext context, Db db, HtmlEncoder htmlEncoder) => {
-    var fortunes = await db.LoadFortunesRows();
-    //var fortunes = await db.LoadFortunesRowsNoDb(); // Don't call the database
-    var template = (RazorSliceHttpResult<List<Fortune>>)Fortunes.Create(fortunes);
-    template.HtmlEncoder = htmlEncoder;
-    return template;
-});
+//app.MapGet("/fortunes", async (HttpContext context, Db db, HtmlEncoder htmlEncoder) => {
+//    var fortunes = await db.LoadFortunesRows();
+//    //var fortunes = await db.LoadFortunesRowsNoDb(); // Don't call the database
+//    var template = (RazorSliceHttpResult<List<Fortune>>)Fortunes.Create(fortunes);
+//    template.HtmlEncoder = htmlEncoder;
+//    return template;
+//});
 
-app.MapGet("/queries/{count}", async (Db db, int count) => await db.LoadMultipleQueriesRows(count));
+//app.MapGet("/queries/{count}", async (Db db, int count) => await db.LoadMultipleQueriesRows(count));
 
-app.MapGet("/queries/{count}/result", async (Db db, int count) => Results.Json(await db.LoadMultipleQueriesRows(count)));
+//app.MapGet("/queries/{count}/result", async (Db db, int count) => Results.Json(await db.LoadMultipleQueriesRows(count)));
 
-app.MapGet("/updates/{count}", async (Db db, int count) => await db.LoadMultipleUpdatesRows(count));
+//app.MapGet("/updates/{count}", async (Db db, int count) => await db.LoadMultipleUpdatesRows(count));
 
-app.MapGet("/updates/{count}/result", async (Db db, int count) => Results.Json(await db.LoadMultipleUpdatesRows(count)));
+//app.MapGet("/updates/{count}/result", async (Db db, int count) => Results.Json(await db.LoadMultipleUpdatesRows(count)));
 
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));
