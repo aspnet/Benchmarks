@@ -19,15 +19,20 @@ builder.Configuration.Bind(appSettings);
 builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddSingleton(CreateHtmlEncoder());
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Add(CustomJsonContext.Default);
+});
+
 var app = builder.Build();
 
 app.MapGet("/plaintext", () => "Hello, World!");
 
 app.MapGet("/plaintext/result", () => Results.Text("Hello, World!"));
 
-app.MapGet("/json", () => new { message = "Hello, World!" });
+app.MapGet("/json", () => new JsonMessage() { message = "Hello, World!" });
 
-app.MapGet("/json/result", () => Results.Json(new { message = "Hello, World!" }));
+app.MapGet("/json/result", () => Results.Json(new JsonMessage() { message = "Hello, World!" }));
 
 app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
@@ -59,4 +64,19 @@ static HtmlEncoder CreateHtmlEncoder()
     var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
     settings.AllowCharacter('\u2014'); // allow EM DASH through
     return HtmlEncoder.Create(settings);
+}
+
+#if NET8_0_OR_GREATER
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+#else
+    [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+#endif
+[JsonSerializable(typeof(JsonMessage))]
+internal partial class CustomJsonContext : JsonSerializerContext
+{
+}
+
+public struct JsonMessage
+{
+    public string message { get; set; }
 }
