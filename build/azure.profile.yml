@@ -404,6 +404,7 @@ profiles:
   # Add individual machine profiles for azure-db similar to ci.profile.yml
   azure-db-app: # azurearm64db
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.9
       cores: 4
     agents:
@@ -439,6 +440,7 @@ profiles:
   # Individual machine profiles for azure-client
   azure-client-app: # azurearm64client
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.8
       cores: 4
     agents:
@@ -474,6 +476,7 @@ profiles:
   # Individual machine profiles for azure-server-arm64
   azure-server-arm64-app: # azurearm64server
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.7
       cores: 4
     agents:
@@ -509,6 +512,7 @@ profiles:
   # Individual machine profiles for azure2-client
   azure2-client-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.5
       cores: 2
     agents:
@@ -544,6 +548,7 @@ profiles:
   # Individual machine profiles for azure2-db
   azure2-db-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.6
       cores: 2
     agents:
@@ -579,6 +584,7 @@ profiles:
   # Individual machine profiles for azure2-server-amd64
   azure2-server-amd64-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.4
       cores: 4
     agents:
@@ -614,6 +620,7 @@ profiles:
   # Individual machine profiles for idna-amd-lin
   idna-amd-lin-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.13
       cores: 4
     agents:
@@ -649,6 +656,7 @@ profiles:
   # Individual machine profiles for idna-amd-win
   idna-amd-win-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.15
       cores: 4
     agents:
@@ -684,6 +692,7 @@ profiles:
   # Individual machine profiles for idna-intel-lin
   idna-intel-lin-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.12
       cores: 4
     agents:
@@ -719,6 +728,7 @@ profiles:
   # Individual machine profiles for idna-intel-win
   idna-intel-win-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.0.4.14
       cores: 4
     agents:
@@ -759,6 +769,7 @@ profiles:
   # Individual machine profiles for cobalt-cloud-lin-client
   cobalt-cloud-lin-client-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.2.2.13
       cores: 16
     agents:
@@ -794,6 +805,7 @@ profiles:
   # Individual machine profiles for cobalt-cloud-lin-db
   cobalt-cloud-lin-db-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.2.2.14
       cores: 16
     agents:
@@ -829,6 +841,7 @@ profiles:
   # Individual machine profiles for cobalt-cloud-lin-server
   cobalt-cloud-lin-server-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.2.2.15
       cores: 16
     agents:
@@ -864,6 +877,7 @@ profiles:
   # Individual machine profiles for cobalt-cloud-lin-server-azure-linux3
   cobalt-cloud-lin-server-azure-linux3-app:
     variables:
+      serverPort: 5000
       serverAddress: 10.2.2.16
       cores: 16
     agents:
