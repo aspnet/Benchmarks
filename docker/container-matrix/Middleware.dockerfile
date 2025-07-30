@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/nightly/sdk:latest AS build
 WORKDIR /app
 COPY . .
-RUN dotnet publish src/Benchmarks/Benchmarks.csproj -c Release -o out -f net9.0 /p:BenchmarksTargetFramework=net9.0 /p:MicrosoftAspNetCoreAppPackageVersion=$ASPNET_VERSION
+RUN dotnet publish src/Benchmarks/Benchmarks.csproj -c Release -o out -f net10.0 /p:BenchmarksTargetFramework=net10.0 /p:MicrosoftAspNetCoreAppPackageVersion=$ASPNET_VERSION
 
 FROM mcr.microsoft.com/dotnet/nightly/aspnet:latest AS runtime
 # ENV ASPNETCORE_URLS http://*:5000
