@@ -110,7 +110,7 @@ parameters:
     arguments: --scenario json_ntex --property scenario=JsonNTex
     condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
   - displayName: Fortunes NTex
-    arguments: --scenario fortunes_ntext --property scenario=FortunesNTex
+    arguments: --scenario fortunes_ntex --property scenario=FortunesNTex
     condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
 steps:
