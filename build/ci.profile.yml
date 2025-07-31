@@ -414,7 +414,13 @@ profiles:
           - warmup
           - secondary
 
-  cobalt-hosted-lin-app:
+  #############################################
+  #                                           #
+  #         COBALT NETWORKED MACHINES         #
+  #                                           #
+  #############################################
+
+  cobalt-hosted-lin-server-app:
     variables:
       serverAddress: 10.57.32.73
       cores: 56
@@ -425,7 +431,7 @@ profiles:
         aliases:
           - main
 
-  cobalt-hosted-lin-load:
+  cobalt-hosted-lin-client-load:
     variables:
       secondaryAddress: 10.57.32.72
     agents:
@@ -436,7 +442,7 @@ profiles:
           - warmup
           - secondary
 
-  cobalt-hosted-lin-db:
+  cobalt-hosted-lin-db-db:
     variables:
       databaseServer: 10.57.32.74
       downstreamAddress: 10.57.32.74
@@ -448,7 +454,7 @@ profiles:
           - downstream
           - extra
 
-  cobalt-hosted-al3-lin-app:
+  cobalt-hosted-lin-server-azure-linux3-app:
     variables:
       serverAddress: 10.57.32.95
       cores: 56
@@ -459,7 +465,7 @@ profiles:
         aliases:
           - main
 
-  cobalt-hosted-al3-lin-load:
+  cobalt-hosted-lin-client-azure-linux3-load:
     variables:
       secondaryAddress: 10.57.32.96
     agents:
@@ -470,7 +476,7 @@ profiles:
           - warmup
           - secondary
 
-  cobalt-hosted-al3-lin-db:
+  cobalt-hosted-lin-db-azure-linux3-db:
     variables:
       databaseServer: 10.57.32.94
       downstreamAddress: 10.57.32.94
