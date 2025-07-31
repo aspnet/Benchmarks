@@ -31,161 +31,161 @@ jobs:
 
 # GROUP 1
 
-- job: Trends_Database_Azure_Linux
-  displayName: 1- Trends Database Azure Linux
+- job: Containers_Azure_Server_Arm64
+  displayName: 1- Containers Azure Server Arm64
   pool: server
   timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: trend-database-scenarios.yml
+  - template: containers-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
       
-- job: Trends_Database_Azure_Arm64_Linux
-  displayName: 1- Trends Database Azure Arm64 Linux
+- job: Containers_Azure2_Server_Amd64
+  displayName: 1- Containers Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: trend-database-scenarios.yml
+  - template: containers-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
       
 # GROUP 2
 
-- job: Trends_Azure_Linux
-  displayName: 2- Trends Azure Linux
+- job: Baselines_Database_Azure_Server_Arm64
+  displayName: 2- Baselines Database Azure Server Arm64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Azure_Linux, Trends_Database_Azure_Arm64_Linux]
+  dependsOn: [Containers_Azure_Server_Arm64, Containers_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
       
-- job: Trends_Azure_Arm64_Linux
-  displayName: 2- Trends Azure Arm64 Linux
+- job: Baselines_Database_Azure2_Server_Amd64
+  displayName: 2- Baselines Database Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Azure_Linux, Trends_Database_Azure_Arm64_Linux]
+  dependsOn: [Containers_Azure_Server_Arm64, Containers_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
       
 # GROUP 3
 
-- job: Baselines_Database_Azure_Linux
-  displayName: 3- Baselines Database Azure Linux
+- job: Baselines_Azure_Server_Arm64
+  displayName: 3- Baselines Azure Server Arm64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Azure_Linux, Trends_Azure_Arm64_Linux]
+  dependsOn: [Baselines_Database_Azure_Server_Arm64, Baselines_Database_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: baselines-database-scenarios.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
       
-- job: Baselines_Database_Azure_Arm64_Linux
-  displayName: 3- Baselines Database Azure Arm64 Linux
+- job: Baselines_Azure2_Server_Amd64
+  displayName: 3- Baselines Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Azure_Linux, Trends_Azure_Arm64_Linux]
+  dependsOn: [Baselines_Database_Azure_Server_Arm64, Baselines_Database_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: baselines-database-scenarios.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
       
 # GROUP 4
 
-- job: Baselines_Azure_Linux
-  displayName: 4- Baselines Azure Linux
+- job: Trends_Azure_Server_Arm64
+  displayName: 4- Trends Azure Server Arm64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Azure_Linux, Baselines_Database_Azure_Arm64_Linux]
+  dependsOn: [Baselines_Azure_Server_Arm64, Baselines_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: baselines-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
       
-- job: Baselines_Azure_Arm64_Linux
-  displayName: 4- Baselines Azure Arm64 Linux
+- job: Trends_Azure2_Server_Amd64
+  displayName: 4- Trends Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Azure_Linux, Baselines_Database_Azure_Arm64_Linux]
+  dependsOn: [Baselines_Azure_Server_Arm64, Baselines_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: baselines-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
       
 # GROUP 5
 
-- job: Containers_Azure_Intel_Linux
-  displayName: 5- Containers Azure Intel Linux
+- job: Trends_Idna_Amd_Lin
+  displayName: 5- Trends Idna Amd Lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
+  dependsOn: [Trends_Azure_Server_Arm64, Trends_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: containers-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      arguments: "$(ciProfile) --profile idna-amd-lin-app --profile idna-intel-lin-load "
       
-- job: Containers_Azure_Arm64_Linux
-  displayName: 5- Containers Azure Arm64 Linux
+- job: Trends_Idna_Amd_Win
+  displayName: 5- Trends Idna Amd Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
+  dependsOn: [Trends_Azure_Server_Arm64, Trends_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: containers-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      arguments: "$(ciProfile) --profile idna-amd-win-app --profile azure2-db-load "
       
 # GROUP 6
 
-- job: IDNA_Azure_Amd_Linux
-  displayName: 6- IDNA Azure Amd Linux
+- job: Trends_Idna_Intel_Lin
+  displayName: 6- Trends Idna Intel Lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Containers_Azure_Intel_Linux, Containers_Azure_Arm64_Linux]
+  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Amd_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -193,45 +193,13 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-lin "
+      arguments: "$(ciProfile) --profile idna-intel-lin-app --profile idna-amd-lin-load "
       
-# GROUP 7
-
-- job: IDNA_Azure_Intel_Linux
-  displayName: 7- IDNA Azure Intel Linux
+- job: Trends_Idna_Intel_Win
+  displayName: 6- Trends Idna Intel Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [IDNA_Azure_Amd_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: trend-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: azure
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-lin "
-      
-# GROUP 8
-
-- job: IDNA_Azure_Amd_Windows
-  displayName: 8- IDNA Azure Amd Windows
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [IDNA_Azure_Intel_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: trend-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: azure
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-win "
-      
-- job: IDNA_Azure_Intel_Windows
-  displayName: 8- IDNA Azure Intel Windows
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [IDNA_Azure_Intel_Linux]
+  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Amd_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -239,6 +207,35 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-win "
+      arguments: "$(ciProfile) --profile idna-intel-win-app --profile azure2-db-load "
       
+# GROUP 7
 
+- job: Trends_Database_Azure_Server_Arm64
+  displayName: 7- Trends Database Azure Server Arm64
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Idna_Intel_Lin, Trends_Idna_Intel_Win]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
+      
+- job: Trends_Database_Azure2_Server_Amd64
+  displayName: 7- Trends Database Azure2 Server Amd64
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Idna_Intel_Lin, Trends_Idna_Intel_Win]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
+      
