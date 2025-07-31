@@ -1,0 +1,164 @@
+{
+  "metadata": {
+      "name": "CI Benchmarks Configuration",
+      "description": "Combined machines and scenarios for continuous integration benchmarks",
+      "version": "1.0",
+      "schedule": "0 3/12 * * *",
+      "queues": [
+          "cobalt-queue-ubuntu",
+          "cobalt-queue-al3"
+      ],
+      "yaml_generation": {
+          "target_yaml_count": 1,
+          "schedule_offset_hours": 6
+      }
+  },
+  "machines": [
+      {
+          "name": "cobalt-hosted-lin-server",
+          "capabilities": {
+              "sut": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-server-app"
+                  ],
+                  "default_profile": "cobalt-hosted-lin-server-app"
+              }
+          },
+          "preferred_partners": [
+              "cobalt-hosted-lin-client",
+              "cobalt-hosted-lin-db"
+          ]
+      },
+      {
+          "name": "cobalt-hosted-lin-client",
+          "capabilities": {
+              "load": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-client-load"
+                  ],
+                  "default_profile": "cobalt-hosted-lin-client-load"
+              }
+          },
+          "preferred_partners": []
+      },
+      {
+          "name": "cobalt-hosted-lin-db",
+          "capabilities": {
+              "db": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-db-db"
+                  ],
+                  "default_profile": "cobalt-hosted-lin-db-db"
+              }
+          },
+          "preferred_partners": []
+      },
+      {
+          "name": "cobalt-hosted-lin-server-azure-linux3",
+          "capabilities": {
+              "sut": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-server-azure-linux3-app"
+                  ],
+                  "default_profile": "cobalt-hosted-lin-server-azure-linux3-app"
+              }
+          },
+          "preferred_partners": [
+              "cobalt-hosted-lin-client-azure-linux3",
+              "cobalt-hosted-lin-db-azure-linux3"
+          ]
+      },
+      {
+          "name": "cobalt-hosted-lin-client-azure-linux3",
+          "capabilities": {
+              "load": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-client-azure-linux3-load"
+                  ],
+                  "default_profile": "cobalt-hosted-lin-client-azure-linux3-load"
+              }
+          },
+          "preferred_partners": []
+      },
+      {
+          "name": "cobalt-hosted-lin-db-azure-linux3",
+          "capabilities": {
+              "db": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-db-azure-linux3-db"
+                  ],
+                  "default_profile": "cobalt-hosted-lin-db-azure-linux3-db"
+              }
+          },
+          "preferred_partners": []
+      }
+  ],
+  "scenarios": [
+    {
+      "name": "Baselines",
+      "template": "baselines-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 30.0
+    },
+    {
+      "name": "Baselines Database",
+      "template": "baselines-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 45.0
+    },
+    {
+      "name": "Containers",
+      "template": "containers-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 90.0
+    },
+    {
+      "name": "MVC",
+      "template": "mvc-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "Trends",
+      "template": "trend-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "Trends Database",
+      "template": "trend-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0
+    }
+  ]
+}
