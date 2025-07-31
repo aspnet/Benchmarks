@@ -5,8 +5,7 @@
       "version": "1.0",
       "schedule": "0 3/12 * * *",
       "queues": [
-          "cobalt-queue-ubuntu",
-          "cobalt-queue-al3"
+          "cobalthosted"
       ],
       "yaml_generation": {
           "target_yaml_count": 1,
