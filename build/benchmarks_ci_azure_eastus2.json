@@ -20,22 +20,19 @@
           "priority": 1,
           "profiles": [
             "cobalt-cloud-lin-server-app"
-          ],
-          "default_profile": "cobalt-cloud-lin-server-app"
+          ]
         },
         "load": {
           "priority": 2,
           "profiles": [
             "cobalt-cloud-lin-server-load"
-          ],
-          "default_profile": "cobalt-cloud-lin-server-load"
+          ]
         },
         "db": {
           "priority": 3,
           "profiles": [
             "cobalt-cloud-lin-server-db"
-          ],
-          "default_profile": "cobalt-cloud-lin-server-db"
+          ]
         }
       },
       "preferred_partners": [
@@ -50,25 +47,21 @@
           "priority": 1,
           "profiles": [
             "cobalt-cloud-lin-client-load"
-          ],
-          "default_profile": "cobalt-cloud-lin-client-load"
+          ]
         },
         "db": {
           "priority": 2,
           "profiles": [
             "cobalt-cloud-lin-client-db"
-          ],
-          "default_profile": "cobalt-cloud-lin-client-db"
+          ]
         },
         "sut": {
           "priority": 3,
           "profiles": [
             "cobalt-cloud-lin-client-app"
-          ],
-          "default_profile": "cobalt-cloud-lin-client-app"
+          ]
         }
-      },
-      "preferred_partners": []
+      }
     },
     {
       "name": "cobalt-cloud-lin-db",
@@ -77,25 +70,21 @@
           "priority": 1,
           "profiles": [
             "cobalt-cloud-lin-db-db"
-          ],
-          "default_profile": "cobalt-cloud-lin-db-db"
+          ]
         },
         "load": {
           "priority": 2,
           "profiles": [
             "cobalt-cloud-lin-db-load"
-          ],
-          "default_profile": "cobalt-cloud-lin-db-load"
+          ]
         },
         "sut": {
           "priority": 3,
           "profiles": [
             "cobalt-cloud-lin-db-app"
-          ],
-          "default_profile": "cobalt-cloud-lin-db-app"
+          ]
         }
-      },
-      "preferred_partners": []
+      }
     },
     {
       "name": "cobalt-cloud-lin-server-azure-linux3",
@@ -104,22 +93,19 @@
           "priority": 1,
           "profiles": [
             "cobalt-cloud-lin-server-azure-linux3-app"
-          ],
-          "default_profile": "cobalt-cloud-lin-server-azure-linux3-app"
+          ]
         },
         "load": {
           "priority": 2,
           "profiles": [
             "cobalt-cloud-lin-server-azure-linux3-load"
-          ],
-          "default_profile": "cobalt-cloud-lin-server-azure-linux3-load"
+          ]
         },
         "db": {
           "priority": 3,
           "profiles": [
             "cobalt-cloud-lin-server-azure-linux3-db"
-          ],
-          "default_profile": "cobalt-cloud-lin-server-azure-linux3-db"
+          ]
         }
       },
       "preferred_partners": [
