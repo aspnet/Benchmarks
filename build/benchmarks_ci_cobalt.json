@@ -20,8 +20,7 @@
                   "priority": 1,
                   "profiles": [
                       "cobalt-hosted-lin-server-app"
-                  ],
-                  "default_profile": "cobalt-hosted-lin-server-app"
+                  ]
               }
           },
           "preferred_partners": [
@@ -36,11 +35,9 @@
                   "priority": 1,
                   "profiles": [
                       "cobalt-hosted-lin-client-load"
-                  ],
-                  "default_profile": "cobalt-hosted-lin-client-load"
+                  ]
               }
-          },
-          "preferred_partners": []
+          }
       },
       {
           "name": "cobalt-hosted-lin-db",
@@ -49,11 +46,9 @@
                   "priority": 1,
                   "profiles": [
                       "cobalt-hosted-lin-db-db"
-                  ],
-                  "default_profile": "cobalt-hosted-lin-db-db"
+                  ]
               }
-          },
-          "preferred_partners": []
+          }
       },
       {
           "name": "cobalt-hosted-lin-server-azure-linux3",
@@ -62,8 +57,7 @@
                   "priority": 1,
                   "profiles": [
                       "cobalt-hosted-lin-server-azure-linux3-app"
-                  ],
-                  "default_profile": "cobalt-hosted-lin-server-azure-linux3-app"
+                  ]
               }
           },
           "preferred_partners": [
@@ -78,11 +72,9 @@
                   "priority": 1,
                   "profiles": [
                       "cobalt-hosted-lin-client-azure-linux3-load"
-                  ],
-                  "default_profile": "cobalt-hosted-lin-client-azure-linux3-load"
+                  ]
               }
-          },
-          "preferred_partners": []
+          }
       },
       {
           "name": "cobalt-hosted-lin-db-azure-linux3",
@@ -91,11 +83,9 @@
                   "priority": 1,
                   "profiles": [
                       "cobalt-hosted-lin-db-azure-linux3-db"
-                  ],
-                  "default_profile": "cobalt-hosted-lin-db-azure-linux3-db"
+                  ]
               }
-          },
-          "preferred_partners": []
+          }
       }
   ],
   "scenarios": [
