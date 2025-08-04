@@ -1,8 +1,9 @@
 # Do not change this file, it is generated using these steps:
 # - The file benchmarks*.json defines how each pipeline set of jobs is run in parallel
-# - Convert its content to json using https://jsonformatter.org/yaml-to-json
-# - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
-# - Update this file with the result of the template generation
+# - Update the associated benchmarks*.json file with machine and scenario updates
+# - Install python and install the requirements for the crank-scheduler in benchmarks/scripts/crank-scheduler/requirements.txt
+# - Run the scheduler specifying the desired benchmarks*.json file, this template, and benchmarks/output to automatically overwrite the current pipeline.
+# - Ex. python ./scripts/crank-scheduler/main.py --config ./build/benchmarks_ci.json --template ./build/benchmarks.template.liquid --yaml-output ./build
 
 {%- assign defaultTimeout = 120 %}
 
