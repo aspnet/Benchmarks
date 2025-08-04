@@ -5,7 +5,8 @@
       "version": "1.0",
       "schedule": "0 3/12 * * *",
       "queues": [
-          "cobalthosted"
+          "cobalthosted",
+          "cobalthosted_azurelinux3"
       ],
       "yaml_generation": {
           "target_yaml_count": 1,
