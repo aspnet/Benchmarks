@@ -36,7 +36,8 @@ class DataLoader:
             version=metadata_data.get('version', '1.0'),
             schedule=metadata_data.get('schedule'),
             queues=metadata_data.get('queues', []),
-            yaml_generation=yaml_generation
+            yaml_generation=yaml_generation,
+            enforce_machine_groups=metadata_data.get('enforce_machine_groups', True)
         )
         
         # Load machines
@@ -67,7 +68,8 @@ class DataLoader:
             machines.append(Machine(
                 name=machine_data['name'],
                 capabilities=capabilities,
-                preferred_partners=machine_data.get('preferred_partners', [])
+                preferred_partners=machine_data.get('preferred_partners', []),
+                machine_group=machine_data.get('machine_group')
             ))
         
         # Load scenarios

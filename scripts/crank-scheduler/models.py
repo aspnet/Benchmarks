@@ -44,6 +44,7 @@ class Machine:
     name: str
     capabilities: Dict[MachineType, MachineCapability]  # Direct mapping for efficient access
     preferred_partners: List[str] = field(default_factory=list)  # Ordered list of preferred partner machines
+    machine_group: Optional[str] = None  # Machine group for compatibility filtering
     
     def get_capability(self, machine_type: MachineType) -> Optional[MachineCapability]:
         """Get the capability for a specific machine type"""
@@ -212,6 +213,7 @@ class ConfigurationMetadata:
     schedule: str
     queues: List[str]
     yaml_generation: Optional[YamlGenerationConfig] = None
+    enforce_machine_groups: bool = True  # If True, machines can only work with others in the same group
 
 @dataclass 
 class CombinedConfiguration:

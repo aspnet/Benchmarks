@@ -10,8 +10,9 @@ from models import (
 class MachineAllocator:
     """Handles machine allocation logic with multi-type capabilities"""
 
-    def __init__(self, machines: List[Machine]):
+    def __init__(self, machines: List[Machine], enforce_machine_groups: bool = True):
         self.machines = {m.name: m for m in machines}
+        self.enforce_machine_groups = enforce_machine_groups
 
     def find_machine_assignment(self, scenario: Scenario, target_machine: str, used_machines: Set[str]) -> Optional[Tuple[Dict[MachineType, Machine], Dict[MachineType, str]]]:
         """Find the best machine assignment for a scenario on a specific target machine"""
@@ -39,7 +40,7 @@ class MachineAllocator:
                 # For LOAD and DB, use SUT machine's preferred partners
                 preferred_partners = sut_machine.preferred_partners if sut_machine else []
                 machine_profile = self._select_best_machine_for_type(
-                    machine_type, used_machines_temp, None, scenario, preferred_partners
+                    machine_type, used_machines_temp, None, scenario, preferred_partners, sut_machine
                 )
                 if not machine_profile:
                     return None
@@ -56,7 +57,8 @@ class MachineAllocator:
                                      used_machines: Set[str], 
                                      preferred_machine: Optional[str] = None,
                                      scenario: Optional[Scenario] = None,
-                                     preferred_partners: Optional[List[str]] = None) -> Optional[Tuple[Machine, str]]:
+                                     preferred_partners: Optional[List[str]] = None,
+                                     sut_machine: Optional[Machine] = None) -> Optional[Tuple[Machine, str]]:
         """Select the best machine for a specific type with priority-based selection"""
         candidates = []
         
@@ -67,6 +69,11 @@ class MachineAllocator:
             capability = machine.get_capability(machine_type)
             if not capability:
                 continue
+            
+            # Apply machine group filtering if enabled
+            if self.enforce_machine_groups and sut_machine:
+                if not self._machines_in_same_group(sut_machine, machine):
+                    continue
             
             # Calculate effective priority
             priority = capability.priority
@@ -96,6 +103,15 @@ class MachineAllocator:
         profile = self._select_profile_for_capability(best_capability, best_machine, machine_type, scenario)
         return (best_machine, profile)
 
+    def _machines_in_same_group(self, machine1: Machine, machine2: Machine) -> bool:
+        """Check if two machines are in the same group or if either has no group (compatible)"""
+        # If either machine has no group, they are compatible with any machine
+        if machine1.machine_group is None or machine2.machine_group is None:
+            return True
+        
+        # Both machines have groups - they must match
+        return machine1.machine_group == machine2.machine_group
+
     def _select_profile_for_capability(self, capability: MachineCapability, machine: Machine, 
                                      machine_type: MachineType, scenario: Optional[Scenario] = None) -> str:
         """Select the best profile for a capability, considering scenario preferences"""
@@ -106,8 +122,8 @@ class MachineAllocator:
             if preferred_profile and preferred_profile in capability.profiles:
                 return preferred_profile
         
-        # Use default profile
-        return capability.default_profile
+        # Use default profile (guaranteed to be set in MachineCapability.__post_init__)
+        return capability.default_profile or capability.profiles[0]
 
     def _select_exact_sut_machine(self, target_machine: str, used_machines: Set[str], 
                                   scenario: Optional[Scenario] = None) -> Optional[Tuple[Machine, str]]:
@@ -167,7 +183,7 @@ class CrankScheduler:
         self.machines = machines
         self.scenarios = scenarios
         self.max_queues = len(config.metadata.queues)
-        self.allocator = MachineAllocator(machines)
+        self.allocator = MachineAllocator(machines, config.metadata.enforce_machine_groups)
         self.estimator = RuntimeEstimator(scenarios)
 
         # Estimate runtimes for all scenarios
