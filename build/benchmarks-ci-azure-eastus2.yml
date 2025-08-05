@@ -31,75 +31,27 @@ jobs:
 
 # GROUP 1
 
-- job: Trends_Database_Cobalt_Cloud_Linux
-  displayName: 1- Trends Database Cobalt Cloud Linux
+- job: Containers_Cobalt_Cloud_Lin_Server
+  displayName: 1- Containers Cobalt Cloud Lin Server
   pool: server
   timeoutInMinutes: 120
   dependsOn: []
   condition: succeededOrFailed()
   steps:
-  - template: trend-database-scenarios.yml
+  - template: containers-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       
 # GROUP 2
 
-- job: Trends_Cobalt_Cloud_Linux
-  displayName: 2- Trends Cobalt Cloud Linux
+- job: Containers_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 2- Containers Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Cobalt_Cloud_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: trend-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin "
-      
-# GROUP 3
-
-- job: Baselines_Database_Cobalt_Cloud_Linux
-  displayName: 3- Baselines Database Cobalt Cloud Linux
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Trends_Cobalt_Cloud_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: baselines-database-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin "
-      
-# GROUP 4
-
-- job: Baselines_Cobalt_Cloud_Linux
-  displayName: 4- Baselines Cobalt Cloud Linux
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Cobalt_Cloud_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: baselines-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin "
-      
-# GROUP 5
-
-- job: Containers_Cobalt_Cloud_Linux
-  displayName: 5- Containers Cobalt Cloud Linux
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Baselines_Cobalt_Cloud_Linux]
+  dependsOn: [Containers_Cobalt_Cloud_Lin_Server]
   condition: succeededOrFailed()
   steps:
   - template: containers-scenarios.yml
@@ -107,15 +59,79 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+# GROUP 3
+
+- job: Baselines_Database_Cobalt_Cloud_Lin_Server
+  displayName: 3- Baselines Database Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Containers_Cobalt_Cloud_Lin_Server_Azure_Linux3]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+# GROUP 4
+
+- job: Baselines_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 4- Baselines Database Cobalt Cloud Lin Server Azure Linux3
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Database_Cobalt_Cloud_Lin_Server]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+# GROUP 5
+
+- job: Baselines_Cobalt_Cloud_Lin_Server
+  displayName: 5- Baselines Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
       
 # GROUP 6
 
-- job: Mvc_Cobalt_Cloud_Linux
-  displayName: 6- Mvc Cobalt Cloud Linux
+- job: Baselines_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 6- Baselines Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Containers_Cobalt_Cloud_Linux]
+  dependsOn: [Baselines_Cobalt_Cloud_Lin_Server]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load "
+      
+# GROUP 7
+
+- job: MVC_Cobalt_Cloud_Lin_Server
+  displayName: 7- MVC Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Cobalt_Cloud_Lin_Server_Azure_Linux3]
   condition: succeededOrFailed()
   steps:
   - template: mvc-scenarios.yml
@@ -123,15 +139,63 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       
-# GROUP 7
+# GROUP 8
 
-- job: Trends_Database_Cobalt_Cloud_Linux_AL3
-  displayName: 7- Trends Database Cobalt Cloud Linux AL3
+- job: MVC_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 8- MVC Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Cobalt_Cloud_Linux]
+  dependsOn: [MVC_Cobalt_Cloud_Lin_Server]
+  condition: succeededOrFailed()
+  steps:
+  - template: mvc-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+# GROUP 9
+
+- job: Trends_Cobalt_Cloud_Lin_Server
+  displayName: 9- Trends Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [MVC_Cobalt_Cloud_Lin_Server_Azure_Linux3]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
+      
+# GROUP 10
+
+- job: Trends_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 10- Trends Cobalt Cloud Lin Server Azure Linux3
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Cobalt_Cloud_Lin_Server]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: cobaltcloud
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load "
+      
+# GROUP 11
+
+- job: Trends_Database_Cobalt_Cloud_Lin_Server
+  displayName: 11- Trends Database Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Cobalt_Cloud_Lin_Server_Azure_Linux3]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -139,85 +203,21 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-al3 "
-      
-# GROUP 8
-
-- job: Trends_Cobalt_Cloud_Linux_AL3
-  displayName: 8- Trends Cobalt Cloud Linux AL3
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Cobalt_Cloud_Linux_AL3]
-  condition: succeededOrFailed()
-  steps:
-  - template: trend-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-al3 "
-      
-# GROUP 9
-
-- job: Baselines_Database_Cobalt_Cloud_Linux_AL3
-  displayName: 9- Baselines Database Cobalt Cloud Linux AL3
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Trends_Cobalt_Cloud_Linux_AL3]
-  condition: succeededOrFailed()
-  steps:
-  - template: baselines-database-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-al3 "
-      
-# GROUP 10
-
-- job: Baselines_Cobalt_Cloud_Linux_AL3
-  displayName: 10- Baselines Cobalt Cloud Linux AL3
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Cobalt_Cloud_Linux_AL3]
-  condition: succeededOrFailed()
-  steps:
-  - template: baselines-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-al3 "
-      
-# GROUP 11
-
-- job: Containers_Cobalt_Cloud_Linux_AL3
-  displayName: 11- Containers Cobalt Cloud Linux AL3
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Baselines_Cobalt_Cloud_Linux_AL3]
-  condition: succeededOrFailed()
-  steps:
-  - template: containers-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: cobaltcloud
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-al3 "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       
 # GROUP 12
 
-- job: Mvc_Cobalt_Cloud_Linux_AL3
-  displayName: 12- Mvc Cobalt Cloud Linux AL3
+- job: Trends_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 12- Trends Database Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Containers_Cobalt_Cloud_Linux_AL3]
+  dependsOn: [Trends_Database_Cobalt_Cloud_Lin_Server]
   condition: succeededOrFailed()
   steps:
-  - template: mvc-scenarios.yml
+  - template: trend-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobaltcloud
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-al3 "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       

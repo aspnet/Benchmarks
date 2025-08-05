@@ -1,0 +1,328 @@
+{
+  "metadata": {
+    "name": "Azure CI Benchmarks Configuration",
+    "description": "Combined machines and scenarios for continuous integration benchmarks on Azure",
+    "version": "1.0",
+    "schedule": "0 9/12 * * *",
+    "queues": [
+      "azure",
+      "azurearm64"
+    ],
+    "yaml_generation": {
+      "target_yaml_count": 1,
+      "schedule_offset_hours": 6
+    }
+  },
+  "machines": [
+    {
+      "name": "azure-db",
+      "capabilities": {
+        "db": {
+          "priority": 1,
+          "profiles": [
+            "azure-db-db"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure-db-load"
+          ]
+        },
+        "sut": {
+          "priority": 3,
+          "profiles": [
+            "azure-db-app"
+          ]
+        }
+      }
+    },
+    {
+      "name": "azure-client",
+      "capabilities": {
+        "load": {
+          "priority": 1,
+          "profiles": [
+            "azure-client-load"
+          ]
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure-client-app"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure-client-db"
+          ]
+        }
+      }
+    },
+    {
+      "name": "azure-server-arm64",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "azure-server-arm64-app"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure-server-arm64-load"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure-server-arm64-db"
+          ]
+        }
+      },
+      "preferred_partners": [
+        "azure-client",
+        "azure-db"
+      ]
+    },
+    {
+      "name": "azure2-client",
+      "capabilities": {
+        "load": {
+          "priority": 1,
+          "profiles": [
+            "azure2-client-load"
+          ]
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure2-client-app"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure2-client-db"
+          ]
+        }
+      }
+    },
+    {
+      "name": "azure2-db",
+      "capabilities": {
+        "db": {
+          "priority": 1,
+          "profiles": [
+            "azure2-db-db"
+          ]
+        },
+        "sut": {
+          "priority": 2,
+          "profiles": [
+            "azure2-db-app"
+          ]
+        },
+        "load": {
+          "priority": 3,
+          "profiles": [
+            "azure2-db-load"
+          ]
+        }
+      }
+    },
+    {
+      "name": "azure2-server-amd64",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "azure2-server-amd64-app"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "azure2-server-amd64-load"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "azure2-server-amd64-db"
+          ]
+        }
+      },
+      "preferred_partners": [
+        "azure2-client",
+        "azure2-db"
+      ]
+    },
+    {
+      "name": "idna-amd-lin",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-amd-lin-app"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-amd-lin-load"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-amd-lin-db"
+          ]
+        }
+      },
+      "preferred_partners": [
+        "idna-intel-lin",
+        "azure2-db"
+      ]
+    },
+    {
+      "name": "idna-amd-win",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-amd-win-app"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-amd-win-load"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-amd-win-db"
+          ]
+        }
+      },
+      "preferred_partners": [
+        "idna-amd-lin",
+        "azure2-db"
+      ]
+    },
+    {
+      "name": "idna-intel-lin",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-intel-lin-app"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-intel-lin-load"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-intel-lin-db"
+          ]
+        }
+      },
+      "preferred_partners": [
+        "idna-amd-lin",
+        "azure2-db"
+      ]
+    },
+    {
+      "name": "idna-intel-win",
+      "capabilities": {
+        "sut": {
+          "priority": 1,
+          "profiles": [
+            "idna-intel-win-app"
+          ]
+        },
+        "load": {
+          "priority": 2,
+          "profiles": [
+            "idna-intel-win-load"
+          ]
+        },
+        "db": {
+          "priority": 3,
+          "profiles": [
+            "idna-intel-win-db"
+          ]
+        }
+      },
+      "preferred_partners": [
+        "idna-amd-lin",
+        "azure2-db"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "Baselines",
+      "template": "baselines-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 30.0
+    },
+    {
+      "name": "Baselines Database",
+      "template": "baselines-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 45.0
+    },
+    {
+      "name": "Containers",
+      "template": "containers-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 90.0
+    },
+    {
+      "name": "Trends",
+      "template": "trend-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64",
+        "idna-amd-lin",
+        "idna-amd-win",
+        "idna-intel-lin",
+        "idna-intel-win"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "Trends Database",
+      "template": "trend-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "azure-server-arm64",
+        "azure2-server-amd64"
+      ],
+      "estimated_runtime": 15.0
+    }
+  ]
+}
