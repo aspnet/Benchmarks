@@ -1,8 +1,9 @@
 # Do not change this file, it is generated using these steps:
-# - The file benchmarks.matrix.yml defines how each job is run in parallel
-# - Convert its content to json using https://jsonformatter.org/yaml-to-json
-# - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
-# - Update this file with the result of the template generation
+# - The file benchmarks*.json defines how each pipeline set of jobs is run in parallel
+# - Update the associated benchmarks*.json file with machine and scenario updates
+# - Install python and install the requirements for the crank-scheduler in benchmarks/scripts/crank-scheduler/requirements.txt
+# - Run the scheduler specifying the desired benchmarks*.json file, this template, and benchmarks/output to automatically overwrite the current pipeline.
+# - Ex. python ./scripts/crank-scheduler/main.py --config ./build/benchmarks_ci.json --template ./build/benchmarks.template.liquid --yaml-output ./build
 
 trigger: none
 pr: none
@@ -177,7 +178,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-win-app --profile azure2-db-load "
+      arguments: "$(ciProfile) --profile idna-amd-win-app --profile idna-intel-win-load "
       
 # GROUP 6
 
@@ -207,7 +208,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-win-app --profile azure2-db-load "
+      arguments: "$(ciProfile) --profile idna-intel-win-app --profile idna-amd-win-load "
       
 # GROUP 7
 
