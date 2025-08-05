@@ -413,3 +413,101 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  #############################################
+  #                                           #
+  #         COBALT NETWORKED MACHINES         #
+  #                                           #
+  #############################################
+
+  cobalt-hosted-lin-server-app:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 56
+    agents:
+      application:
+        endpoints:
+          - http://10.57.32.73:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-server-28-app:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 28
+    agents:
+      application:
+        cpuSet: 0-27
+        endpoints:
+          - http://10.57.32.73:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-client-load:
+    variables:
+      secondaryAddress: 10.57.32.72
+    agents:
+      load:
+        endpoints:
+          - http://10.57.32.72:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-hosted-lin-db-db:
+    variables:
+      databaseServer: 10.57.32.74
+      downstreamAddress: 10.57.32.74
+    agents:
+      db:
+        endpoints:
+          - http://10.57.32.74:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-hosted-lin-server-azure-linux3-app:
+    variables:
+      serverAddress: 10.57.32.95
+      cores: 56
+    agents:
+      application:
+        endpoints:
+          - http://10.57.32.95:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-server-azure-linux3-28-app:
+    variables:
+      serverAddress: 10.57.32.95
+      cores: 28
+    agents:
+      application:
+        cpuSet: 0-27
+        endpoints:
+          - http://10.57.32.95:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-client-azure-linux3-load:
+    variables:
+      secondaryAddress: 10.57.32.96
+    agents:
+      load:
+        endpoints:
+          - http://10.57.32.96:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-hosted-lin-db-azure-linux3-db:
+    variables:
+      databaseServer: 10.57.32.94
+      downstreamAddress: 10.57.32.94
+    agents:
+      db:
+        endpoints:
+          - http://10.57.32.94:5001
+        aliases:
+          - downstream
+          - extra

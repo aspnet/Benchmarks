@@ -1,0 +1,396 @@
+{
+  "metadata": {
+      "name": "CI Benchmarks Configuration",
+      "description": "Combined machines and scenarios for continuous integration benchmarks",
+      "version": "1.0",
+      "schedule": "0 3/12 * * *",
+      "queues": [
+          "cobalthosted",
+          "cobalthosted_azurelinux3"
+      ],
+      "yaml_generation": {
+          "target_yaml_count": 1,
+          "schedule_offset_hours": 6
+      }
+  },
+  "machines": [
+      {
+          "name": "cobalt-hosted-lin-server",
+          "capabilities": {
+              "sut": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-server-app",
+                      "cobalt-hosted-lin-server-28-app"
+                  ]
+              }
+          },
+          "preferred_partners": [
+              "cobalt-hosted-lin-client",
+              "cobalt-hosted-lin-db"
+          ]
+      },
+      {
+          "name": "cobalt-hosted-lin-client",
+          "capabilities": {
+              "load": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-client-load"
+                  ]
+              }
+          }
+      },
+      {
+          "name": "cobalt-hosted-lin-db",
+          "capabilities": {
+              "db": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-db-db"
+                  ]
+              }
+          }
+      },
+      {
+          "name": "cobalt-hosted-lin-server-azure-linux3",
+          "capabilities": {
+              "sut": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-server-azure-linux3-app",
+                      "cobalt-hosted-lin-server-azure-linux3-28-app"
+                  ]
+              }
+          },
+          "preferred_partners": [
+              "cobalt-hosted-lin-client-azure-linux3",
+              "cobalt-hosted-lin-db-azure-linux3"
+          ]
+      },
+      {
+          "name": "cobalt-hosted-lin-client-azure-linux3",
+          "capabilities": {
+              "load": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-client-azure-linux3-load"
+                  ]
+              }
+          }
+      },
+      {
+          "name": "cobalt-hosted-lin-db-azure-linux3",
+          "capabilities": {
+              "db": {
+                  "priority": 1,
+                  "profiles": [
+                      "cobalt-hosted-lin-db-azure-linux3-db"
+                  ]
+              }
+          }
+      }
+  ],
+  "scenarios": [
+    {
+      "name": "Baselines",
+      "template": "baselines-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 30.0
+    },
+    {
+      "name": "Baselines 28 Core",
+      "template": "baselines-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 30.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "Baselines Database",
+      "template": "baselines-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 45.0
+    },
+    {
+      "name": "Baselines Database 28 Core",
+      "template": "baselines-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 45.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "Containers",
+      "template": "containers-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 90.0
+    },
+    {
+      "name": "Crossgen",
+      "template": "crossgen2-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 5.0
+    },
+    {
+      "name": "Crossgen 28 Core",
+      "template": "crossgen2-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 5.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "Frameworks",
+      "template": "frameworks-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0
+    },
+    {
+      "name": "Frameworks 28 Core",
+      "template": "frameworks-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "Frameworks Database",
+      "template": "frameworks-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "Frameworks Database 28 Core",
+      "template": "frameworks-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "GC",
+      "template": "gc-scenarios.yml",
+      "type": 1,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0
+    },
+    {
+      "name": "GC 28 Core",
+      "template": "gc-scenarios.yml",
+      "type": 1,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "MVC",
+      "template": "mvc-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "NativeAOT",
+      "template": "nativeaot-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "NativeAOT 28 Core",
+      "template": "nativeaot-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "PGO",
+      "template": "pgo-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 90.0
+    },
+    {
+      "name": "PGO 28 Core",
+      "template": "pgo-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 90.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "Trends",
+      "template": "trend-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0
+    },
+    {
+      "name": "Trends 28 Core",
+      "template": "trend-scenarios.yml",
+      "type": 2,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 20.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    },
+    {
+      "name": "Trends Database",
+      "template": "trend-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0
+    },
+    {
+      "name": "Trends Database 28 Core",
+      "template": "trend-database-scenarios.yml",
+      "type": 3,
+      "target_machines": [
+        "cobalt-hosted-lin-server",
+        "cobalt-hosted-lin-server-azure-linux3"
+      ],
+      "estimated_runtime": 15.0,
+      "profile_overrides": {
+        "cobalt-hosted-lin-server": {
+          "sut": "cobalt-hosted-lin-server-28-app"
+        },
+        "cobalt-hosted-lin-server-azure-linux3": {
+          "sut": "cobalt-hosted-lin-server-azure-linux3-28-app"
+        }
+      }
+    }
+  ]
+}

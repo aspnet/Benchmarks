@@ -621,3 +621,103 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  aspnet-cobalt-hosted-lin:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 56
+    jobs:
+      db:
+        endpoints:
+          - http://10.57.32.74:5001
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints:
+          - http://10.57.32.73:5001
+        variables:
+          databaseServer: 10.57.32.74
+        aliases:
+          - main
+      load:
+        endpoints:
+          - http://10.57.32.72:5001
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-cobalt-hosted-lin-relay:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 56
+    jobs:
+      db:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlindb
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlinserver
+        variables:
+          databaseServer: 10.57.32.74
+        aliases:
+          - main
+      load:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlinclient
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-cobalt-hosted-al3-lin:
+    variables:
+      serverAddress: 10.57.32.95
+      cores: 56
+    jobs:
+      db:
+        endpoints:
+          - http://10.57.32.94:5001
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints:
+          - http://10.57.32.95:5001
+        variables:
+          databaseServer: 10.57.32.94
+        aliases:
+          - main
+      load:
+        endpoints:
+          - http://10.57.32.96:5001
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-cobalt-hosted-al3-lin-relay:
+    variables:
+      serverAddress: 10.57.32.95
+      cores: 56
+    jobs:
+      db:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlindb_azurelinux3
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlinserver_azurelinux3
+        variables:
+          databaseServer: 10.57.32.94
+        aliases:
+          - main
+      load:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobalthostedlinclient_azurelinux3
+        aliases:
+          - warmup
+          - secondary
