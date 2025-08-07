@@ -93,7 +93,7 @@ Examples:
         yamls_generated = ScheduleOperations.process_yaml_generation(args, partial_schedules, config)
 
                 # Print summary
-        summary = MultiYamlSummary(yamls_generated, len(yamls_generated), partial_schedules)
+        summary = MultiYamlSummary(yamls_generated, len(config.scenarios), partial_schedules)
         summary.print_summary()
         summary.print_execution_plans()
         
