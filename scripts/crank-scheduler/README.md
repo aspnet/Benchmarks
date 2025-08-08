@@ -165,7 +165,6 @@ python main.py --config config.json --list-jobs-by-machine
 - **Machine**: Represents a physical machine with multiple capabilities and preferences
 - **Scenario**: Represents a performance test scenario with requirements and target machines
 - **MachineAllocator**: Handles machine assignment logic with preference matching and capability-based selection
-- **RuntimeEstimator**: Estimates runtimes for scenarios without known values based on similar scenarios
 - **CrankScheduler**: Main scheduler that creates optimized schedules with stage-based execution
 - **ScheduleSplitter**: Divides large schedules into smaller, parallelizable units
 

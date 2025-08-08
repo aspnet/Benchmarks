@@ -82,6 +82,20 @@ artifacts/
 # Chutzpah Test files
 _Chutzpah*
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
 # Visual C++ cache files
 ipch/
 *.aps

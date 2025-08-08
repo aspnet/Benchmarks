@@ -5,6 +5,7 @@ This guide demonstrates all possible configuration options using `example_comple
 ## Machine Configuration Options
 
 ### 1. Single-Type Machine (Traditional)
+
 ```json
 {
   "name": "single-type-machine",
@@ -18,12 +19,15 @@ This guide demonstrates all possible configuration options using `example_comple
   "preferred_partners": ["dedicated-load", "dedicated-db"]
 }
 ```
+
 **Features:**
+
 - ✅ One machine type only (SUT)
 - ✅ Single profile available
 - ✅ Preferred partners for load/db roles
 
 ### 2. Multi-Type Machine (Advanced)
+
 ```json
 {
   "name": "multi-type-machine",
@@ -57,13 +61,16 @@ This guide demonstrates all possible configuration options using `example_comple
   }
 }
 ```
+
 **Features:**
+
 - ✅ Multiple machine types (SUT, LOAD, DB)
 - ✅ Priority ordering (1=preferred, 2=secondary, 3=fallback)
 - ✅ Multiple sub-profiles per type
 - ✅ Default profile for each type
 
 ### 3. Specialized Machine
+
 ```json
 {
   "name": "dedicated-load",
@@ -80,7 +87,9 @@ This guide demonstrates all possible configuration options using `example_comple
   }
 }
 ```
+
 **Features:**
+
 - ✅ Dedicated to one role (LOAD only)
 - ✅ Multiple specialized profiles
 - ✅ No preferred partners needed
@@ -125,9 +134,11 @@ This guide demonstrates all possible configuration options using `example_comple
   "description": "Basic single machine scenario with default profiles"
 }
 ```
+
 **Result:** Uses default profiles for all machines
 
 ### 2. Custom Profile Selection
+
 ```json
 {
   "name": "Triple Machine Test with Custom Profiles",
@@ -144,9 +155,11 @@ This guide demonstrates all possible configuration options using `example_comple
   }
 }
 ```
+
 **Result:** Uses specific custom profiles for each machine type
 
 ### 3. Mixed Profile Usage
+
 ```json
 {
   "name": "Mixed Profile Scenario",
@@ -160,7 +173,9 @@ This guide demonstrates all possible configuration options using `example_comple
   }
 }
 ```
-**Result:** 
+
+**Result:**
+
 - `single-type-machine`: Uses default profile
 - `multi-type-machine` SUT: Uses custom profile
 - `multi-type-machine` LOAD: Uses default profile
@@ -168,32 +183,36 @@ This guide demonstrates all possible configuration options using `example_comple
 ## Configuration Properties Explained
 
 ### Machine Properties
-| Property | Required | Description |
-|----------|----------|-------------|
-| `name` | ✅ | Unique machine identifier |
-| `capabilities` | ✅ | Dict of machine types this machine can fulfill |
-| `preferred_partners` | ❌ | List of preferred machines for other roles |
+
+| Property             | Required | Description                                    |
+| -------------------- | -------- | ---------------------------------------------- |
+| `name`               | ✅        | Unique machine identifier                      |
+| `capabilities`       | ✅        | Dict of machine types this machine can fulfill |
+| `preferred_partners` | ❌        | List of preferred machines for other roles     |
 
 ### Capability Properties
-| Property | Required | Description |
-|----------|----------|-------------|
-| `machine_type` | ✅ | Key: "sut", "load", or "db" |
-| `priority` | ✅ | 1=preferred, 2=secondary, 3=fallback |
-| `profiles` | ✅ | List of available profile names |
-| `default_profile` | ❌ | Which profile to use by default (defaults to first profile in list) |
+
+| Property          | Required | Description                                                         |
+| ----------------- | -------- | ------------------------------------------------------------------- |
+| `machine_type`    | ✅        | Key: "sut", "load", or "db"                                         |
+| `priority`        | ✅        | 1=preferred, 2=secondary, 3=fallback                                |
+| `profiles`        | ✅        | List of available profile names                                     |
+| `default_profile` | ❌        | Which profile to use by default (defaults to first profile in list) |
 
 ### Scenario Properties
-| Property | Required | Description |
-|----------|----------|-------------|
-| `name` | ✅ | Scenario identifier |
-| `template` | ✅ | YAML template file |
-| `scenario_type` | ✅ | 1=single, 2=dual, 3=triple machine |
-| `target_machines` | ✅ | List of machines to run on |
-| `estimated_runtime` | ❌ | Runtime in minutes |
-| `description` | ❌ | Human-readable description |
-| `profile_overrides` | ❌ | Custom profile overrides |
+
+| Property            | Required | Description                        |
+| ------------------- | -------- | ---------------------------------- |
+| `name`              | ✅        | Scenario identifier                |
+| `template`          | ✅        | YAML template file                 |
+| `scenario_type`     | ✅        | 1=single, 2=dual, 3=triple machine |
+| `target_machines`   | ✅        | List of machines to run on         |
+| `estimated_runtime` | ❌        | Runtime in minutes                 |
+| `description`       | ❌        | Human-readable description         |
+| `profile_overrides` | ❌        | Custom profile overrides           |
 
 ### Profile Overrides Structure
+
 ```json
 "profile_overrides": {
   "machine-name": {
