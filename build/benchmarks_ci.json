@@ -108,8 +108,7 @@
                         "intel-load2-db"
                     ]
                 }
-            },
-            "preferred_partners": []
+            }
         },
         {
             "name": "intel-db",
