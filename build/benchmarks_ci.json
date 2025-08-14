@@ -136,6 +136,30 @@
             }
         },
         {
+            "name": "intel-perflin",
+            "machine_group": "intel-perf",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-perflin-app"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "intel-perfload",
+            "machine_group": "intel-perf",
+            "capabilities": {
+                "load": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-perfload-load"
+                    ]
+                }
+            }
+        },
+        {
             "name": "amd-lin2",
             "machine_group": "gold",
             "capabilities": {
@@ -259,7 +283,8 @@
             "type": 2,
             "target_machines": [
                 "gold-lin",
-                "intel-lin"
+                "intel-lin",
+                "intel-perflin"
             ],
             "estimated_runtime": null
         },

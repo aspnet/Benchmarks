@@ -164,10 +164,10 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-lin-app --profile idna-intel-lin-load "
+      arguments: "$(ciProfile) --profile idna-amd-lin-app --profile idna-amd-win-load "
       
-- job: Trends_Idna_Amd_Win
-  displayName: 5- Trends Idna Amd Win
+- job: Trends_Idna_Intel_Lin
+  displayName: 5- Trends Idna Intel Lin
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Trends_Azure_Server_Arm64, Trends_Azure2_Server_Amd64]
@@ -178,15 +178,15 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-win-app --profile idna-intel-win-load "
+      arguments: "$(ciProfile) --profile idna-intel-lin-app --profile idna-intel-win-load "
       
 # GROUP 6
 
-- job: Trends_Idna_Intel_Lin
-  displayName: 6- Trends Idna Intel Lin
+- job: Trends_Idna_Amd_Win
+  displayName: 6- Trends Idna Amd Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Amd_Win]
+  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Intel_Lin]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -194,13 +194,13 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-lin-app --profile idna-amd-lin-load "
+      arguments: "$(ciProfile) --profile idna-amd-win-app --profile idna-intel-lin-load "
       
 - job: Trends_Idna_Intel_Win
   displayName: 6- Trends Idna Intel Win
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Amd_Win]
+  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Intel_Lin]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -208,7 +208,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-win-app --profile idna-amd-win-load "
+      arguments: "$(ciProfile) --profile idna-intel-win-app --profile idna-amd-lin-load "
       
 # GROUP 7
 
@@ -216,7 +216,7 @@ jobs:
   displayName: 7- Trends Database Azure Server Arm64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Intel_Lin, Trends_Idna_Intel_Win]
+  dependsOn: [Trends_Idna_Amd_Win, Trends_Idna_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -230,7 +230,7 @@ jobs:
   displayName: 7- Trends Database Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Intel_Lin, Trends_Idna_Intel_Win]
+  dependsOn: [Trends_Idna_Amd_Win, Trends_Idna_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml

@@ -44,7 +44,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Containers_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 1- Containers Cobalt Hosted Lin Server Azure Linux3
@@ -58,7 +58,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 2
 
@@ -74,7 +74,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: PGO_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 2- PGO Cobalt Hosted Lin Server Azure Linux3
@@ -88,7 +88,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 3
 
@@ -104,7 +104,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: PGO_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 3- PGO 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -118,7 +118,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 4
 
@@ -134,7 +134,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Baselines_Database_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 4- Baselines Database Cobalt Hosted Lin Server Azure Linux3
@@ -148,7 +148,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 5
 
@@ -164,7 +164,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Baselines_Database_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 5- Baselines Database 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -178,7 +178,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 6
 
@@ -194,7 +194,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load "
       
 - job: Baselines_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 6- Baselines Cobalt Hosted Lin Server Azure Linux3
@@ -208,7 +208,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load "
       
 # GROUP 7
 
@@ -224,7 +224,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load "
       
 - job: Baselines_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 7- Baselines 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -238,7 +238,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load "
       
 # GROUP 8
 
@@ -254,7 +254,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Frameworks_Database_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 8- Frameworks Database Cobalt Hosted Lin Server Azure Linux3
@@ -268,7 +268,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 9
 
@@ -284,7 +284,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Frameworks_Database_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 9- Frameworks Database 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -298,7 +298,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 10
 
@@ -314,7 +314,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: MVC_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 10- MVC Cobalt Hosted Lin Server Azure Linux3
@@ -328,7 +328,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 11
 
@@ -344,7 +344,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: NativeAOT_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 11- NativeAOT Cobalt Hosted Lin Server Azure Linux3
@@ -358,7 +358,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 12
 
@@ -374,7 +374,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: NativeAOT_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 12- NativeAOT 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -388,7 +388,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 13
 
@@ -404,7 +404,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load "
       
 - job: Trends_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 13- Trends Cobalt Hosted Lin Server Azure Linux3
@@ -418,7 +418,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load "
       
 # GROUP 14
 
@@ -434,7 +434,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load "
       
 - job: Trends_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 14- Trends 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -448,7 +448,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load "
       
 # GROUP 15
 
@@ -464,7 +464,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Frameworks_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 15- Frameworks Cobalt Hosted Lin Server Azure Linux3
@@ -478,7 +478,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 16
 
@@ -494,7 +494,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Frameworks_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 16- Frameworks 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -508,7 +508,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 17
 
@@ -584,7 +584,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Trends_Database_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 19- Trends Database Cobalt Hosted Lin Server Azure Linux3
@@ -598,7 +598,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 20
 
@@ -614,7 +614,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
       
 - job: Trends_Database_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 20- Trends Database 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -628,7 +628,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load --profile cobalt-hosted-lin-db-azure-linux3-db "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load --profile cobalt-hosted-lin-db-db "
       
 # GROUP 21
 
@@ -644,7 +644,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-app --profile cobalt-hosted-lin-client-azure-linux3-load "
       
 - job: Crossgen_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 21- Crossgen Cobalt Hosted Lin Server Azure Linux3
@@ -658,7 +658,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-azure-linux3-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-app --profile cobalt-hosted-lin-client-load "
       
 # GROUP 22
 
@@ -674,7 +674,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-28-app --profile cobalt-hosted-lin-client-azure-linux3-load "
       
 - job: Crossgen_28_Core_Cobalt_Hosted_Lin_Server_Azure_Linux3
   displayName: 22- Crossgen 28 Core Cobalt Hosted Lin Server Azure Linux3
@@ -688,5 +688,5 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: cobalthosted_azurelinux3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-azure-linux3-load "
+      arguments: "$(ciProfile) --profile cobalt-hosted-lin-server-azure-linux3-28-app --profile cobalt-hosted-lin-client-load "
       

@@ -59,8 +59,15 @@ class MachineAllocator:
                                       scenario: Optional[Scenario] = None,
                                       preferred_partners: Optional[List[str]] = None,
                                       sut_machine: Optional[Machine] = None) -> Optional[Tuple[Machine, str]]:
-        """Select the best machine for a specific type with priority-based selection"""
-        candidates = []
+        """Select the best machine for a specific type with role-priority-first scoring.
+
+        Scoring rules (lower score is better):
+        - Start with the machine's capability.priority for the requested role (1 = best)
+        - If a specific preferred_machine is requested, give it a strong boost (-0.5)
+        - If the machine is a preferred partner of the SUT, add a tiny tie-breaker (+0.01 per rank)
+          so partner order never overrides role priority, only breaks ties among equals.
+        """
+        candidates: List[Tuple[float, Machine, MachineCapability]] = []
 
         for machine in self.machines.values():
             if machine.name in used_machines:
@@ -75,29 +82,28 @@ class MachineAllocator:
                 if not self._machines_in_same_group(sut_machine, machine):
                     continue
 
-            # Calculate effective priority
-            priority = capability.priority
+            # Base score is the role priority (1 = preferred)
+            score: float = float(capability.priority)
 
-            # Highest priority for preferred machine (SUT case)
+            # Strong boost if a specific machine is explicitly preferred (rare for non-SUT)
             if preferred_machine and machine.name == preferred_machine:
-                priority = 0
-            # High priority for preferred partners (LOAD/DB case)
-            elif preferred_partners and machine.name in preferred_partners:
-                # Give priority based on position in preferred_partners list
+                score -= 0.5
+
+            # Tiny bias for preferred partners (LOAD/DB case) – tie-breaker only
+            if preferred_partners and machine.name in preferred_partners:
                 try:
                     partner_index = preferred_partners.index(machine.name)
-                    # 0.1, 0.2, 0.3, etc.
-                    priority = 0.1 + (partner_index * 0.1)
+                    score += 0.01 * (partner_index + 1)  # 0.01, 0.02, 0.03, ...
                 except ValueError:
-                    pass  # Not in preferred partners, keep original priority
+                    pass
 
-            candidates.append((priority, machine, capability))
+            candidates.append((score, machine, capability))
 
         if not candidates:
             return None
 
-        # Sort by priority (lower = better) and return best match
-        candidates.sort(key=lambda x: x[0])
+        # Sort by score (lower = better), apply stable tiebreaker by name
+        candidates.sort(key=lambda x: (x[0], x[1].name))
         _, best_machine, best_capability = candidates[0]
 
         # Select profile based on scenario preferences or default
