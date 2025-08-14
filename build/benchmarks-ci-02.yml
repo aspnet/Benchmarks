@@ -58,7 +58,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Blazor_Intel_Perflin
   displayName: 1- Blazor Intel Perflin
@@ -116,7 +116,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: HttpClient_Intel_Win
   displayName: 2- HttpClient Intel Win
@@ -130,7 +130,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Baselines_Gold_Win
   displayName: 2- Baselines Gold Win
@@ -174,7 +174,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Intel_Win
   displayName: 3- Baselines Intel Win
@@ -188,7 +188,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Baselines_Amd_Lin2
   displayName: 3- Baselines Amd Lin2
@@ -232,7 +232,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-load-db "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Blazor_Gold_Lin
   displayName: 4- Blazor Gold Lin
@@ -260,7 +260,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 # GROUP 5
 
@@ -348,7 +348,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Gold_Win
   displayName: 6- Trends Gold Win
@@ -376,7 +376,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 # GROUP 7
 
@@ -406,7 +406,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Amd_Lin2
   displayName: 7- Trends Amd Lin2

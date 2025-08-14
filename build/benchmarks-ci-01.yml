@@ -58,7 +58,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Grpc_Gold_Win
   displayName: 1- Grpc Gold Win
@@ -86,7 +86,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 # GROUP 2
 
@@ -116,7 +116,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-load-db "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Grpc_Gold_Lin
   displayName: 2- Grpc Gold Lin
@@ -144,7 +144,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 # GROUP 3
 
@@ -348,7 +348,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: EF_Core_Gold_Win
   displayName: 6- EF Core Gold Win
@@ -406,7 +406,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Single_File_Gold_Win
   displayName: 7- Single File Gold Win
@@ -434,7 +434,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 # GROUP 8
 
@@ -464,7 +464,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: WebSockets_Intel_Win
   displayName: 8- WebSockets Intel Win
@@ -478,7 +478,7 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Crossgen_Gold_Win
   displayName: 8- Crossgen Gold Win
@@ -580,5 +580,5 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
