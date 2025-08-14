@@ -18,85 +18,236 @@
     "machines": [
         {
             "name": "intel-lin",
-            "machine_type": "sut",
+            "machine_group": "intel",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-lin-app"
+                    ]
+                },
+                "load": {
+                    "priority": 2,
+                    "profiles": [
+                        "intel-lin-load"
+                    ]
+                }
+            },
             "preferred_partners": [
                 "intel-load",
                 "intel-load2",
                 "intel-db"
-            ],
-            "profile_name": "intel-lin-app"
+            ]
         },
         {
             "name": "intel-win",
-            "machine_type": "sut",
+            "machine_group": "intel",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-win-app"
+                    ]
+                },
+                "load": {
+                    "priority": 2,
+                    "profiles": [
+                        "intel-win-load"
+                    ]
+                }
+            },
             "preferred_partners": [
                 "intel-load2",
                 "intel-load",
                 "intel-db"
-            ],
-            "profile_name": "intel-win-app"
+            ]
         },
         {
             "name": "intel-load",
-            "machine_type": "load",
-            "preferred_partners": [],
-            "profile_name": "intel-load-load"
+            "machine_group": "intel",
+            "capabilities": {
+                "load": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-load-load"
+                    ]
+                },
+                "sut": {
+                    "priority": 2,
+                    "profiles": [
+                        "intel-load-app"
+                    ]
+                },
+                "db": {
+                    "priority": 3,
+                    "profiles": [
+                        "intel-load-db"
+                    ]
+                }
+            }
         },
         {
             "name": "intel-load2",
-            "machine_type": "load",
-            "preferred_partners": [],
-            "profile_name": "intel-load2-load"
+            "machine_group": "intel",
+            "capabilities": {
+                "load": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-load2-load"
+                    ]
+                },
+                "sut": {
+                    "priority": 2,
+                    "profiles": [
+                        "intel-load2-app"
+                    ]
+                },
+                "db": {
+                    "priority": 3,
+                    "profiles": [
+                        "intel-load2-db"
+                    ]
+                }
+            },
+            "preferred_partners": []
         },
         {
             "name": "intel-db",
-            "machine_type": "db",
-            "preferred_partners": [],
-            "profile_name": "intel-db-db"
+            "machine_group": "intel",
+            "capabilities": {
+                "db": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-db-db"
+                    ]
+                },
+                "sut": {
+                    "priority": 2,
+                    "profiles": [
+                        "intel-db-app"
+                    ]
+                },
+                "load": {
+                    "priority": 3,
+                    "profiles": [
+                        "intel-db-load"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "intel-perflin",
+            "machine_group": "intel-perf",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-perflin-app"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "intel-perfload",
+            "machine_group": "intel-perf",
+            "capabilities": {
+                "load": {
+                    "priority": 1,
+                    "profiles": [
+                        "intel-perfload-load"
+                    ]
+                }
+            }
         },
         {
             "name": "amd-lin2",
-            "machine_type": "sut",
-            "preferred_partners": [],
-            "profile_name": "amd-lin2-app"
+            "machine_group": "gold",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "amd-lin2-app"
+                    ]
+                }
+            }
         },
         {
             "name": "gold-lin",
-            "machine_type": "sut",
+            "machine_group": "gold",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "gold-lin-app",
+                        "gold-lin-28-app"
+                    ]
+                }
+            },
             "preferred_partners": [
                 "gold-load",
                 "gold-load2",
                 "gold-db"
-            ],
-            "profile_name": "gold-lin-app"
+            ]
         },
         {
             "name": "gold-win",
-            "machine_type": "sut",
+            "machine_group": "gold",
+            "capabilities": {
+                "sut": {
+                    "priority": 1,
+                    "profiles": [
+                        "gold-win-app",
+                        "gold-win-28-app"
+                    ]
+                },
+                "load": {
+                    "priority": 2,
+                    "profiles": [
+                        "gold-win-load"
+                    ]
+                }
+            },
             "preferred_partners": [
                 "gold-load2",
                 "gold-load",
                 "gold-db"
-            ],
-            "profile_name": "gold-win-app"
+            ]
         },
         {
             "name": "gold-load",
-            "machine_type": "load",
-            "preferred_partners": [],
-            "profile_name": "gold-load-load"
+            "machine_group": "gold",
+            "capabilities": {
+                "load": {
+                    "priority": 1,
+                    "profiles": [
+                        "gold-load-load"
+                    ]
+                }
+            }
         },
         {
             "name": "gold-load2",
-            "machine_type": "load",
-            "preferred_partners": [],
-            "profile_name": "gold-load2-load"
+            "machine_group": "gold",
+            "capabilities": {
+                "load": {
+                    "priority": 1,
+                    "profiles": [
+                        "gold-load2-load"
+                    ]
+                }
+            }
         },
         {
             "name": "gold-db",
-            "machine_type": "db",
-            "preferred_partners": [],
-            "profile_name": "gold-db-db"
+            "machine_group": "gold",
+            "capabilities": {
+                "db": {
+                    "priority": 1,
+                    "profiles": [
+                        "gold-db-db"
+                    ]
+                }
+            }
         }
     ],
     "scenarios": [
@@ -132,7 +283,8 @@
             "type": 2,
             "target_machines": [
                 "gold-lin",
-                "intel-lin"
+                "intel-lin",
+                "intel-perflin"
             ],
             "estimated_runtime": null
         },
