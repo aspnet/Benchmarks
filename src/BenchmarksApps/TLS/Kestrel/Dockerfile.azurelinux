@@ -13,7 +13,8 @@ RUN dotnet restore "./Kestrel.csproj"
 COPY . .
 
 # Always copy the TLS/Certificates folder from the repository into /src/Certificates in the container.
-COPY ["../Certificates", "/src/Certificates"]
+COPY ["testCert-2048.pfx", "/Certificates/testCert-2048.pfx"]
+COPY ["testCert-4096.pfx", "/Certificates/testCert-4096.pfx"]
 
 WORKDIR "/src/."
 RUN dotnet build "./Kestrel.csproj" -c $BUILD_CONFIGURATION -o /app/build
