@@ -19,6 +19,8 @@ jobs:
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
     buildFiles: 
       - https://raw.githubusercontent.com/aspnet/Benchmarks/main/NuGet.Config
+    variables:
+      warmup: 60
     environmentVariables:
       OrchardCore__OrchardCore_AutoSetup__AutoSetupPath: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__ShellName: "Default"
