@@ -20,13 +20,13 @@
     </None>
   </ItemGroup>
 
-  <!-- <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)..\Certificates\2048\testCert-2048.pfx" Link="certificates\testCert-2048.pfx" Condition="Exists('$(MSBuildThisFileDirectory)..\Certificates\2048\testCert-2048.pfx')">
+  <ItemGroup>
+    <None Include="..\Certificates\2048\testCert-2048.pfx" Link="certificates\testCert-2048.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="$(MSBuildThisFileDirectory)..\Certificates\4096\testCert-4096.pfx" Link="certificates\testCert-4096.pfx" Condition="Exists('$(MSBuildThisFileDirectory)..\Certificates\4096\testCert-4096.pfx')">
+    <None Include="..\Certificates\4096\testCert-4096.pfx" Link="certificates\testCert-4096.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup> -->
+  </ItemGroup>
 
 </Project>
