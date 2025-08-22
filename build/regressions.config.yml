@@ -7,7 +7,7 @@ sources:
         labels: 
           - area-mvc
       - exclude: drogon|fasthttp|actix|gin|express|node|netty|spring|vertx|ntex|Siryn
-      - exclude: '[aA]zure|Cloud'
+      - exclude: '[aA]zure|Cloud|Idna'
       - exclude: Arm\s80
     daysToLoad: 60
     stdevCount: 7
