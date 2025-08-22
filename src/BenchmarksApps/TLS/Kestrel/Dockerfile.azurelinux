@@ -11,6 +11,8 @@ WORKDIR /src
 COPY ["Kestrel.csproj", "."]
 RUN dotnet restore "./Kestrel.csproj"
 COPY . .
+# If a `Certificates` folder exists in the build context, copy it to /Certificates so the project Include path (..\Certificates) resolves during build.
+RUN if [ -d "./Certificates" ]; then mkdir -p /Certificates && cp -r ./Certificates/* /Certificates/; fi
 WORKDIR "/src/."
 RUN dotnet build "./Kestrel.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
