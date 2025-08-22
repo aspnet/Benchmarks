@@ -35,4 +35,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Ensure the certificate files copied into the build stage are also present in the final image where the app expects them
+COPY --from=build /Certificates /app/certificates
+
 ENTRYPOINT [ "dotnet", "Kestrel.dll" ]
