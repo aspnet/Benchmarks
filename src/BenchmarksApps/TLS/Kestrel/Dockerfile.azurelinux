@@ -19,6 +19,12 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Kestrel.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
+# If TLS certificates are present in the build context (copied into /src/Certificates by the earlier COPY . .),
+# copy them into the publish output so the runtime can find them under 'certificates/'.
+RUN mkdir -p /app/publish/certificates || true; \
+    if [ -f ./Certificates/2048/testCert-2048.pfx ]; then cp ./Certificates/2048/testCert-2048.pfx /app/publish/certificates/; fi; \
+    if [ -f ./Certificates/4096/testCert-4096.pfx ]; then cp ./Certificates/4096/testCert-4096.pfx /app/publish/certificates/; fi
+
 # This stage is used in production or when running from VS in regular mode
 FROM base AS final
 WORKDIR /app
