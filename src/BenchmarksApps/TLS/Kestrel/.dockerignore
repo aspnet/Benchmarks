@@ -28,3 +28,6 @@ README.md
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+!testCert-2048.pfx
+!testCert-4096.pfx
+!Certificates/
