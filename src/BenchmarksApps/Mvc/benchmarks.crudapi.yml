@@ -37,8 +37,8 @@ scenarios:
       variables:
         path: /Products
         verb: POST
-    customHeaders: [ 'content-type: application/json' ]
-    bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/crudproductbody.json
+        customHeaders: [ 'content-type: application/json' ]
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/crudproductbody.json
 
     # Update product
   ApiCrudUpdateProduct:
