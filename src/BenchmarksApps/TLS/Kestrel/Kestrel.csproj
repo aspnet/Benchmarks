@@ -20,13 +20,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\Certificates\2048\testCert-2048.pfx" Link="certificates\testCert-2048.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Certificates\4096\testCert-4096.pfx" Link="certificates\testCert-4096.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
