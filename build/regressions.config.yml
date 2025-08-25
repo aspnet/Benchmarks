@@ -5,8 +5,9 @@ sources:
       - include: .
       - include: Mvc # custom include for the extra-label
         labels: 
-          - area-mvc
+          - area-perf
       - exclude: drogon|fasthttp|actix|gin|express|node|netty|spring|vertx|ntex|Siryn
+      - exclude: ConnectionClose
       - exclude: '[aA]zure|Cloud|Idna'
       - exclude: Arm\s80
     daysToLoad: 60
@@ -17,7 +18,7 @@ sources:
         - path: jobs.load.results['http/rps/mean']
           threshold: 2
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
@@ -39,7 +40,7 @@ sources:
           threshold: 5
           unit: Percent
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
@@ -49,12 +50,7 @@ sources:
   - name: MVC 
     table: MvcBenchmarks
     rules:
-      - include: ApiCrud.*
-        labels: 
-          - area-mvc
       - include: Plaintext.*
-        labels: 
-          - area-auth
         owners:
           - BrennanConroy
       - include: OrchardAboutSqlite
@@ -68,7 +64,7 @@ sources:
         - path: jobs.load.results['http/rps/mean']
           threshold: 2
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       template: rps      
       title: >-
@@ -85,7 +81,7 @@ sources:
           threshold: 2
           unit: Percent
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
@@ -104,7 +100,7 @@ sources:
           threshold: 2
           unit: Percent
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
@@ -123,7 +119,7 @@ sources:
           - sebastienros
     regressions:
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
@@ -137,7 +133,7 @@ sources:
       - include: Stage.*Aot
     regressions:
       labels: 
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
@@ -151,9 +147,8 @@ sources:
       - include: .
     regressions:
       labels:
-        - Perf
+        - area-perf
         - perf-regression
-        - area-blazor
       owners:
         - sebastienros
         - MackinnonBuck
@@ -167,7 +162,7 @@ sources:
       - include: .
     regressions:
       labels:
-        - Perf
+        - area-perf
         - perf-regression
       owners:
         - sebastienros
