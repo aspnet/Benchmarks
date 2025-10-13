@@ -220,7 +220,7 @@ profiles:
     variables:
       mainAddress: 10.0.0.110
       secondaryAddress: 10.0.0.105
-      extraAddress: 10.0.0.109
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.110
       databaseServer: 10.0.0.103
       downstreamAddress: 10.0.0.103
@@ -332,10 +332,10 @@ profiles:
     variables:
       mainAddress: 10.0.0.102
       secondaryAddress: 10.0.0.105
-      extraAddress: 10.0.0.103
+      extraAddress: 10.0.0.106
       serverAddress: 10.0.0.102
-      databaseServer: 10.0.0.103
-      downstreamAddress: 10.0.0.103
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
       cores: 12
     agents:
       main:
@@ -360,10 +360,10 @@ profiles:
     variables:
       mainAddress: 10.0.0.102
       secondaryAddress: 10.0.0.105
-      extraAddress: 10.0.0.103
+      extraAddress: 10.0.0.106
       serverAddress: 10.0.0.102
-      databaseServer: 10.0.0.103
-      downstreamAddress: 10.0.0.103
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
       cores: 12
     agents:
       main:
@@ -387,8 +387,8 @@ profiles:
   aspnet-perf-win:
     variables:
       mainAddress: 10.0.0.110
-      secondaryAddress: 10.0.0.105
-      extraAddress: 10.0.0.103
+      secondaryAddress: 10.0.0.106
+      extraAddress: 10.0.0.105
       serverAddress: 10.0.0.110
       databaseServer: 10.0.0.105
       downstreamAddress: 10.0.0.105

@@ -362,7 +362,7 @@ profiles:
         endpoints: 
           - http://asp-perf-lin:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
         aliases:
           - main
       load:
@@ -387,7 +387,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perflin
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
         aliases:
           - main
       load:
@@ -437,7 +437,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perfwin
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
         aliases:
           - main
       load:
