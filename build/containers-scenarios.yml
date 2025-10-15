@@ -22,6 +22,10 @@ parameters:
   type: object
   default:
 
+    - displayName: 0.1 - 256mb
+      arguments: --property cpu=0.1 --property mem=256mb --property size=100m-256mb --application.cpuLimitRatio 0.1 --application.memoryLimitInBytes 256000000 
+    - displayName: 0.25 - 256mb
+      arguments: --property cpu=0.25 --property mem=256mb --property size=250m-256mb --application.cpuLimitRatio 0.25 --application.memoryLimitInBytes 256000000 
     - displayName: 0.5 - 256mb
       arguments: --property cpu=0.5 --property mem=256mb --property size=500m-256mb --application.cpuLimitRatio 0.5 --application.memoryLimitInBytes 256000000 
     - displayName: 1 - 512mb
