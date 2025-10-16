@@ -175,27 +175,6 @@ profiles:
           - warmup
           - secondary
 
-  amd-lin-app:
-    variables:
-      serverAddress: 10.0.0.106
-      cores: 48
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-amd:5001
-        aliases:
-          - main
-
-  amd-lin-load:
-    variables:
-      secondaryAddress: 10.0.0.106
-    agents: 
-      load:
-        endpoints: 
-          - http://asp-citrine-amd:5001
-        aliases:
-          - warmup
-          - secondary
 
   amd-lin2-app:
     variables:

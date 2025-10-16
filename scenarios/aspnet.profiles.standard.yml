@@ -164,10 +164,10 @@ profiles:
     variables:
       mainAddress: 10.0.0.108
       secondaryAddress: 10.0.0.109
-      extraAddress: 10.0.0.106
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.108
-      databaseServer: 10.0.0.106
-      downstreamAddress: 10.0.0.106
+      databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
       cores: 80
     agents:
       main:
@@ -183,7 +183,7 @@ profiles:
           - warmup
       extra:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-db:5001
         aliases:
           - db
           - downstream
@@ -192,10 +192,10 @@ profiles:
     variables:
       mainAddress: 10.0.0.108
       secondaryAddress: 10.0.0.109
-      extraAddress: 10.0.0.106
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.108
-      databaseServer: 10.0.0.106
-      downstreamAddress: 10.0.0.106
+      databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
       cores: 80
     agents:
       main:
@@ -211,7 +211,7 @@ profiles:
           - warmup
       extra:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineamd
+          - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - db
           - downstream
@@ -219,11 +219,11 @@ profiles:
   aspnet-citrine-arm-win:
     variables:
       mainAddress: 10.0.0.110
-      secondaryAddress: 10.0.0.106
-      extraAddress: 10.0.0.109
+      secondaryAddress: 10.0.0.105
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.110
-      databaseServer: 10.0.0.109
-      downstreamAddress: 10.0.0.109
+      databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
       cores: 80
     agents:
       main:
@@ -233,13 +233,13 @@ profiles:
           - application
       secondary:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-load:5001
         aliases:
           - load
           - warmup
       extra:
         endpoints: 
-          - http://asp-citrine-amd2:5001
+          - http://asp-citrine-db:5001
         aliases:
           - db
           - downstream
@@ -247,11 +247,11 @@ profiles:
   aspnet-citrine-arm-win-relay:
     variables:
       mainAddress: 10.0.0.110
-      secondaryAddress: 10.0.0.106
-      extraAddress: 10.0.0.109
+      secondaryAddress: 10.0.0.105
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.110
-      databaseServer: 10.0.0.109
-      downstreamAddress: 10.0.0.109
+      databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
       cores: 80
     agents:
       main:
@@ -261,13 +261,13 @@ profiles:
           - application
       secondary:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineamd
+          - https://aspnetperf.servicebus.windows.net/citrineload
         aliases:
           - load
           - warmup
       extra:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineamd2
+          - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - db
           - downstream
@@ -300,47 +300,19 @@ profiles:
           - db
           - downstream
 
-  aspnet-citrine-amd:
-    variables:
-      mainAddress: 10.0.0.106
-      secondaryAddress: 10.0.0.103
-      extraAddress: 10.0.0.105
-      serverAddress: 10.0.0.106
-      databaseServer: 10.0.0.105
-      downstreamAddress: 10.0.0.105
-      cores: 48
-    agents:
-      main:
-        endpoints: 
-          - http://asp-citrine-amd:5001
-        aliases:
-          - application
-      secondary:
-        endpoints: 
-          - http://asp-citrine-db:5001
-        aliases:
-          - load
-          - warmup
-      extra:
-        endpoints: 
-          - http://asp-citrine-load:5001
-        aliases:
-          - db
-          - downstream
-
   aspnet-citrine-amd-relay:
     variables:
-      mainAddress: 10.0.0.106
+      mainAddress: 10.0.0.109
       secondaryAddress: 10.0.0.103
       extraAddress: 10.0.0.105
-      serverAddress: 10.0.0.106
+      serverAddress: 10.0.0.109
       databaseServer: 10.0.0.105
       downstreamAddress: 10.0.0.105
       cores: 48
     agents:
       main:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineamd
+          - https://aspnetperf.servicebus.windows.net/citrineamd2
         aliases:
           - application
       secondary:
@@ -584,10 +556,10 @@ profiles:
     variables:
       mainAddress: 10.0.0.111
       secondaryAddress: 10.0.0.109
-      extraAddress: 10.0.0.106
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.111
-      databaseServer: 10.0.0.106
-      downstreamAddress: 10.0.0.106
+      databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
       cores: 128
     agents:
       main:
@@ -603,7 +575,7 @@ profiles:
           - warmup
       extra:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-db:5001
         aliases:
           - db
           - downstream
@@ -612,10 +584,10 @@ profiles:
     variables:
       mainAddress: 10.0.0.111
       secondaryAddress: 10.0.0.109
-      extraAddress: 10.0.0.106
+      extraAddress: 10.0.0.103
       serverAddress: 10.0.0.111
-      databaseServer: 10.0.0.106
-      downstreamAddress: 10.0.0.106
+      databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
       cores: 128
     agents:
       main:
@@ -631,7 +603,7 @@ profiles:
           - warmup
       extra:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineamd
+          - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - db
           - downstream
