@@ -173,11 +173,15 @@ if (logRequestDetails)
         {
             logged = true;
 
-            var tlsHandshakeFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
+            var tlsFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
 
             Console.WriteLine("Request details:");
             Console.WriteLine("-----");
-            Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
+            Console.WriteLine($"Protocol: {tlsFeature.Protocol}");
+            Console.WriteLine($"CipherSuite: {tlsFeature.NegotiatedCipherSuite}");
+            Console.WriteLine($"CipherAlgorithm: {tlsFeature.CipherAlgorithm}");
+            Console.WriteLine($"KeyExchangeAlgorithm: {tlsFeature.KeyExchangeAlgorithm}");
+            Console.WriteLine("TLS: " + tlsFeature.Protocol);
             Console.WriteLine("-----");
         }
 
@@ -218,7 +222,7 @@ if (tlsRenegotiationEnabled)
 }
 
 app.MapGet("/hello-world", () =>
-{
+{   
     return Results.Ok("Hello World!");
 });
 
@@ -246,6 +250,16 @@ if (statsEnabled)
 {
     Console.WriteLine($"\tenabled logging stats to console");
 }
+
+if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
+{
+#pragma warning disable CA1416 // Validate platform compatibility
+    Console.WriteLine($"OpenSSL: {System.Security.Cryptography.SafeEvpPKeyHandle.OpenSslVersion}");
+#pragma warning restore CA1416 // Validate platform compatibility
+}
+
+Console.WriteLine($"OPENSSL_CONF: {Environment.GetEnvironmentVariable("OPENSSL_CONF")}");
+Console.WriteLine($"LD_LIBRARY_PATH: {Environment.GetEnvironmentVariable("LD_LIBRARY_PATH")}");
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
 
