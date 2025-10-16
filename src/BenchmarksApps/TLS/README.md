@@ -19,6 +19,13 @@ In output you nee to find SSL connection:
 * SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / secp521r1 / RSASSA-PSS
 ```
 
+### Machine setup
+You could use [set-fips-compliant-tls-config](./set-fips-compliant-tls-config.ps1) to configure machine. It may not work (registry on windows does not apply always).
+
+You can set TLS CipherSuite and ECC Curve order in Windows UI:
+- Local Group Policy Editor -> Computer Configuration > Administrative Templates > Network > SSL Configuration
+- Values can be taken from https://learn.microsoft.com/en-us/windows/win32/secauthn/tls-elliptic-curves-in-windows-10-1607-and-later
+
 ### Verify machine setup
 
 #### Windows

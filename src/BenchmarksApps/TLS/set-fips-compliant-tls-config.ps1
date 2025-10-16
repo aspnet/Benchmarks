@@ -40,7 +40,7 @@ Write-Host "set priority cipher suites"
 # Set ECC curve order: P-384, P-256, P-521
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Cryptography\Configuration\Local\SSL\00010002' `
     -Name 'EccCurves' `
-    -Value @('NistP384', 'NistP256', 'NistP521') `
+    -Value @('NistP384')` # -Value @('NistP384', 'NistP256', 'NistP521') ` to set more ECs
     -PropertyType MultiString `
     -Force
 
