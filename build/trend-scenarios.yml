@@ -113,7 +113,10 @@ parameters:
 
   - displayName: "Kestrel Linux: TLS Handshakes"
     arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=KestrelTLSHandshakes --application.options.requiredOperatingSystem linux
-    
+
+  - displayName: "Nginx: TLS Handshakes"
+    arguments: --scenario tls-handshakes-nginx $(tlsJobs) --property scenario=NginxTLSHandshakes --application.options.requiredOperatingSystem linux
+
   - displayName: "Kestrel Linux: mTLS Handshakes"
     arguments: --scenario mTls-handshakes-kestrel $(tlsJobs) --property scenario=KestrelMutualTLSHandshakes --application.options.requiredOperatingSystem linux
 

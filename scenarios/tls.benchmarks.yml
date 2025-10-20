@@ -130,6 +130,24 @@ scenarios:
         certPwd: testPassword
         sslProtocol: tls12
 
+# Nginx
+
+  tls-handshakes-docker-nginx:
+    application:
+      job: dockerLinuxNginxServer
+      buildArguments:
+      - CERT_KEY_LENGTH=2048
+      - ENABLE_FIPS_MODE=true
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+
 # Kestrel
   
   tls-handshakes-kestrel:
@@ -245,21 +263,6 @@ scenarios:
       job: dockerLinuxKestrelServer
       # openssl version is already pre-installed with base image (latest)
       dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
-    load:
-      job: httpclient
-      variables:
-        path: /hello-world
-        serverPort: 8080
-        presetHeaders: connectionclose
-        connections: 32
-        serverScheme: https
-        sslProtocol: tls12
-
-  tls-handshakes-docker-nginx:
-    application:
-      job: dockerLinuxNginxServer
-      buildArguments:
-      - CERT_KEY_LENGTH=2048
     load:
       job: httpclient
       variables:
