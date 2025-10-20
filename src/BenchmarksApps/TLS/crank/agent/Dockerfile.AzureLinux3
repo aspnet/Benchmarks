@@ -60,18 +60,18 @@ RUN tdnf install -y \
 # Configure OpenSSL for FIPS-compliant cipher suites if $ENABLE_FIPS_MODE
 RUN if [ "$ENABLE_FIPS_MODE" = "true" ]; then \
         echo "=== FIPS MODE ENABLED - Configuring OpenSSL ===" && \
-        cat /etc/ssl/openssl.cnf && \
-        echo "" >> /etc/ssl/openssl.cnf && \
-        echo "openssl_conf = openssl_init" >> /etc/ssl/openssl.cnf && \
-        echo "[openssl_init]" >> /etc/ssl/openssl.cnf && \
-        echo "ssl_conf = ssl_sect" >> /etc/ssl/openssl.cnf && \
-        echo "[ssl_sect]" >> /etc/ssl/openssl.cnf && \
-        echo "system_default = system_default_sect" >> /etc/ssl/openssl.cnf && \
-        echo "[system_default_sect]" >> /etc/ssl/openssl.cnf && \
-        echo "CipherString = $OPENSSL_CIPHER_STRING" >> /etc/ssl/openssl.cnf && \
-        echo "Groups = $OPENSSL_GROUPS" >> /etc/ssl/openssl.cnf && \
+        cat /etc/pki/tls/openssl.cnf && \
+        echo "" >> /etc/pki/tls/openssl.cnf && \
+        echo "openssl_conf = openssl_init" >> /etc/pki/tls/openssl.cnf && \
+        echo "[openssl_init]" >> /etc/pki/tls/openssl.cnf && \
+        echo "ssl_conf = ssl_sect" >> /etc/pki/tls/openssl.cnf && \
+        echo "[ssl_sect]" >> /etc/pki/tls/openssl.cnf && \
+        echo "system_default = system_default_sect" >> /etc/pki/tls/openssl.cnf && \
+        echo "[system_default_sect]" >> /etc/pki/tls/openssl.cnf && \
+        echo "CipherString = $OPENSSL_CIPHER_STRING" >> /etc/pki/tls/openssl.cnf && \
+        echo "Groups = $OPENSSL_GROUPS" >> /etc/pki/tls/openssl.cnf && \
         echo "=== FIPS Configuration Applied ===" && \
-        tail -15 /etc/ssl/openssl.cnf; \
+        tail -15 /etc/pki/tls/openssl.cnf; \
     else \
         echo "=== FIPS MODE DISABLED ==="; \
     fi
