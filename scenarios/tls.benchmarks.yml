@@ -68,10 +68,10 @@ jobs:
     dockerFile: dockerNginx/src/BenchmarksApps/TLS/Nginx/Dockerfile
     dockerImageName: dockerNginx
     dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS
-    port: 8080
+    port: 5000
     readyStateText: Application started.
     environmentVariables:
-      urls: "https://*:8080" # any ip, port 8080
+      urls: "https://*:5000" # any ip, port 8080
 
 scenarios:
 
@@ -146,7 +146,7 @@ scenarios:
         connections: 32
         serverScheme: https
         sslProtocol: tls12
-        serverPort: 8080
+        serverPort: 5000
 
 # Kestrel
   

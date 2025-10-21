@@ -36,8 +36,8 @@ RUN if [ "$ENABLE_FIPS_MODE" = "true" ]; then \
 # Make the script executable
 RUN chmod +x /start-nginx.sh
 
-# Expose port 8080 for HTTPS traffic
-EXPOSE 8080
+# Expose port 5000 for HTTPS traffic
+EXPOSE 5000
 
 # Run the startup script
 CMD ["/start-nginx.sh"]
