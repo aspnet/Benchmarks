@@ -142,11 +142,11 @@ scenarios:
       job: httpclient
       variables:
         path: /hello-world
-        serverPort: 8080
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
         sslProtocol: tls12
+        serverPort: 8080
 
 # Kestrel
   
