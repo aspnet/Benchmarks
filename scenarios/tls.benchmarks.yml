@@ -68,10 +68,10 @@ jobs:
     dockerFile: dockerNginx/src/BenchmarksApps/TLS/Nginx/Dockerfile
     dockerImageName: dockerNginx
     dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS
-    port: 8080
+    port: 5000
     readyStateText: Application started.
     environmentVariables:
-      urls: "https://*:8080" # any ip, port 8080
+      urls: "https://*:5000" # any ip, port 8080
 
 scenarios:
 
@@ -129,6 +129,24 @@ scenarios:
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
+
+# Nginx
+
+  tls-handshakes-docker-nginx:
+    application:
+      job: dockerLinuxNginxServer
+      buildArguments:
+      - CERT_KEY_LENGTH=2048
+      - ENABLE_FIPS_MODE=true
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
+        serverPort: 5000
 
 # Kestrel
   
@@ -245,21 +263,6 @@ scenarios:
       job: dockerLinuxKestrelServer
       # openssl version is already pre-installed with base image (latest)
       dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
-    load:
-      job: httpclient
-      variables:
-        path: /hello-world
-        serverPort: 8080
-        presetHeaders: connectionclose
-        connections: 32
-        serverScheme: https
-        sslProtocol: tls12
-
-  tls-handshakes-docker-nginx:
-    application:
-      job: dockerLinuxNginxServer
-      buildArguments:
-      - CERT_KEY_LENGTH=2048
     load:
       job: httpclient
       variables:
