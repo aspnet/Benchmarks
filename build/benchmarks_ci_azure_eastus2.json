@@ -3,7 +3,7 @@
     "name": "Azure CI Benchmarks Configuration",
     "description": "Combined machines and scenarios for continuous integration benchmarks on Azure",
     "version": "1.0",
-    "schedule": "0 9/12 * * *",
+    "schedule": "0 2/12 * * *",
     "queues": [
       "cobaltcloud"
     ],
