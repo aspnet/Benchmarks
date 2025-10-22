@@ -97,7 +97,7 @@ profiles:
   aspnet-citrine-amd:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.106
+      serverAddress: 10.0.0.109
       cores: 48
     jobs:
       db:
@@ -105,7 +105,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints:
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-amd2:5001
         variables:
           databaseServer: 10.0.0.103
       load:

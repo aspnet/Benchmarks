@@ -33,9 +33,6 @@ profiles:
         description: Intel/Linux 12 Cores
         arguments: --profile aspnet-perf-lin-relay
 
-    aspnet-citrine-amd:
-        description: Amd/Linux 48 Cores
-        arguments: --profile aspnet-citrine-amd-relay
 
 benchmarks:
     micro:

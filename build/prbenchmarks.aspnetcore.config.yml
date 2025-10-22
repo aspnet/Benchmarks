@@ -45,9 +45,6 @@ profiles:
         description: Ampere/Linux 80 Cores
         arguments: --profile aspnet-citrine-arm-lin-relay
         
-    aspnet-citrine-amd:
-        description: AMD/Linux 48 Cores
-        arguments: --profile aspnet-citrine-amd-relay
 
 benchmarks:
     plaintext:
