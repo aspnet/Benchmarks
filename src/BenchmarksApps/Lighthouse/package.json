@@ -16,5 +16,8 @@
     "lighthouse": "12.2.1",
     "open": "^10.0.4",
     "puppeteer": "^22.3.0"
+  },
+  "overrides": {
+    "cookie@>0.4.0 <0.7.2": "0.7.2"
   }
 }
