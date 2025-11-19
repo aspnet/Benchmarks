@@ -152,6 +152,7 @@ sources:
       owners:
         - sebastienros
         - MackinnonBuck
+        - lewing
       template: reliability
       healthCheck: true
       title: >-
