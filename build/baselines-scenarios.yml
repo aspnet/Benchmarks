@@ -64,7 +64,7 @@ parameters:
   # Orchard Core
 
   - displayName: Orchard - About - Sqlite
-    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http
+    arguments: "--scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http --application.source.branchOrCommit #eefd4a1659cd48e56b681b5bcff2cc92b349b464"
   
 steps:
 - ${{ each s in parameters.scenarios }}:
