@@ -173,7 +173,6 @@ namespace PlatformBenchmarks
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
             var results = new World[count];
-            var ids = new int[count];
 
             using var connection = CreateConnection();
             await connection.OpenAsync();
@@ -185,6 +184,7 @@ namespace PlatformBenchmarks
                 // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
                 batch.EnableErrorBarriers = true;
 
+                var ids = new int[count];
                 for (var i = 0; i < count; i++)
                 {
                     ids[i] = Random.Shared.Next(1, 10001);
@@ -213,7 +213,9 @@ namespace PlatformBenchmarks
             var numbers = new int[count];
             for (var i = 0; i < count; i++)
             {
-                numbers[i] = Random.Shared.Next(1, 10001);
+                var randomNumber = Random.Shared.Next(1, 10001);
+                results[i].RandomNumber = randomNumber;
+                numbers[i] = randomNumber;
             }
 
             var update = "UPDATE world w SET randomnumber = u.new_val FROM (SELECT unnest($1) as id, unnest($2) as new_val) u WHERE w.id = u.id";
