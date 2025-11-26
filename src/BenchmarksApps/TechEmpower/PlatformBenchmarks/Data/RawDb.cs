@@ -15,7 +15,6 @@ namespace PlatformBenchmarks
 {
     public sealed class RawDb
     {
-        private readonly ConcurrentRandom _random;
         private readonly MemoryCache _cache
             = new(new MemoryCacheOptions { ExpirationScanFrequency = TimeSpan.FromMinutes(60) });
 
@@ -25,9 +24,8 @@ namespace PlatformBenchmarks
         private readonly string _connectionString;
 #endif
 
-        public RawDb(ConcurrentRandom random, AppSettings appSettings)
+        public RawDb(AppSettings appSettings)
         {
-            _random = random;
 #if NET8_0_OR_GREATER
             _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
 #elif NET7_0
@@ -53,10 +51,10 @@ namespace PlatformBenchmarks
             var result = new CachedWorld[count];
             var cacheKeys = _cacheKeys;
             var cache = _cache;
-            var random = _random;
+
             for (var i = 0; i < result.Length; i++)
             {
-                var id = random.Next(1, 10001);
+                var id = Random.Shared.Next(1, 10001);
                 var key = cacheKeys[id];
                 if (cache.TryGetValue(key, out var cached))
                 {
@@ -88,7 +86,7 @@ namespace PlatformBenchmarks
                 {
                     result[i] = await rawdb._cache.GetOrCreateAsync(key, create);
 
-                    id = rawdb._random.Next(1, 10001);
+                    id = Random.Shared.Next(1, 10001);
                     idParameter.TypedValue = id;
                     key = cacheKeys[id];
                 }
@@ -136,7 +134,7 @@ namespace PlatformBenchmarks
                 batch.BatchCommands.Add(new()
                 {
                     CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
-                    Parameters = { new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) } }
+                    Parameters = { new NpgsqlParameter<int> { TypedValue = Random.Shared.Next(1, 10001) } }
                 });
             }
 
@@ -165,7 +163,7 @@ namespace PlatformBenchmarks
             for (var i = 0; i < results.Length; i++)
             {
                 results[i] = await ReadSingleRow(cmd);
-                idParameter.TypedValue = _random.Next(1, 10001);
+                idParameter.TypedValue = Random.Shared.Next(1, 10001);
             }
 
             return results;
@@ -175,11 +173,11 @@ namespace PlatformBenchmarks
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
             var results = new World[count];
+            var ids = new int[count];
 
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-#if NET7_0_OR_GREATER
             using (var batch = new NpgsqlBatch(connection))
             {
                 // Inserts a PG Sync message between each statement in the batch, required for compliance with
@@ -189,10 +187,16 @@ namespace PlatformBenchmarks
 
                 for (var i = 0; i < count; i++)
                 {
+                    ids[i] = Random.Shared.Next(1, 10001);
+                }
+                Array.Sort(ids);
+                
+                for (var i = 0; i < count; i++)
+                {
                     batch.BatchCommands.Add(new()
                     {
                         CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
-                        Parameters = { new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) } }
+                        Parameters = { new NpgsqlParameter<int> { TypedValue = ids[i] } }
                     });
                 }
 
@@ -205,32 +209,20 @@ namespace PlatformBenchmarks
                     await reader.NextResultAsync();
                 }
             }
-#else
-            var (queryCmd, queryParameter) = CreateReadCommand(connection);
-            using (queryCmd)
+
+            var numbers = new int[count];
+            for (var i = 0; i < count; i++)
             {
-                for (var i = 0; i < results.Length; i++)
-                {
-                    results[i] = await ReadSingleRow(queryCmd);
-                    queryParameter.TypedValue = _random.Next(1, 10001);
-                }
+                numbers[i] = Random.Shared.Next(1, 10001);
             }
-#endif
 
-            using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), connection))
-            {
-                for (var i = 0; i < results.Length; i++)
-                {
-                    var randomNumber = _random.Next(1, 10001);
+            var update = "UPDATE world w SET randomnumber = u.new_val FROM (SELECT unnest($1) as id, unnest($2) as new_val) u WHERE w.id = u.id";
 
-                    updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = results[i].Id });
-                    updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = randomNumber });
+            using var updateCmd = new NpgsqlCommand(update, connection);
+            updateCmd.Parameters.AddWithValue("id", ids);
+            updateCmd.Parameters.AddWithValue("new_val", numbers);
 
-                    results[i].RandomNumber = randomNumber;
-                }
-
-                await updateCmd.ExecuteNonQueryAsync();
-            }
+            await updateCmd.ExecuteNonQueryAsync();
 
             return results;
         }
@@ -293,7 +285,7 @@ namespace PlatformBenchmarks
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {
             var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = $1", connection);
-            var parameter = new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) };
+            var parameter = new NpgsqlParameter<int> { TypedValue = Random.Shared.Next(1, 10001) };
 
             cmd.Parameters.Add(parameter);
 
