@@ -447,46 +447,46 @@ profiles:
 
   cobalt-hosted-lin-server-azure-linux3-app:
     variables:
-      serverAddress: 10.57.32.95
+      serverAddress: 10.57.32.77
       cores: 56
     agents:
       application:
         endpoints:
-          - http://10.57.32.95:5001
+          - http://10.57.32.77:5001
         aliases:
           - main
 
   cobalt-hosted-lin-server-azure-linux3-28-app:
     variables:
-      serverAddress: 10.57.32.95
+      serverAddress: 10.57.32.77
       cores: 28
     agents:
       application:
         cpuSet: 0-27
         endpoints:
-          - http://10.57.32.95:5001
+          - http://10.57.32.77:5001
         aliases:
           - main
 
   cobalt-hosted-lin-client-azure-linux3-load:
     variables:
-      secondaryAddress: 10.57.32.96
+      secondaryAddress: 10.57.32.76
     agents:
       load:
         endpoints:
-          - http://10.57.32.96:5001
+          - http://10.57.32.76:5001
         aliases:
           - warmup
           - secondary
 
   cobalt-hosted-lin-db-azure-linux3-db:
     variables:
-      databaseServer: 10.57.32.94
-      downstreamAddress: 10.57.32.94
+      databaseServer: 10.57.32.101
+      downstreamAddress: 10.57.32.101
     agents:
       db:
         endpoints:
-          - http://10.57.32.94:5001
+          - http://10.57.32.101:5001
         aliases:
           - downstream
           - extra
