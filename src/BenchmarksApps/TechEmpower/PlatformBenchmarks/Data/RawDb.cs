@@ -219,8 +219,8 @@ namespace PlatformBenchmarks
             var update = "UPDATE world w SET randomnumber = u.new_val FROM (SELECT unnest($1) as id, unnest($2) as new_val) u WHERE w.id = u.id";
 
             using var updateCmd = new NpgsqlCommand(update, connection);
-            updateCmd.Parameters.AddWithValue("id", ids);
-            updateCmd.Parameters.AddWithValue("new_val", numbers);
+            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = ids });
+            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = numbers });
 
             await updateCmd.ExecuteNonQueryAsync();
 
