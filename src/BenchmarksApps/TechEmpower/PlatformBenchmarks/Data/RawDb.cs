@@ -174,6 +174,13 @@ namespace PlatformBenchmarks
         {
             var results = new World[count];
 
+            var ids = new int[count];
+            for (var i = 0; i < count; i++)
+            {
+                ids[i] = Random.Shared.Next(1, 10001);
+            }
+            Array.Sort(ids);
+            
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
@@ -183,13 +190,6 @@ namespace PlatformBenchmarks
                 // TechEmpower general test requirement 7
                 // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
                 batch.EnableErrorBarriers = true;
-
-                var ids = new int[count];
-                for (var i = 0; i < count; i++)
-                {
-                    ids[i] = Random.Shared.Next(1, 10001);
-                }
-                Array.Sort(ids);
                 
                 for (var i = 0; i < count; i++)
                 {
