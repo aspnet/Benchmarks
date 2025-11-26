@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Npgsql;
+using NpgsqlTypes;
 
 // ReSharper disable UseAwaitUsing
 
@@ -27,7 +28,7 @@ namespace PlatformBenchmarks
         public RawDb(AppSettings appSettings)
         {
 #if NET8_0_OR_GREATER
-            _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+            _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).EnableArrays().Build();
 #elif NET7_0
             _dataSource = NpgsqlDataSource.Create(appSettings.ConnectionString);
 #else
@@ -221,8 +222,8 @@ namespace PlatformBenchmarks
             var update = "UPDATE world w SET randomnumber = u.new_val FROM (SELECT unnest($1) as id, unnest($2) as new_val) u WHERE w.id = u.id";
 
             using var updateCmd = new NpgsqlCommand(update, connection);
-            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = ids });
-            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = numbers });
+            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = ids, NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer });
+            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = numbers, NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer });
 
             await updateCmd.ExecuteNonQueryAsync();
 
