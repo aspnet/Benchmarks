@@ -164,6 +164,21 @@ scenarios:
         serverScheme: https
         sslProtocol: tls12
 
+  # Scenario to measure memory impact of SSL_MODE_RELEASE_BUFFERS
+  # Uses keep-alive connections to allow connections to go idle
+  tls-keepalive-kestrel:
+    application:
+      job: kestrelServer
+      variables:
+        certPublicKeyLength: 2048
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        connections: 256
+        serverScheme: https
+        sslProtocol: tls12
+
   mTls-handshakes-kestrel:
     application:
       job: kestrelServer
