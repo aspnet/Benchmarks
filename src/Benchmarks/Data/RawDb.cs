@@ -71,6 +71,12 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
+            Span<int> ids = stackalloc int[count];
+            for (int i = 0; i < count; i++)
+            {
+                ids[i] = _random.Next(1, 10001);
+            }
+
             var result = new World[count];
 
             using (var db = _dbProviderFactory.CreateConnection())
@@ -81,8 +87,8 @@ namespace Benchmarks.Data
                 {
                     for (int i = 0; i < count; i++)
                     {
+                        cmd.Parameters["@Id"].Value = ids[i];
                         result[i] = await ReadSingleRow(db, cmd);
-                        cmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
                 }
             }
@@ -92,6 +98,12 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
+            Span<int> ids = stackalloc int[count];
+            for (int i = 0; i < count; i++)
+            {
+                ids[i] = _random.Next(1, 10001);
+            }
+
             using (var db = _dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = _connectionString;
@@ -103,8 +115,8 @@ namespace Benchmarks.Data
                     var results = new World[count];
                     for (int i = 0; i < count; i++)
                     {
+                        queryCmd.Parameters["@Id"].Value = ids[i];
                         results[i] = await ReadSingleRow(db, queryCmd);
-                        queryCmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
 
                     updateCmd.CommandText = BatchUpdateString.Query(count);

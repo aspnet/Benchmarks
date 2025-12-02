@@ -119,6 +119,12 @@ namespace PlatformBenchmarks
 #if NET7_0_OR_GREATER
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
+            Span<int> ids = stackalloc int[count];
+            for (var i = 0; i < count; i++)
+            {
+                ids[i] = _random.Next(1, 10001);
+            }
+
             var results = new World[count];
 
             using var connection = await _dataSource.OpenConnectionAsync();
@@ -136,7 +142,7 @@ namespace PlatformBenchmarks
                 batch.BatchCommands.Add(new()
                 {
                     CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
-                    Parameters = { new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) } }
+                    Parameters = { new NpgsqlParameter<int> { TypedValue = ids[i] } }
                 });
             }
 
@@ -154,6 +160,12 @@ namespace PlatformBenchmarks
 #else
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
+            Span<int> ids = stackalloc int[count];
+            for (var i = 0; i < count; i++)
+            {
+                ids[i] = _random.Next(1, 10001);
+            }
+
             var results = new World[count];
 
             using var db = CreateConnection();
@@ -164,8 +176,8 @@ namespace PlatformBenchmarks
 
             for (var i = 0; i < results.Length; i++)
             {
+                idParameter.TypedValue = ids[i];
                 results[i] = await ReadSingleRow(cmd);
-                idParameter.TypedValue = _random.Next(1, 10001);
             }
 
             return results;
@@ -174,6 +186,12 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
+            Span<int> ids = stackalloc int[count];
+            for (var i = 0; i < count; i++)
+            {
+                ids[i] = _random.Next(1, 10001);
+            }
+
             var results = new World[count];
 
             using var connection = CreateConnection();
@@ -192,7 +210,7 @@ namespace PlatformBenchmarks
                     batch.BatchCommands.Add(new()
                     {
                         CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
-                        Parameters = { new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) } }
+                        Parameters = { new NpgsqlParameter<int> { TypedValue = ids[i] } }
                     });
                 }
 
@@ -211,8 +229,8 @@ namespace PlatformBenchmarks
             {
                 for (var i = 0; i < results.Length; i++)
                 {
+                    queryParameter.TypedValue = ids[i];
                     results[i] = await ReadSingleRow(queryCmd);
-                    queryParameter.TypedValue = _random.Next(1, 10001);
                 }
             }
 #endif
