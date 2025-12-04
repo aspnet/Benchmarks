@@ -73,9 +73,10 @@ extends:
         steps:
         - checkout: dotnet-crank
           path: crank
+          workspaceRepo: true
           fetchDepth: 1
           displayName: Checkout dotnet-crank
-        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.PullRequestBot/
+        - powershell: dotnet build --framework net8.0 -c release src/Microsoft.Crank.PullRequestBot/
           displayName: Build PR benchmarks
         - checkout: self
           fetchDepth: 1
@@ -89,7 +90,7 @@ extends:
             scriptLocation: inlineScript
             inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
+              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/aspnetcore `
                   --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.aspnetcore.config.yml `
                   --app-id $(github.appid) `
@@ -109,7 +110,7 @@ extends:
             scriptLocation: inlineScript
             inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
+              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/efcore `
                   --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.efcore.config.yml `
                   --app-id $(github.appid) `
@@ -129,7 +130,7 @@ extends:
             scriptLocation: inlineScript
             inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
+              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
                   --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.windows_x64.config.yml `
                   --app-id $(github.appid) `
@@ -150,7 +151,7 @@ extends:
             scriptLocation: inlineScript
             inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
+              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
                   --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.windows_arm64.config.yml `
                   --app-id $(github.appid) `
@@ -173,9 +174,10 @@ extends:
         steps:
         - checkout: dotnet-crank
           path: crank
+          workspaceRepo: true
           fetchDepth: 1
           displayName: Checkout dotnet-crank
-        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.PullRequestBot/
+        - powershell: dotnet build --framework net8.0 -c release src/Microsoft.Crank.PullRequestBot/
           displayName: Build PR benchmarks
         - checkout: self
           fetchDepth: 1
@@ -189,7 +191,7 @@ extends:
             scriptLocation: inlineScript
             inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
+              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
                   --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.linux_x64.config.yml `
                   --app-id $(github.appid) `
@@ -209,7 +211,7 @@ extends:
             scriptLocation: inlineScript
             inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
+              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
                   --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.linux_arm64.config.yml `
                   --app-id $(github.appid) `
