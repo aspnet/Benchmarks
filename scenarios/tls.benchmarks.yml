@@ -166,6 +166,7 @@ scenarios:
 
   # Scenario to measure memory impact of SSL_MODE_RELEASE_BUFFERS
   # Uses keep-alive connections to allow connections to go idle
+  # With 10,000 connections, expect ~220-340MB memory difference
   tls-keepalive-kestrel:
     application:
       job: kestrelServer
@@ -175,9 +176,11 @@ scenarios:
       job: httpclient
       variables:
         path: /hello-world
-        connections: 256
+        connections: 10000
         serverScheme: https
         sslProtocol: tls12
+        requestsPerSecond: 100
+        duration: 120
 
   mTls-handshakes-kestrel:
     application:

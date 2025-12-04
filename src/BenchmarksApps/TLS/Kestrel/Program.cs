@@ -74,6 +74,9 @@ if (enableHostHeaderValidation)
 
 builder.WebHost.UseKestrel(options =>
 {
+    // Increase keep-alive timeout for idle connection memory testing
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
+    
     foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
     {
         ConfigureListen(options, builder.Configuration, value);
