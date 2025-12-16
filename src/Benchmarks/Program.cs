@@ -163,7 +163,9 @@ namespace Benchmarks
                 StartInteractiveConsoleThread();
             }
 
-            webHost.Run();
+            webHost.Start();
+            Console.WriteLine("Application started. Press Ctrl+C to shut down.");
+            webHost.WaitForShutdown();
         }
 
         private static void StartInteractiveConsoleThread()
