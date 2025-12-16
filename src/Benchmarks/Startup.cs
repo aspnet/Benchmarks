@@ -18,6 +18,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Npgsql;
 using System.IO;
 using Microsoft.AspNetCore.WebUtilities;
@@ -27,7 +28,7 @@ namespace Benchmarks
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment hostingEnv, Scenarios scenarios)
+        public Startup(IWebHostEnvironment hostingEnv)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
@@ -38,21 +39,27 @@ namespace Benchmarks
                 .AddCommandLine(Program.Args);
 
             Configuration = builder.Build();
-
-            Scenarios = scenarios;
         }
 
         public IConfigurationRoot Configuration { get; set; }
 
-        public Scenarios Scenarios { get; }
+        public Scenarios Scenarios { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AppSettings>(Configuration);
 
-            // We re-register the Scenarios as an instance singleton here to avoid it being created again due to the
-            // registration done in Program.Main
-            services.AddSingleton(Scenarios);
+            // Retrieve Scenarios that was registered in Program.Main
+            // We need it throughout ConfigureServices, so we must call BuildServiceProvider here.
+            // Warning suppression justification:
+            // Duplicate Scenarios will not cause issues as it is a singleton and we re-register the same instance below.
+            // Moving to a different pattern would require significant refactoring.
+#pragma warning disable ASP0000 // Do not call 'BuildServiceProvider' in 'ConfigureServices'
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                Scenarios = serviceProvider.GetRequiredService<Scenarios>();
+            }
+#pragma warning restore ASP0000
 
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
@@ -230,7 +237,7 @@ namespace Benchmarks
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
