@@ -61,6 +61,19 @@ namespace Benchmarks
                     webHostBuilder
                         .UseContentRoot(Directory.GetCurrentDirectory())
                         .UseConfiguration(config)
+                        .ConfigureServices(services => services
+                            .AddSingleton(new ConsoleArgs(args))
+                            .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
+                            .AddSingleton<Scenarios>()
+                            .Configure<LoggerFilterOptions>(options =>
+                            {
+                                if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
+                                {
+                                    Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
+                                    options.CaptureScopes = false;
+                                }
+                            })
+                        )
                         .UseStartup<Startup>()
                         .ConfigureLogging(loggerFactory =>
                         {
@@ -70,19 +83,6 @@ namespace Benchmarks
                                 loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                             }
                         })
-                    .ConfigureServices(services => services
-                        .AddSingleton(new ConsoleArgs(args))
-                        .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
-                        .AddSingleton<Scenarios>()
-                        .Configure<LoggerFilterOptions>(options =>
-                        {
-                            if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
-                            {
-                                Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
-                                options.CaptureScopes = false;
-                            }
-                        })
-                    )
                     .UseDefaultServiceProvider(
                         (context, options) => options.ValidateScopes = context.HostingEnvironment.IsDevelopment());
 
