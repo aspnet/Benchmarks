@@ -10,6 +10,7 @@ namespace Benchmarks.Data
     [Table("world")]
     public class World
     {
+        [UseColumnAttribute] // Fixes DAP043 warning
         [Column("id")]
         public int Id { get; set; }
 
@@ -17,6 +18,7 @@ namespace Benchmarks.Data
         [NotMapped, DbValue(Ignore = true)]
         public int _Id { get; set; }
 
+        [UseColumnAttribute] // Fixes DAP043 warning
         [Column("randomnumber")]
         public int RandomNumber { get; set; }
     }

@@ -57,13 +57,22 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftIISTestingVersion80)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net10.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion90)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion90)" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion90)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion90)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftIISTestingVersion90)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net11.0'">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion100)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion100)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion100)" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion100)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion100)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftIISTestingVersion100)" />
   </ItemGroup>
 
   <ItemGroup>
