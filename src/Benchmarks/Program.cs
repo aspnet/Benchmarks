@@ -55,104 +55,100 @@ namespace Benchmarks
 
             Protocol = config["protocol"] ?? "";
 
-            var hostBuilder = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var webHostBuilder = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseConfiguration(config)
+                .UseStartup<Startup>()
+                .ConfigureLogging(loggerFactory =>
                 {
-                    webHostBuilder
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .UseConfiguration(config)
-                        .ConfigureServices(services => services
-                            .AddSingleton(new ConsoleArgs(args))
-                            .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
-                            .AddSingleton<Scenarios>()
-                            .Configure<LoggerFilterOptions>(options =>
-                            {
-                                if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
-                                {
-                                    Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
-                                    options.CaptureScopes = false;
-                                }
-                            })
-                        )
-                        .UseStartup<Startup>()
-                        .ConfigureLogging(loggerFactory =>
-                        {
-                            if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
-                            {
-                                Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
-                                loggerFactory.AddConsole().SetMinimumLevel(logLevel);
-                            }
-                        })
-                    .UseDefaultServiceProvider(
-                        (context, options) => options.ValidateScopes = context.HostingEnvironment.IsDevelopment());
-
-                    if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
+                    if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
                     {
-                        webHostBuilder.UseKestrel(options =>
-                        {
-                            var urls = config["urls"] ?? config["server.urls"];
-
-                            if (!string.IsNullOrEmpty(urls))
-                            {
-                                foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    Listen(options, config, value);
-                                }
-                            }
-                            else
-                            {
-                                Listen(options, config, "http://localhost:5000/");
-                            }
-                        });
-
-                        var threadCount = GetThreadCount(config);
-
-                        webHostBuilder.UseSockets(socketOptions =>
-                        {
-                            if (threadCount > 0)
-                            {
-                                socketOptions.IOQueueCount = threadCount;
-                            }
-
-                            Console.WriteLine($"Using Sockets with {socketOptions.IOQueueCount} threads");
-                        });
-
-                        webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
+                        Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
+                        loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
-                    else if (String.Equals(Server, "HttpSys", StringComparison.OrdinalIgnoreCase))
+                })
+                .ConfigureServices(services => services
+                    .AddSingleton(new ConsoleArgs(args))
+                    .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
+                    .AddSingleton<Scenarios>()
+                    .Configure<LoggerFilterOptions>(options =>
                     {
-                        // Disable cross-platform warning
-#pragma warning disable CA1416
-                        webHostBuilder.UseHttpSys();
-#pragma warning restore CA1416
-                    }
-                    else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
-                    {
-#if NET9_0_OR_GREATER
-                        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_VERSION")))
+                        if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
-                            throw new InvalidOperationException("Benchmark wants to use IIS but app isn't running in IIS.");
+                            Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
+                            options.CaptureScopes = false;
                         }
-#endif
-                        webHostBuilder.UseKestrel().UseIIS();
-                    }
-                    else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
+                    })
+                )
+                .UseDefaultServiceProvider(
+                    (context, options) => options.ValidateScopes = context.HostingEnvironment.IsDevelopment());
+
+            if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
+            {
+                webHostBuilder = webHostBuilder.UseKestrel(options =>
+                {
+                    var urls = config["urls"] ?? config["server.urls"];
+
+                    if (!string.IsNullOrEmpty(urls))
                     {
-#if NET9_0_OR_GREATER
-                        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_VERSION")))
+                        foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            throw new InvalidOperationException("Benchmark wants to use IIS but app isn't running in IIS.");
+                            Listen(options, config, value);
                         }
-#endif
-                        webHostBuilder.UseKestrel().UseIISIntegration();
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Unknown server value: {Server}");
+                        Listen(options, config, "http://localhost:5000/");
                     }
                 });
 
-            var webHost = hostBuilder.Build();
+                var threadCount = GetThreadCount(config);
+
+                webHostBuilder.UseSockets(socketOptions =>
+                {
+                    if (threadCount > 0)
+                    {
+                        socketOptions.IOQueueCount = threadCount;
+                    }
+
+                    Console.WriteLine($"Using Sockets with {socketOptions.IOQueueCount} threads");
+                });
+
+                webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
+            }
+            else if (String.Equals(Server, "HttpSys", StringComparison.OrdinalIgnoreCase))
+            {
+                // Disable cross-platform warning
+#pragma warning disable CA1416
+                webHostBuilder = webHostBuilder.UseHttpSys();
+#pragma warning restore CA1416
+            }
+            else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
+            {
+#if NET9_0_OR_GREATER
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_VERSION")))
+                {
+                    throw new InvalidOperationException("Benchmark wants to use IIS but app isn't running in IIS.");
+                }
+#endif
+                webHostBuilder = webHostBuilder.UseKestrel().UseIIS();
+            }
+            else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
+            {
+#if NET9_0_OR_GREATER
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_VERSION")))
+                {
+                    throw new InvalidOperationException("Benchmark wants to use IIS but app isn't running in IIS.");
+                }
+#endif
+                webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown server value: {Server}");
+            }
+
+            var webHost = webHostBuilder.Build();
 
             Console.WriteLine($"Using server {Server}");
             Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
@@ -163,9 +159,7 @@ namespace Benchmarks
                 StartInteractiveConsoleThread();
             }
 
-            webHost.Start();
-            Console.WriteLine("Application started. Press Ctrl+C to shut down.");
-            webHost.WaitForShutdown();
+            webHost.Run();
         }
 
         private static void StartInteractiveConsoleThread()
