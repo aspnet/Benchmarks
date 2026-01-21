@@ -11,6 +11,7 @@ namespace Benchmarks.Data
     public class World
     {
         [Column("id")]
+        [UseColumnAttribute]
         public int Id { get; set; }
 
         [IgnoreDataMember]
@@ -18,6 +19,7 @@ namespace Benchmarks.Data
         public int _Id { get; set; }
 
         [Column("randomnumber")]
+        [UseColumnAttribute]
         public int RandomNumber { get; set; }
     }
 }
