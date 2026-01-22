@@ -10,16 +10,16 @@ namespace Benchmarks.Data
     [Table("world")]
     public class World
     {
-        [Column("id")]
         [UseColumnAttribute]
+        [Column("id")]
         public int Id { get; set; }
 
         [IgnoreDataMember]
         [NotMapped, DbValue(Ignore = true)]
         public int _Id { get; set; }
 
-        [Column("randomnumber")]
         [UseColumnAttribute]
+        [Column("randomnumber")]
         public int RandomNumber { get; set; }
     }
 }
