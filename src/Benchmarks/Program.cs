@@ -16,6 +16,8 @@ using Benchmarks.Data;
 using Benchmarks.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -487,6 +489,28 @@ namespace Benchmarks
 
             Console.WriteLine($"Using server {Server}");
             Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
+
+            app.Lifetime.ApplicationStarted.Register(() =>
+            {
+                Console.WriteLine($"Hosting environment: {app.Environment.EnvironmentName}");
+                Console.WriteLine($"Content root path: {app.Environment.ContentRootPath}");
+
+                var serverAddresses = app.Services.GetService<IServer>()?.Features.Get<IServerAddressesFeature>()?.Addresses;
+                if (serverAddresses != null)
+                {
+                    foreach (var address in serverAddresses)
+                    {
+                        Console.WriteLine($"Now listening on: {address}");
+                    }
+                }
+
+                Console.WriteLine("Application started. Press Ctrl+C to shut down.");
+            });
+
+            app.Lifetime.ApplicationStopping.Register(() =>
+            {
+                Console.WriteLine("Application is shutting down...");
+            });
 
             var nonInteractiveValue = hostingConfig["nonInteractive"];
             if (nonInteractiveValue == null || !bool.Parse(nonInteractiveValue))
