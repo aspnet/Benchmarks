@@ -437,7 +437,7 @@ namespace Benchmarks
             {
                 var helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
-                app.MapGet("/ep-plaintext", async context =>
+                app.Map("/ep-plaintext", async context =>
                 {
                     var payloadLength = helloWorldPayload.Length;
                     var response = context.Response;
