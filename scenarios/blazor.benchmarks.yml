@@ -14,7 +14,8 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/BenchmarksApps/BlazorBlazingPizza/BlazingPizza.Server.csproj
-      arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
   ssr:
