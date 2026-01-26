@@ -1,0 +1,119 @@
+# Kestrel Bad Request Benchmarks
+#
+# Measures Kestrel's performance handling malformed HTTP requests.
+#
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/badrequest.benchmarks.yml --scenario invalid-header --profile aspnet-perf-lin
+
+imports:
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+  connections: 64
+  warmup: 15
+  duration: 15
+  silentClose: false
+
+jobs:
+  server:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/Kestrel/BadRequest/BadRequestServer.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} {% if silentClose %}--silentClose{% endif %}"
+
+  client:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BadRequestClient/BadRequestClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 120
+    variables:
+      requestType: invalid-header
+    arguments: "-a {{serverAddress}} -p {{serverPort}} -c {{connections}} -w {{warmup}} -d {{duration}} -t {{requestType}}"
+
+scenarios:
+  # Valid request baseline
+  badrequest-valid:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: valid
+
+  # Invalid header name (contains space) - most common bad request type
+  badrequest-invalid-header:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: invalid-header
+
+  # Header without colon
+  badrequest-no-colon:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: no-colon
+
+  # Invalid method (null byte)
+  badrequest-invalid-method:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: invalid-method
+
+  # Invalid HTTP version
+  badrequest-invalid-version:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: invalid-version
+
+  # Null byte in URL path
+  badrequest-null-byte:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: null-byte
+
+  # TLS handshake over HTTP port
+  badrequest-tls-over-http:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: tls-over-http
+
+  # Very long header name
+  badrequest-long-header:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: long-header
+
+  # Control characters in header
+  badrequest-control-chars:
+    application:
+      job: server
+    load:
+      job: client
+      variables:
+        requestType: control-chars
