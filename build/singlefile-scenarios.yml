@@ -39,6 +39,10 @@ parameters:
   - displayName: AOT
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
     arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+  - displayName: R2RComposite-Windows
+    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishSingleFile=true /p:RuntimeIdentifier=win-x64\" --property mode=R2RComposite --property rid=win-x64 --application.options.requiredOperatingSystem windows
+  - displayName: R2RComposite-Linux
+    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishSingleFile=true /p:RuntimeIdentifier=linux-x64\" --property mode=R2RComposite --property rid=linux-x64 --application.options.requiredOperatingSystem linux
 
 steps:
 - ${{ each s in parameters.scenarios }}:

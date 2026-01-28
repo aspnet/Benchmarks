@@ -3,32 +3,32 @@
     <NpgsqlVersion60>6.0.13</NpgsqlVersion60>
     <NpgsqlVersion70>7.0.10</NpgsqlVersion70>
     <NpgsqlVersion80>8.0.7</NpgsqlVersion80>
-    <NpgsqlVersion90>9.0.3</NpgsqlVersion90>
+    <NpgsqlVersion90>9.0.4</NpgsqlVersion90>
+    <NpgsqlVersion100>10.0.0</NpgsqlVersion100>
 
     <MicrosoftDataSqlClientVersion60>5.2.2</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.2.2</MicrosoftDataSqlClientVersion70>
     <MicrosoftDataSqlClientVersion80>5.2.2</MicrosoftDataSqlClientVersion80>
     <MicrosoftDataSqlClientVersion90>5.2.2</MicrosoftDataSqlClientVersion90>
+    <MicrosoftDataSqlClientVersion100>5.2.2</MicrosoftDataSqlClientVersion100>
 
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.29</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.18</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion90>9.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion90>
-
-    <PomeloEntityFrameworkCoreMySqlVersion60>6.0.3</PomeloEntityFrameworkCoreMySqlVersion60>
-    <PomeloEntityFrameworkCoreMySqlVersion70>7.0.0</PomeloEntityFrameworkCoreMySqlVersion70>
-    <PomeloEntityFrameworkCoreMySqlVersion80>8.0.2</PomeloEntityFrameworkCoreMySqlVersion80>
-    <PomeloEntityFrameworkCoreMySqlVersion90>8.0.2</PomeloEntityFrameworkCoreMySqlVersion90>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion100>10.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion100>
 
     <MicrosoftEntityFrameworkCoreSqlServerVersion60>6.0.35</MicrosoftEntityFrameworkCoreSqlServerVersion60>
     <MicrosoftEntityFrameworkCoreSqlServerVersion70>7.0.20</MicrosoftEntityFrameworkCoreSqlServerVersion70>
     <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.10</MicrosoftEntityFrameworkCoreSqlServerVersion80>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion90>9.0.0-rc.2.24474.1</MicrosoftEntityFrameworkCoreSqlServerVersion90>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion90>9.0.11</MicrosoftEntityFrameworkCoreSqlServerVersion90>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion100>10.0.1</MicrosoftEntityFrameworkCoreSqlServerVersion100>
 
     <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.35</MicrosoftEntityFrameworkCoreSqliteVersion60>
     <MicrosoftEntityFrameworkCoreSqliteVersion70>7.0.20</MicrosoftEntityFrameworkCoreSqliteVersion70>
     <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.10</MicrosoftEntityFrameworkCoreSqliteVersion80>
-    <MicrosoftEntityFrameworkCoreSqliteVersion90>9.0.0-rc.2.24474.1</MicrosoftEntityFrameworkCoreSqliteVersion90>
+    <MicrosoftEntityFrameworkCoreSqliteVersion90>9.0.11</MicrosoftEntityFrameworkCoreSqliteVersion90>
+    <MicrosoftEntityFrameworkCoreSqliteVersion100>10.0.1</MicrosoftEntityFrameworkCoreSqliteVersion100>
 
     <!-- 
       Don't follow ASPNETCORE version for this package since it only exists as servicing builds 
@@ -40,6 +40,7 @@
     <MicrosoftIISTestingVersion80>8.0.0-*</MicrosoftIISTestingVersion80>
     <MicrosoftIISTestingVersion90>9.0.0-*</MicrosoftIISTestingVersion90>
     <MicrosoftIISTestingVersion100>10.0.0-*</MicrosoftIISTestingVersion100>
+    <MicrosoftIISTestingVersion110>11.0.0-*</MicrosoftIISTestingVersion110>
 
     <DapperVersion>2.1.66</DapperVersion>
     <DapperAotVersion>1.0.48</DapperAotVersion>
