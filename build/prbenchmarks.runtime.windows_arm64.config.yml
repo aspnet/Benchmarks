@@ -17,7 +17,7 @@ components:
             --{{job}}.options.outputFiles .\artifacts\tests\coreclr\windows.arm64.Release\tests\Core_Root\
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --{{job}}.framework net10.0 --relay 
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --{{job}}.framework net11.0 --relay 
 
 variables:
     job: application

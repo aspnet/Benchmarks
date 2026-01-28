@@ -21,7 +21,7 @@ components:
             --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Routing\release\net10.0\
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net10.0 --application.options.collectCounters true --relay 
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net11.0 --application.options.collectCounters true --relay 
 
 # the first value is the default if none is specified
 profiles:
