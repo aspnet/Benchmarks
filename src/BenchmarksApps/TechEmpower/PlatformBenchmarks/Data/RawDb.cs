@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -175,59 +176,73 @@ namespace PlatformBenchmarks
         {
             var results = new World[count];
 
-            var ids = new int[count];
-            for (var i = 0; i < count; i++)
-            {
-                ids[i] = Random.Shared.Next(1, 10001);
-            }
-            Array.Sort(ids);
+            var ids = ArrayPool<int>.Shared.Rent(count);
+            var numbers = ArrayPool<int>.Shared.Rent(count);
             
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
-
-            using (var batch = new NpgsqlBatch(connection))
+            try
             {
-                // Inserts a PG Sync message between each statement in the batch, required for compliance with
-                // TechEmpower general test requirement 7
-                // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
-                batch.EnableErrorBarriers = true;
+                for (var i = 0; i < count; i++)
+                {
+                    ids[i] = Random.Shared.Next(1, 10001);
+                }
+                Array.Sort(ids, 0, count);
                 
-                for (var i = 0; i < count; i++)
+                using var connection = CreateConnection();
+                await connection.OpenAsync();
+
+                using (var batch = new NpgsqlBatch(connection))
                 {
-                    batch.BatchCommands.Add(new()
+                    // Inserts a PG Sync message between each statement in the batch, required for compliance with
+                    // TechEmpower general test requirement 7
+                    // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
+                    batch.EnableErrorBarriers = true;
+                    
+                    for (var i = 0; i < count; i++)
                     {
-                        CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
-                        Parameters = { new NpgsqlParameter<int> { TypedValue = ids[i] } }
-                    });
-                }
+                        batch.BatchCommands.Add(new()
+                        {
+                            CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
+                            Parameters = { new NpgsqlParameter<int> { TypedValue = ids[i] } }
+                        });
+                    }
 
-                using var reader = await batch.ExecuteReaderAsync();
+                    using var reader = await batch.ExecuteReaderAsync();
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        await reader.ReadAsync();
+                        results[i] = new World { Id = reader.GetInt32(0), RandomNumber = reader.GetInt32(1) };
+                        await reader.NextResultAsync();
+                    }
+                }
 
                 for (var i = 0; i < count; i++)
                 {
-                    await reader.ReadAsync();
-                    results[i] = new World { Id = reader.GetInt32(0), RandomNumber = reader.GetInt32(1) };
-                    await reader.NextResultAsync();
+                    var randomNumber = Random.Shared.Next(1, 10001);
+                    results[i].RandomNumber = randomNumber;
+                    numbers[i] = randomNumber;
                 }
-            }
 
-            var numbers = new int[count];
-            for (var i = 0; i < count; i++)
+                var update = "UPDATE world w SET randomnumber = u.new_val FROM (SELECT unnest($1) as id, unnest($2) as new_val) u WHERE w.id = u.id";
+
+                using var updateCmd = new NpgsqlCommand(update, connection);
+                
+                // Create properly sized arrays from pooled arrays for passing to Npgsql
+                var idsArray = ids.AsSpan(0, count).ToArray();
+                var numbersArray = numbers.AsSpan(0, count).ToArray();
+                
+                updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = idsArray, NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer });
+                updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = numbersArray, NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer });
+
+                await updateCmd.ExecuteNonQueryAsync();
+
+                return results;
+            }
+            finally
             {
-                var randomNumber = Random.Shared.Next(1, 10001);
-                results[i].RandomNumber = randomNumber;
-                numbers[i] = randomNumber;
+                ArrayPool<int>.Shared.Return(ids);
+                ArrayPool<int>.Shared.Return(numbers);
             }
-
-            var update = "UPDATE world w SET randomnumber = u.new_val FROM (SELECT unnest($1) as id, unnest($2) as new_val) u WHERE w.id = u.id";
-
-            using var updateCmd = new NpgsqlCommand(update, connection);
-            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = ids, NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer });
-            updateCmd.Parameters.Add(new NpgsqlParameter<int[]> { TypedValue = numbers, NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer });
-
-            await updateCmd.ExecuteNonQueryAsync();
-
-            return results;
         }
 
         public async Task<List<FortuneUtf8>> LoadFortunesRows()
