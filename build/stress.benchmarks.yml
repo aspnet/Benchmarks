@@ -1,4 +1,4 @@
-﻿imports:
+imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   
 jobs:

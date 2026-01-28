@@ -54,7 +54,7 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net10.0 --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net11.0 --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
         }
 
 - ${{ each s in parameters.lighthouseScenarios }}:
@@ -72,5 +72,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net10.0 --command-line-property --table Lighthouse --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net11.0 --command-line-property --table Lighthouse --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
         }
