@@ -27,10 +27,10 @@ class Program
     private static long _errors;
 
     // When the threads need to be stopped
-    private static bool _stopped;
+    private static volatile bool _stopped;
 
     // When the threads need to start measuring
-    private static bool _measure;
+    private static volatile bool _measure;
 
     static async Task<int> Main(string[] args)
     {
@@ -105,7 +105,7 @@ class Program
             // Start scheduler
             _ = ScheduleAsync();
 
-            // Run client (blocking)
+            // Run client
             await RunClientAsync(requestBytes, isValidRequest);
 
             return 0;
@@ -129,27 +129,20 @@ class Program
         _stopped = true;
     }
 
-    private static Task RunClientAsync(byte[] requestBytes, bool keepAlive)
+    private static async Task RunClientAsync(byte[] requestBytes, bool keepAlive)
     {
         var endpoint = new IPEndPoint(IPAddress.Parse(Ip), Port);
-        var threads = new Thread[Connections];
+        var tasks = new Task[Connections];
 
         for (var i = 0; i < Connections; i++)
         {
-            var thread = new Thread(() => RunConnection(endpoint, requestBytes, keepAlive));
-            threads[i] = thread;
-            thread.Start();
+            tasks[i] = Task.Run(() => RunConnectionAsync(endpoint, requestBytes, keepAlive));
         }
 
-        foreach (var thread in threads)
-        {
-            thread.Join();
-        }
-
-        return Task.CompletedTask;
+        await Task.WhenAll(tasks);
     }
 
-    private static void RunConnection(IPEndPoint endpoint, byte[] request, bool keepAlive)
+    private static async Task RunConnectionAsync(IPEndPoint endpoint, byte[] request, bool keepAlive)
     {
         var responseBuffer = new byte[4096];
         Socket? socket = null;
@@ -162,22 +155,18 @@ class Program
                 try
                 {
                     // Create new connection if needed
-                    if (socket == null || !socket.Connected)
+                    if (socket == null)
                     {
-                        socket?.Dispose();
                         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         socket.NoDelay = true;
-                        socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                        socket.ReceiveTimeout = 2000;
-                        socket.SendTimeout = 2000;
-                        socket.Connect(endpoint);
+                        await socket.ConnectAsync(endpoint);
                     }
 
                     // Send request
-                    socket.Send(request);
+                    await socket.SendAsync(request, SocketFlags.None);
 
                     // Read response
-                    var received = socket.Receive(responseBuffer);
+                    var received = await socket.ReceiveAsync(responseBuffer, SocketFlags.None);
 
                     if (received > 0)
                     {
@@ -192,8 +181,7 @@ class Program
                     }
                     else
                     {
-                        // Connection closed without response (silent close)
-                        // Still counts as a completed request
+                        // Connection closed - counts as completed request
                         Interlocked.Increment(ref _requests);
                         socket.Dispose();
                         socket = null;
@@ -203,7 +191,7 @@ class Program
                                                   ex.SocketErrorCode == SocketError.ConnectionRefused ||
                                                   ex.SocketErrorCode == SocketError.ConnectionAborted)
                 {
-                    // Connection closed by server (includes silent close case)
+                    // Connection closed by server
                     Interlocked.Increment(ref _requests);
                     socket?.Dispose();
                     socket = null;
@@ -211,11 +199,11 @@ class Program
                 catch (SocketException ex) when (ex.SocketErrorCode == SocketError.AddressAlreadyInUse ||
                                                   ex.SocketErrorCode == SocketError.TooManyOpenSockets)
                 {
-                    // Socket exhaustion - wait longer
+                    // Socket exhaustion - back off
                     socket?.Dispose();
                     socket = null;
                     Interlocked.Increment(ref _errors);
-                    Thread.Sleep(10);
+                    await Task.Delay(1);
                 }
                 catch (SocketException)
                 {
