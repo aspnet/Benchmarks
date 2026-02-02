@@ -31,16 +31,16 @@ parameters:
   - displayName: "10.0"
     arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
 
-# Orchard Baselines (uses release/2.2 branch for net8.0 and net9.0)
+# Orchard Baselines (uses release/2.2 branch for net8.0 and main#eefd4a1659cd48e56b681b5bcff2cc92b349b464 for net9.0)
 - name: orchardBaselines
   type: object
   default:
 
   - displayName: "8.0"
-    arguments: --application.framework net8.0 --property framework=net8.0 --application.branchOrCommit release/2.2
+    arguments: --application.framework net8.0 --property framework=net8.0 --application.source.branchOrCommit release/2.2
 
   - displayName: "9.0"
-    arguments: --application.framework net9.0 --property framework=net9.0 --application.branchOrCommit release/2.2
+    arguments: --application.framework net9.0 --property framework=net9.0 --application.source.branchOrCommit main#eefd4a1659cd48e56b681b5bcff2cc92b349b464
 
   - displayName: "10.0"
     arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
