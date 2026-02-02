@@ -31,6 +31,20 @@ parameters:
   - displayName: "10.0"
     arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
 
+# Orchard Baselines (uses release/2.2 branch for net8.0 and net9.0)
+- name: orchardBaselines
+  type: object
+  default:
+
+  - displayName: "8.0"
+    arguments: --application.framework net8.0 --property framework=net8.0 --application.branchOrCommit release/2.2
+
+  - displayName: "9.0"
+    arguments: --application.framework net9.0 --property framework=net9.0 --application.branchOrCommit release/2.2
+
+  - displayName: "10.0"
+    arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
+
 # Scenarios
 - name: scenarios 
   type: object
@@ -61,14 +75,39 @@ parameters:
   - displayName: Json Https
     arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps
 
-  # Orchard Core
+# Orchard Scenarios (separate to use orchardBaselines)
+- name: orchardScenarios
+  type: object
+  default:
 
   - displayName: Orchard - About - Sqlite
     arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http
-  
+
 steps:
+# Standard scenarios with standard baselines
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
+    - task: PublishToAzureServiceBus@2
+      condition: succeededOrFailed()
+      timeoutInMinutes: 10
+      displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+      inputs:
+        connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
+        waitForCompletion: true
+        useDataContractSerializer: "false"
+        messageBody: |
+          {
+            "name": "crank",
+            "condition": "(${{ parameters.condition }})",
+            "retries": 1,
+            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --load.options.reuseBuild true --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          }
+
+# Orchard scenarios with orchard-specific baselines (release/2.2 branch for net8.0 and net9.0)
+- ${{ each s in parameters.orchardScenarios }}:
+  - ${{ each b in parameters.orchardBaselines }}:
     - task: PublishToAzureServiceBus@2
       condition: succeededOrFailed()
       timeoutInMinutes: 10
