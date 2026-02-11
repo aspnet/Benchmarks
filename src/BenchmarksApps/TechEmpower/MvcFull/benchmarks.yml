@@ -1,0 +1,66 @@
+﻿# Examples:
+# --config plaintext.benchmarks.yml --scenario plaintext --profile aspnet-physical
+# --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+jobs:
+
+  platformbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TechEmpower/PlatformBenchmarks/PlatformBenchmarks.csproj
+    readyStateText: Application started.
+    framework: net10.0
+    arguments: "--urls {{urls}}"
+    environmentVariables:
+      database: PostgreSQL
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000
+  
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  fortunes:
+    application:
+      job: platformbenchmarks  
+    db:
+      job: postgresql
+    load:
+      job: wrk
+      variables:
+        serverPort: 8000
+        presetHeaders: html
+        path: /fortunes
+  
+  plaintext:
+    application:
+      job: platformbenchmarks  
+    load:
+      job: wrk
+      variables:
+        serverPort: 8000
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+        
+  json:
+    application:
+      job: platformbenchmarks  
+    load:
+      job: wrk
+      variables:
+        serverPort: 8000
+        presetHeaders: json
+        path: /json

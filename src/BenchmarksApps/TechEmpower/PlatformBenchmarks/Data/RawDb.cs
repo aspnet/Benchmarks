@@ -185,29 +185,16 @@ namespace PlatformBenchmarks
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using (var batch = new NpgsqlBatch(connection))
+            // Each row must be selected randomly using one query in the same fashion as the single database query test
+            // ... use of IN clauses or similar means to consolidate multiple queries into one operation is not permitted.
+            // Similarly, use of a batch or multiple SELECTs within a single statement are not permitted
+            var (queryCmd, queryParameter) = CreateReadCommand(connection, 0);
+            using (queryCmd)
             {
-                // Inserts a PG Sync message between each statement in the batch, required for compliance with
-                // TechEmpower general test requirement 7
-                // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
-                batch.EnableErrorBarriers = true;
-                
-                for (var i = 0; i < count; i++)
+                for (var i = 0; i < results.Length; i++)
                 {
-                    batch.BatchCommands.Add(new()
-                    {
-                        CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
-                        Parameters = { new NpgsqlParameter<int> { TypedValue = ids[i] } }
-                    });
-                }
-
-                using var reader = await batch.ExecuteReaderAsync();
-
-                for (var i = 0; i < count; i++)
-                {
-                    await reader.ReadAsync();
-                    results[i] = new World { Id = reader.GetInt32(0), RandomNumber = reader.GetInt32(1) };
-                    await reader.NextResultAsync();
+                    queryParameter.TypedValue = ids[i];
+                    results[i] = await ReadSingleRow(queryCmd);
                 }
             }
 
@@ -285,10 +272,10 @@ namespace PlatformBenchmarks
 
         private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
 
-        private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
+        private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection, int id)
         {
             var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = $1", connection);
-            var parameter = new NpgsqlParameter<int> { TypedValue = Random.Shared.Next(1, 10001) };
+            var parameter = new NpgsqlParameter<int> { TypedValue = id };
 
             cmd.Parameters.Add(parameter);
 
