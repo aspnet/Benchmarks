@@ -32,13 +32,17 @@ parameters:
 
   - displayName: Default
     arguments: --property profile=default
+    condition: 'true'
   - displayName: CG2 composite # since 6.0-preview4 CG2 is the default when PublishReadyToRun=true is set 
     arguments: --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true \"
+    condition: 'true'
   - displayName: CG2 non-composite  # /p:PublishReadyToRunComposite=false is the default
     arguments: --property profile=non-composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunComposite=false\"
-# avx2 is not supported on ARM64
+    condition: 'true'
+# avx2 is not supported on ARM64; popcnt instruction set is not supported on current machine configurations
   - displayName: CG2 composite avx2
     arguments: --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--inputbubble%3b--instruction-set:avx2%2cpopcnt%2clzcnt\" --application.options.requiredArchitecture x64
+    condition: 'false'
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -55,7 +59,7 @@ steps:
         useDataContractSerializer: "false"
         messageBody: |
           {
-            "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 < 13)",
+            "condition": "(${{ parameters.condition }}) && (${{ p.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 < 13)",
             "name": "crank",
             "args": [ "${{ s.arguments }} ${{ p.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net11.0 --application.options.collectCounters false --no-metadata --no-measurements --load.options.reuseBuild true  --session $(session) --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table CG2Benchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
           }
