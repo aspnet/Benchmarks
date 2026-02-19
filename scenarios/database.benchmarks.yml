@@ -23,7 +23,7 @@ jobs:
     arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     environmentVariables:
       database: PostgresQL
-      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
 
   postgresql:
     source:
