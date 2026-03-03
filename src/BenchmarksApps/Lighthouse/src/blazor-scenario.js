@@ -24,7 +24,13 @@ logReadyStateText(); // Required by the Crank job
 
 const browser = await puppeteer.launch({
   headless: headless === 'true',
-  args: ['--no-sandbox']
+  args: [
+    '--no-sandbox',
+    // Treat the target URL as a secure origin so that crypto.subtle is available.
+    // This is needed because Blazor WASM requires crypto.subtle, which is only
+    // available in secure contexts (HTTPS or localhost).
+    `--unsafely-treat-insecure-origin-as-secure=${targetBaseUrl}`,
+  ],
 });
 
 const pageUrl = `${targetBaseUrl}/counter`;
