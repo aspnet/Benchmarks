@@ -1,0 +1,71 @@
+{
+    "metadata": {
+        "name": "Azure EastUS2 (Cobalt Cloud) CI Benchmarks Configuration",
+        "description": "Pod-based scheduling for cobalt cloud CI benchmarks",
+        "version": "2.0",
+        "schedule": "0 2/12 * * *",
+        "queues": [
+            "cobaltcloud"
+        ],
+        "yaml_generation": {
+            "target_yaml_count": 1,
+            "schedule_offset_hours": 0
+        }
+    },
+    "pods": [
+        {
+            "name": "cobalt-cloud-lin",
+            "machines": { "sut": "cobalt-cloud-lin-server", "load": "cobalt-cloud-lin-client", "db": "cobalt-cloud-lin-db" },
+            "profiles": { "sut": "cobalt-cloud-lin-server-app", "load": "cobalt-cloud-lin-client-load", "db": "cobalt-cloud-lin-db-db" }
+        },
+        {
+            "name": "cobalt-cloud-lin-azl3",
+            "machines": { "sut": "cobalt-cloud-lin-server-azl3", "load": "cobalt-cloud-lin-client", "db": "cobalt-cloud-lin-db" },
+            "profiles": { "sut": "cobalt-cloud-lin-server-azure-linux3-app", "load": "cobalt-cloud-lin-client-load", "db": "cobalt-cloud-lin-db-db" }
+        }
+    ],
+    "scenarios": [
+        {
+            "name": "Containers",
+            "template": "containers-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Baselines Database",
+            "template": "baselines-database-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Baselines",
+            "template": "baselines-scenarios.yml",
+            "type": 2,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "MVC",
+            "template": "mvc-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends",
+            "template": "trend-scenarios.yml",
+            "type": 2,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends Database",
+            "template": "trend-database-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 15.0
+        }
+    ]
+}

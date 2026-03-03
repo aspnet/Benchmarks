@@ -56,7 +56,8 @@ def print_summary(config: ScheduleConfig, schedule: Schedule) -> None:
             busy = machine_time.get(m, 0)
             total = machine_total.get(m, 1)
             pct = (busy / total * 100) if total > 0 else 0
-            bar = "█" * int(pct / 5) + "░" * (20 - int(pct / 5))
+            filled = int(pct / 5)
+            bar = "#" * filled + "." * (20 - filled)
             print(f"  {m:<25} {bar} {pct:5.1f}%  "
                   f"({busy:.0f}/{total:.0f} min)")
         print()
