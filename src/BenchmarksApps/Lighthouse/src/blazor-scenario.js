@@ -132,7 +132,8 @@ function throwOnFutureUncachedWasmDownloads(page) {
 
   page.on('requestfinished', request => {
     const url = request.url();
-    if (url.endsWith('.wasm') && request.response().status() !== 304) {
+    const response = request.response();
+    if (url.endsWith('.wasm') && response.status() !== 304 && !response.fromCache()) {
       throw new Error(`Unexpected uncached wasm resource '${url}'`);
     }
   });
