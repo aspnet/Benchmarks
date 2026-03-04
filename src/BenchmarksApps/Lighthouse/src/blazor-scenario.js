@@ -24,7 +24,13 @@ logReadyStateText(); // Required by the Crank job
 
 const browser = await puppeteer.launch({
   headless: headless === 'true',
-  args: ['--no-sandbox']
+  args: [
+    '--no-sandbox',
+    // Treat the target URL as a secure origin so that crypto.subtle is available.
+    // This is needed because Blazor WASM requires crypto.subtle, which is only
+    // available in secure contexts (HTTPS or localhost).
+    `--unsafely-treat-insecure-origin-as-secure=${targetBaseUrl}`,
+  ],
 });
 
 const pageUrl = `${targetBaseUrl}/counter`;
@@ -126,7 +132,8 @@ function throwOnFutureUncachedWasmDownloads(page) {
 
   page.on('requestfinished', request => {
     const url = request.url();
-    if (url.endsWith('.wasm') && request.response().status() !== 304) {
+    const response = request.response();
+    if (url.endsWith('.wasm') && response.status() !== 304 && !response.fromCache()) {
       throw new Error(`Unexpected uncached wasm resource '${url}'`);
     }
   });
