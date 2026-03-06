@@ -1,10 +1,10 @@
-﻿# Examples:
+# Examples:
 # --config benchmarks.certapi.yml --scenario ApiCrudListProducts --profile aspnet-perf-lin
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
 - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/mvcserver.yml
-- https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+- https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
 
 variables:
     serverPort: 5000
@@ -25,7 +25,7 @@ scenarios:
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPwd: testPassword
-        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/testCert.pfx
 
     # List products
   ApiCrudListProducts:
@@ -42,7 +42,7 @@ scenarios:
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPwd: testPassword
-        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/testCert.pfx
 
     # Get an individual product
   ApiCrudGetProductDetails:
@@ -59,7 +59,7 @@ scenarios:
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPwd: testPassword
-        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/testCert.pfx
 
    # Add product
   ApiCrudAddProduct:
@@ -78,7 +78,7 @@ scenarios:
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPwd: testPassword
-        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/testCert.pfx
 
     # Update product
   ApiCrudUpdateProduct:
@@ -97,7 +97,7 @@ scenarios:
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPwd: testPassword
-        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/testCert.pfx
 
     # Remove a product item
   ApiCrudDeleteProduct:
@@ -115,4 +115,4 @@ scenarios:
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPwd: testPassword
-        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/testCert.pfx

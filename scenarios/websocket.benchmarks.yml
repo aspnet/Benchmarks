@@ -1,10 +1,10 @@
-﻿# Examples:
+# Examples:
 # --config websocket.benchmarks.yml --scenario websocket --variable scenario=echo --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WebsocketClient/websocketclient.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Websocket/websocketServer.yml
-  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
 
 variables:
     serverPort: 5000

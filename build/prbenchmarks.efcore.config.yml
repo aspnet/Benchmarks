@@ -9,7 +9,7 @@ components:
             --application.options.outputFiles .\artifacts\bin\EFCore.Sqlite.Benchmarks\Release\net8.0\
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net8.0 --relay 
+defaults: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/azure.profile.yml --application.framework net8.0 --relay 
 
 # the first value is the default if none is specified
 profiles:
@@ -24,56 +24,56 @@ profiles:
 benchmarks:
     AddDataVariations:
       description: AddDataVariations
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario AddDataVariations
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario AddDataVariations
 
     ChildVariations:
       description: ChildVariations
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario ChildVariations
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario ChildVariations
 
     Delete:
       description: Delete
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario Delete
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario Delete
 
     ExistingDataVariations:
       description: ExistingDataVariations
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario ExistingDataVariations
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario ExistingDataVariations
 
     Funcletization:
       description: Funcletization
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario Funcletization
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario Funcletization
 
     Initialization:
       description: Initialization
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario Initialization
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario Initialization
 
     Insert:
       description: Insert
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario Insert
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario Insert
 
     Mixed:
       description: Mixed
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario Mixed
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario Mixed
 
     ParentVariations:
       description: ParentVariations
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario ParentVariations
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario ParentVariations
 
     RawSqlQuery:
       description: RawSqlQuery
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario RawSqlQuery
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario RawSqlQuery
 
     SimpleQuery:
       description: SimpleQuery
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario SimpleQuery
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario SimpleQuery
 
     NavigationsQuery:
       description: NavigationsQuery
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario NavigationsQuery
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario NavigationsQuery
 
     QueryCompilation:
       description: QueryCompilation
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario QueryCompilation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario QueryCompilation
 
     Update:
       description: Update
-      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario Update
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml --scenario Update

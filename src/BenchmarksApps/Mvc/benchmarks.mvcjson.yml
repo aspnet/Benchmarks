@@ -1,11 +1,11 @@
-﻿# Examples:
+# Examples:
 # --config benchmarks.mvcjson.yml --scenario MvcJson2k --profile aspnet-perf-lin
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
 - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
 - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/mvcserver.yml
-- https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+- https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
 
 variables:
     serverPort: 5000
