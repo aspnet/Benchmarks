@@ -1,8 +1,8 @@
-﻿# Examples:
+# Examples:
 # --config platform.benchmarks.yml --scenario json --profile aspnet-citrine-lin
 
 imports:
-  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
 
 jobs:

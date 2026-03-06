@@ -1,5 +1,5 @@
 imports:
-  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/packages.yml?raw=true
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/packages.yml
 
 profiles:
   short:
