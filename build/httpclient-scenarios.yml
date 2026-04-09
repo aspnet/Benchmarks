@@ -19,7 +19,7 @@ parameters:
 
 - name: httpClientJobs
   type: string
-  default: '--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml?raw=true'
+  default: '--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml'
 
 - name: tfm
   type: string
