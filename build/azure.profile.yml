@@ -304,24 +304,24 @@ profiles:
   cobalt-cloud-lin:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.15
+      serverAddress: 10.0.4.17
       cores: 16
     jobs:
       db:
         endpoints:
-          - http://10.2.2.14:5001
+          - http://10.0.4.19:5001
         aliases:
           - extra
       application:
         endpoints:
-          - http://10.2.2.15:5001
+          - http://10.0.4.17:5001
         variables:
-          databaseServer: 10.2.2.14
+          databaseServer: 10.0.4.19
         aliases:
           - main
       load:
         endpoints:
-          - http://10.2.2.13:5001
+          - http://10.0.4.18:5001
         aliases:
           - warmup
           - secondary
@@ -329,7 +329,7 @@ profiles:
   cobalt-cloud-lin-relay:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.15
+      serverAddress: 10.0.4.17
       cores: 16
     jobs:
       db:
@@ -341,7 +341,7 @@ profiles:
         endpoints:
           - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver
         variables:
-          databaseServer: 10.2.2.14
+          databaseServer: 10.0.4.19
         aliases:
           - main
       load:
@@ -354,24 +354,24 @@ profiles:
   cobalt-cloud-lin-al3:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.16
+      serverAddress: 10.0.4.20
       cores: 16
     jobs:
       db:
         endpoints:
-          - http://10.2.2.14:5001
+          - http://10.0.4.19:5001
         aliases:
           - extra
       application:
         endpoints:
-          - http://10.2.2.16:5001
+          - http://10.0.4.20:5001
         variables:
-          databaseServer: 10.2.2.14
+          databaseServer: 10.0.4.19
         aliases:
           - main
       load:
         endpoints:
-          - http://10.2.2.13:5001
+          - http://10.0.4.18:5001
         aliases:
           - warmup
           - secondary
@@ -379,7 +379,7 @@ profiles:
   cobalt-cloud-lin-al3-relay:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.16
+      serverAddress: 10.0.4.20
       cores: 16
     jobs:
       db:
@@ -391,7 +391,7 @@ profiles:
         endpoints:
           - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver_azurelinux3
         variables:
-          databaseServer: 10.2.2.14
+          databaseServer: 10.0.4.19
         aliases:
           - main
       load:
@@ -770,34 +770,34 @@ profiles:
   cobalt-cloud-lin-client-app:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.13
+      serverAddress: 10.0.4.18
       cores: 16
     agents:
       application:
         endpoints:
-          - http://10.2.2.13:5001
+          - http://10.0.4.18:5001
         aliases:
           - main
 
   cobalt-cloud-lin-client-db:
     variables:
-      databaseServer: 10.2.2.13
-      downstreamAddress: 10.2.2.13
+      databaseServer: 10.0.4.18
+      downstreamAddress: 10.0.4.18
     agents:
       db:
         endpoints:
-          - http://10.2.2.13:5001
+          - http://10.0.4.18:5001
         aliases:
           - downstream
           - extra
 
   cobalt-cloud-lin-client-load:
     variables:
-      secondaryAddress: 10.2.2.13
+      secondaryAddress: 10.0.4.18
     agents:
       load:
         endpoints:
-          - http://10.2.2.13:5001
+          - http://10.0.4.18:5001
         aliases:
           - warmup
           - secondary
@@ -806,34 +806,34 @@ profiles:
   cobalt-cloud-lin-db-app:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.14
+      serverAddress: 10.0.4.19
       cores: 16
     agents:
       application:
         endpoints:
-          - http://10.2.2.14:5001
+          - http://10.0.4.19:5001
         aliases:
           - main
 
   cobalt-cloud-lin-db-db:
     variables:
-      databaseServer: 10.2.2.14
-      downstreamAddress: 10.2.2.14
+      databaseServer: 10.0.4.19
+      downstreamAddress: 10.0.4.19
     agents:
       db:
         endpoints:
-          - http://10.2.2.14:5001
+          - http://10.0.4.19:5001
         aliases:
           - downstream
           - extra
 
   cobalt-cloud-lin-db-load:
     variables:
-      secondaryAddress: 10.2.2.14
+      secondaryAddress: 10.0.4.19
     agents:
       load:
         endpoints:
-          - http://10.2.2.14:5001
+          - http://10.0.4.19:5001
         aliases:
           - warmup
           - secondary
@@ -842,34 +842,34 @@ profiles:
   cobalt-cloud-lin-server-app:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.15
+      serverAddress: 10.0.4.17
       cores: 16
     agents:
       application:
         endpoints:
-          - http://10.2.2.15:5001
+          - http://10.0.4.17:5001
         aliases:
           - main
 
   cobalt-cloud-lin-server-db:
     variables:
-      databaseServer: 10.2.2.15
-      downstreamAddress: 10.2.2.15
+      databaseServer: 10.0.4.17
+      downstreamAddress: 10.0.4.17
     agents:
       db:
         endpoints:
-          - http://10.2.2.15:5001
+          - http://10.0.4.17:5001
         aliases:
           - downstream
           - extra
 
   cobalt-cloud-lin-server-load:
     variables:
-      secondaryAddress: 10.2.2.15
+      secondaryAddress: 10.0.4.17
     agents:
       load:
         endpoints:
-          - http://10.2.2.15:5001
+          - http://10.0.4.17:5001
         aliases:
           - warmup
           - secondary
@@ -878,34 +878,34 @@ profiles:
   cobalt-cloud-lin-server-azure-linux3-app:
     variables:
       serverPort: 5000
-      serverAddress: 10.2.2.16
+      serverAddress: 10.0.4.20
       cores: 16
     agents:
       application:
         endpoints:
-          - http://10.2.2.16:5001
+          - http://10.0.4.20:5001
         aliases:
           - main
 
   cobalt-cloud-lin-server-azure-linux3-db:
     variables:
-      databaseServer: 10.2.2.16
-      downstreamAddress: 10.2.2.16
+      databaseServer: 10.0.4.20
+      downstreamAddress: 10.0.4.20
     agents:
       db:
         endpoints:
-          - http://10.2.2.16:5001
+          - http://10.0.4.20:5001
         aliases:
           - downstream
           - extra
 
   cobalt-cloud-lin-server-azure-linux3-load:
     variables:
-      secondaryAddress: 10.2.2.16
+      secondaryAddress: 10.0.4.20
     agents:
       load:
         endpoints:
-          - http://10.2.2.16:5001
+          - http://10.0.4.20:5001
         aliases:
           - warmup
           - secondary
