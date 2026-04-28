@@ -1,8 +1,9 @@
 # Do not change this file, it is generated using these steps:
-# - The file benchmarks.matrix.yml defines how each job is run in parallel
-# - Convert its content to json using https://jsonformatter.org/yaml-to-json
-# - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
-# - Update this file with the result of the template generation
+# - The file benchmarks*.json defines how each pipeline set of jobs is run in parallel
+# - Update the associated benchmarks*.json file with machine and scenario updates
+# - Install python and install the requirements for the crank-scheduler in benchmarks/scripts/crank-scheduler/requirements.txt
+# - Run the scheduler specifying the desired benchmarks*.json file, this template, and benchmarks/output to automatically overwrite the current pipeline.
+# - Ex. python ./scripts/crank-scheduler/main.py --config ./build/benchmarks_ci.json --template ./build/benchmarks.template.liquid --yaml-output ./build
 
 trigger: none
 pr: none
@@ -61,6 +62,20 @@ jobs:
       
 # GROUP 2
 
+- job: Containers_Cobalt_Cloud_Lin_Server
+  displayName: 2- Containers Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Containers_Azure_Server_Arm64, Containers_Azure2_Server_Amd64]
+  condition: succeededOrFailed()
+  steps:
+  - template: containers-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
 - job: Baselines_Database_Azure_Server_Arm64
   displayName: 2- Baselines Database Azure Server Arm64
   pool: server
@@ -71,15 +86,31 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: azure
+      serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
       
-- job: Baselines_Database_Azure2_Server_Amd64
-  displayName: 2- Baselines Database Azure2 Server Amd64
+# GROUP 3
+
+- job: Containers_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 3- Containers Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Containers_Azure_Server_Arm64, Containers_Azure2_Server_Amd64]
+  dependsOn: [Containers_Cobalt_Cloud_Lin_Server, Baselines_Database_Azure_Server_Arm64]
+  condition: succeededOrFailed()
+  steps:
+  - template: containers-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+- job: Baselines_Database_Azure2_Server_Amd64
+  displayName: 3- Baselines Database Azure2 Server Amd64
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Containers_Cobalt_Cloud_Lin_Server, Baselines_Database_Azure_Server_Arm64]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
@@ -89,117 +120,117 @@ jobs:
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
       
-# GROUP 3
-
-- job: Baselines_Azure_Server_Arm64
-  displayName: 3- Baselines Azure Server Arm64
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Azure_Server_Arm64, Baselines_Database_Azure2_Server_Amd64]
-  condition: succeededOrFailed()
-  steps:
-  - template: baselines-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: azure
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
-      
-- job: Baselines_Azure2_Server_Amd64
-  displayName: 3- Baselines Azure2 Server Amd64
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Baselines_Database_Azure_Server_Arm64, Baselines_Database_Azure2_Server_Amd64]
-  condition: succeededOrFailed()
-  steps:
-  - template: baselines-scenarios.yml
-    parameters:
-      connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: azurearm64
-      serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
-      
 # GROUP 4
 
-- job: Trends_Azure_Server_Arm64
-  displayName: 4- Trends Azure Server Arm64
+- job: Baselines_Database_Cobalt_Cloud_Lin_Server
+  displayName: 4- Baselines Database Cobalt Cloud Lin Server
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Azure_Server_Arm64, Baselines_Azure2_Server_Amd64]
+  dependsOn: [Containers_Cobalt_Cloud_Lin_Server_Azure_Linux3, Baselines_Database_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       
-- job: Trends_Azure2_Server_Amd64
-  displayName: 4- Trends Azure2 Server Amd64
+- job: Baselines_Azure_Server_Arm64
+  displayName: 4- Baselines Azure Server Arm64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Baselines_Azure_Server_Arm64, Baselines_Azure2_Server_Amd64]
+  dependsOn: [Containers_Cobalt_Cloud_Lin_Server_Azure_Linux3, Baselines_Database_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
       
 # GROUP 5
 
-- job: Trends_Idna_Amd_Lin
-  displayName: 5- Trends Idna Amd Lin
+- job: Baselines_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 5- Baselines Database Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Azure_Server_Arm64, Trends_Azure2_Server_Amd64]
+  dependsOn: [Baselines_Database_Cobalt_Cloud_Lin_Server, Baselines_Azure_Server_Arm64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-lin-app --profile idna-intel-lin-load "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       
-- job: Trends_Idna_Amd_Win
-  displayName: 5- Trends Idna Amd Win
+- job: Baselines_Azure2_Server_Amd64
+  displayName: 5- Baselines Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Azure_Server_Arm64, Trends_Azure2_Server_Amd64]
+  dependsOn: [Baselines_Database_Cobalt_Cloud_Lin_Server, Baselines_Azure_Server_Arm64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-win-app --profile azure2-db-load "
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
       
 # GROUP 6
 
-- job: Trends_Idna_Intel_Lin
-  displayName: 6- Trends Idna Intel Lin
+- job: Baselines_Cobalt_Cloud_Lin_Server
+  displayName: 6- Baselines Cobalt Cloud Lin Server
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Amd_Win]
+  dependsOn: [Baselines_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3, Baselines_Azure2_Server_Amd64]
   condition: succeededOrFailed()
   steps:
-  - template: trend-scenarios.yml
+  - template: baselines-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-lin-app --profile idna-amd-lin-load "
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
       
-- job: Trends_Idna_Intel_Win
-  displayName: 6- Trends Idna Intel Win
+- job: Baselines_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 6- Baselines Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Amd_Win]
+  dependsOn: [Baselines_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3, Baselines_Azure2_Server_Amd64]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-db-load "
+      
+# GROUP 7
+
+- job: MVC_Cobalt_Cloud_Lin_Server
+  displayName: 7- MVC Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Cobalt_Cloud_Lin_Server, Baselines_Cobalt_Cloud_Lin_Server_Azure_Linux3]
+  condition: succeededOrFailed()
+  steps:
+  - template: mvc-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+- job: Trends_Azure_Server_Arm64
+  displayName: 7- Trends Azure Server Arm64
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Cobalt_Cloud_Lin_Server, Baselines_Cobalt_Cloud_Lin_Server_Azure_Linux3]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -207,15 +238,135 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-win-app --profile azure2-db-load "
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
       
-# GROUP 7
+# GROUP 8
 
-- job: Trends_Database_Azure_Server_Arm64
-  displayName: 7- Trends Database Azure Server Arm64
+- job: MVC_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 8- MVC Cobalt Cloud Lin Server Azure Linux3
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Intel_Lin, Trends_Idna_Intel_Win]
+  dependsOn: [MVC_Cobalt_Cloud_Lin_Server, Trends_Azure_Server_Arm64]
+  condition: succeededOrFailed()
+  steps:
+  - template: mvc-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+- job: Trends_Azure2_Server_Amd64
+  displayName: 8- Trends Azure2 Server Amd64
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [MVC_Cobalt_Cloud_Lin_Server, Trends_Azure_Server_Arm64]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
+      
+# GROUP 9
+
+- job: Trends_Cobalt_Cloud_Lin_Server
+  displayName: 9- Trends Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [MVC_Cobalt_Cloud_Lin_Server_Azure_Linux3, Trends_Azure2_Server_Amd64]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
+      
+- job: Trends_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 9- Trends Cobalt Cloud Lin Server Azure Linux3
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [MVC_Cobalt_Cloud_Lin_Server_Azure_Linux3, Trends_Azure2_Server_Amd64]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-db-load "
+      
+# GROUP 10
+
+- job: Trends_Idna_Amd_Lin
+  displayName: 10- Trends Idna Amd Lin
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Cobalt_Cloud_Lin_Server, Trends_Cobalt_Cloud_Lin_Server_Azure_Linux3]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-amd-lin-app --profile idna-amd-win-load "
+      
+- job: Trends_Idna_Intel_Lin
+  displayName: 10- Trends Idna Intel Lin
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Cobalt_Cloud_Lin_Server, Trends_Cobalt_Cloud_Lin_Server_Azure_Linux3]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-intel-lin-app --profile idna-intel-win-load "
+      
+# GROUP 11
+
+- job: Trends_Idna_Amd_Win
+  displayName: 11- Trends Idna Amd Win
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Intel_Lin]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-amd-win-app --profile idna-intel-lin-load "
+      
+- job: Trends_Idna_Intel_Win
+  displayName: 11- Trends Idna Intel Win
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Idna_Amd_Lin, Trends_Idna_Intel_Lin]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile idna-intel-win-app --profile idna-amd-lin-load "
+      
+# GROUP 12
+
+- job: Trends_Database_Azure_Server_Arm64
+  displayName: 12- Trends Database Azure Server Arm64
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Idna_Amd_Win, Trends_Idna_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -226,10 +377,10 @@ jobs:
       arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
       
 - job: Trends_Database_Azure2_Server_Amd64
-  displayName: 7- Trends Database Azure2 Server Amd64
+  displayName: 12- Trends Database Azure2 Server Amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Idna_Intel_Lin, Trends_Idna_Intel_Win]
+  dependsOn: [Trends_Idna_Amd_Win, Trends_Idna_Intel_Win]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -238,4 +389,36 @@ jobs:
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
+      
+# GROUP 13
+
+- job: Trends_Database_Cobalt_Cloud_Lin_Server
+  displayName: 13- Trends Database Cobalt Cloud Lin Server
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Azure_Server_Arm64, Trends_Database_Azure2_Server_Amd64]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      
+# GROUP 14
+
+- job: Trends_Database_Cobalt_Cloud_Lin_Server_Azure_Linux3
+  displayName: 14- Trends Database Cobalt Cloud Lin Server Azure Linux3
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Cobalt_Cloud_Lin_Server]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
       

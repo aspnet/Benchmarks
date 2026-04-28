@@ -761,11 +761,6 @@ profiles:
           - warmup
             - secondary
 
-  #############################################
-  #                                           #
-  #         EAST US 2 MACHINES                #
-  #                                           #
-  #############################################
   # Individual machine profiles for cobalt-cloud-lin-client
   cobalt-cloud-lin-client-app:
     variables:
