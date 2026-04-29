@@ -1,11 +1,10 @@
 """
-YAML generator using the existing Liquid template.
+YAML generator for pod-based scheduling.
 
-Converts schedule data into the JSON format expected by the Liquid template,
-then renders it to produce Azure DevOps pipeline YAML files.
+Converts schedule data into Azure DevOps pipeline YAML files directly,
+without requiring a Liquid template engine.
 """
 
-import json
 import os
 import re
 from typing import Any, Dict, List
@@ -76,21 +75,7 @@ def schedule_to_template_data(
     }
 
 
-def render_with_liquid(template_path: str, data: Dict[str, Any]) -> str:
-    """Render a Liquid template with the given data."""
-    try:
-        from liquid import Environment
-        env = Environment()
-        with open(template_path, "r") as f:
-            template_str = f.read()
-        template = env.from_string(template_str)
-        return template.render(**data)
-    except ImportError:
-        # Fallback: manual rendering for the simple template structure
-        return _render_simple(template_path, data)
-
-
-def _render_simple(template_path: str, data: Dict[str, Any]) -> str:
+def _render_simple(data: Dict[str, Any]) -> str:
     """
     Simple template renderer that generates YAML directly without Liquid.
     Produces the same output as the Liquid template.
@@ -174,7 +159,6 @@ def _render_simple(template_path: str, data: Dict[str, Any]) -> str:
 def generate_yamls(
     schedules: List[Schedule],
     config: ScheduleConfig,
-    template_path: str,
     output_dir: str,
     base_name: str = "benchmarks-ci",
 ) -> List[str]:
@@ -191,7 +175,7 @@ def generate_yamls(
             config.schedule, config.schedule_offset_hours * i
         )
         data = schedule_to_template_data(sched, config, cron_override=cron)
-        yaml_content = _render_simple(template_path, data)
+        yaml_content = _render_simple(data)
 
         with open(filepath, "w", newline="\n") as f:
             f.write(yaml_content)

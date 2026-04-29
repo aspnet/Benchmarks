@@ -354,7 +354,7 @@ jobs:
   dependsOn: [Baselines_amd_lin2, Frameworks_Database_intel_lin, EF_Core_intel_win, GC_gold_lin]
   condition: succeededOrFailed()
   steps:
-  - template: single-file-scenarios.yml
+  - template: singlefile-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -368,7 +368,7 @@ jobs:
   dependsOn: [Baselines_amd_lin2, Frameworks_Database_intel_lin, EF_Core_intel_win, GC_gold_lin]
   condition: succeededOrFailed()
   steps:
-  - template: single-file-scenarios.yml
+  - template: singlefile-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -412,7 +412,7 @@ jobs:
   dependsOn: [Frameworks_Database_gold_lin, NativeAOT_intel_lin, Single_File_gold_win, Single_File_intel_win]
   condition: succeededOrFailed()
   steps:
-  - template: websockets-scenarios.yml
+  - template: websocket-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
@@ -426,7 +426,7 @@ jobs:
   dependsOn: [Frameworks_Database_gold_lin, NativeAOT_intel_lin, Single_File_gold_win, Single_File_intel_win]
   condition: succeededOrFailed()
   steps:
-  - template: crossgen-scenarios.yml
+  - template: crossgen2-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
@@ -514,7 +514,7 @@ jobs:
   dependsOn: [Trends_gold_lin, Trends_Database_gold_win, Trends_Database_intel_lin, Build_intel_win]
   condition: succeededOrFailed()
   steps:
-  - template: websockets-scenarios.yml
+  - template: websocket-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -544,7 +544,7 @@ jobs:
   dependsOn: [Frameworks_gold_lin, WebSockets_intel_lin]
   condition: succeededOrFailed()
   steps:
-  - template: crossgen-scenarios.yml
+  - template: crossgen2-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
@@ -590,7 +590,7 @@ jobs:
   dependsOn: [Trends_Database_amd_lin2, Build_intel_lin]
   condition: succeededOrFailed()
   steps:
-  - template: crossgen-scenarios.yml
+  - template: crossgen2-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
@@ -606,7 +606,7 @@ jobs:
   dependsOn: [Crossgen_gold_lin]
   condition: succeededOrFailed()
   steps:
-  - template: custom-proxies-scenarios.yml
+  - template: proxies-custom-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1

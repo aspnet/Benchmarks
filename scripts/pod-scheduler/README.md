@@ -21,7 +21,6 @@ python main.py --config ../../build/benchmarks_ci_pods.json
 
 # Generate pipeline YAML files
 python main.py --config ../../build/benchmarks_ci_pods.json \
-    --template ../../build/benchmarks.template.liquid \
     --yaml-output ../../build
 
 # Show which pods share machines

@@ -85,14 +85,14 @@
         },
         {
             "name": "Crossgen",
-            "template": "crossgen-scenarios.yml",
+            "template": "crossgen2-scenarios.yml",
             "type": 2,
             "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win", "amd-lin2"],
             "estimated_runtime": 5.0
         },
         {
             "name": "Custom Proxies",
-            "template": "custom-proxies-scenarios.yml",
+            "template": "proxies-custom-scenarios.yml",
             "type": 3,
             "pods": ["gold-lin", "intel-lin"],
             "estimated_runtime": 5.0
@@ -176,7 +176,7 @@
         },
         {
             "name": "Single File",
-            "template": "single-file-scenarios.yml",
+            "template": "singlefile-scenarios.yml",
             "type": 2,
             "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
             "estimated_runtime": 10.0
@@ -204,7 +204,7 @@
         },
         {
             "name": "WebSockets",
-            "template": "websockets-scenarios.yml",
+            "template": "websocket-scenarios.yml",
             "type": 2,
             "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
             "estimated_runtime": 6.0

@@ -9,13 +9,11 @@ and the scheduler ensures no physical machine is double-booked per stage.
 Usage:
     python main.py --config ./build/benchmarks_ci_pods.json
     python main.py --config ./build/benchmarks_ci_pods.json \\
-        --template ./build/benchmarks.template.liquid \\
         --yaml-output ./build
 """
 
 import argparse
 import json
-import sys
 from typing import List
 
 from config_loader import load_config
@@ -42,13 +40,15 @@ def print_summary(config: ScheduleConfig, schedule: Schedule) -> None:
     machine_time = {}
     machine_total = {}
     for stage in schedule.stages:
+        stage_machines = set()
         for run in stage.runs:
             for m in run.machines_used:
+                stage_machines.add(m)
                 machine_time.setdefault(m, 0)
                 machine_time[m] += run.estimated_runtime
-                machine_total.setdefault(m, 0)
-        for m in machine_time:
-            machine_total[m] = machine_total.get(m, 0) + stage.duration
+        for m in stage_machines:
+            machine_total.setdefault(m, 0)
+            machine_total[m] += stage.duration
 
     if machine_total:
         print("MACHINE UTILIZATION:")
@@ -64,6 +64,9 @@ def print_summary(config: ScheduleConfig, schedule: Schedule) -> None:
 
     # Stage breakdown
     print("STAGE BREAKDOWN:")
+    if not config.queues:
+        print("  ERROR: No queues configured.")
+        return
     for i, stage in enumerate(schedule.stages):
         print(f"\n  Stage {i} (Duration: {stage.duration:.0f} min)")
         print(f"  {'Queue':<8} {'Scenario':<40} {'Runtime':>8}  "
@@ -117,10 +120,6 @@ def main():
     parser.add_argument(
         "--config", required=True,
         help="Path to JSON configuration file"
-    )
-    parser.add_argument(
-        "--template",
-        help="Path to Liquid template for YAML generation"
     )
     parser.add_argument(
         "--yaml-output",
@@ -187,10 +186,12 @@ def main():
 
     # Generate YAML files
     if args.yaml_output:
-        template = args.template or ""
+        if not config.queues:
+            print("ERROR: No queues configured, cannot generate YAML.")
+            return
         print(f"Generating {len(schedules)} YAML file(s)...")
         generate_yamls(
-            schedules, config, template, args.yaml_output,
+            schedules, config, args.yaml_output,
             base_name=args.base_name,
         )
         print("Done!")

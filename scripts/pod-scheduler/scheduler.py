@@ -8,7 +8,7 @@ ensure no physical machine is used twice in the same stage.
 
 from typing import List
 
-from models import Pod, Run, Schedule, ScheduleConfig, ScenarioType, Stage
+from models import Run, Schedule, ScheduleConfig, ScenarioType, Stage
 
 
 DEFAULT_RUNTIMES = {

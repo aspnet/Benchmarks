@@ -3,7 +3,6 @@ JSON configuration loader for pod-based scheduling.
 """
 
 import json
-from typing import Any, Dict
 
 from models import Pod, Scenario, ScenarioType, ScheduleConfig
 
