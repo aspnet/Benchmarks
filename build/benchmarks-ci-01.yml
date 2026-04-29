@@ -32,7 +32,7 @@ jobs:
 - job: Proxies_gold_lin
   displayName: 1- Proxies gold-lin
   pool: server
-  timeoutInMinutes: 300
+  timeoutInMinutes: 240
   dependsOn: []
   condition: succeededOrFailed()
   steps:
@@ -46,7 +46,7 @@ jobs:
 - job: Proxies_intel_lin
   displayName: 1- Proxies intel-lin
   pool: server
-  timeoutInMinutes: 300
+  timeoutInMinutes: 240
   dependsOn: []
   condition: succeededOrFailed()
   steps:

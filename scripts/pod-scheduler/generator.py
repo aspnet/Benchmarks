@@ -65,7 +65,7 @@ def schedule_to_template_data(
                 "name": run.name,
                 "template": run.scenario.template,
                 "profiles": run.profiles,
-                "timeout": max(120, int(run.estimated_runtime * 2)),
+                "timeout": max(120, min(240, int(run.estimated_runtime * 2))),
             })
         groups.append({"jobs": jobs})
 
