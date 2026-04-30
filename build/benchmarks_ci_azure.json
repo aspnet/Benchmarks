@@ -16,7 +16,6 @@
   "machines": [
     {
       "name": "azure-db",
-      "machine_group": "azure",
       "capabilities": {
         "db": {
           "priority": 1,
@@ -40,7 +39,6 @@
     },
     {
       "name": "azure-client",
-      "machine_group": "azure",
       "capabilities": {
         "load": {
           "priority": 1,
@@ -64,7 +62,6 @@
     },
     {
       "name": "azure-server-arm64",
-      "machine_group": "azure",
       "capabilities": {
         "sut": {
           "priority": 1,
@@ -92,7 +89,6 @@
     },
     {
       "name": "azure2-client",
-      "machine_group": "azure2",
       "capabilities": {
         "load": {
           "priority": 1,
@@ -116,7 +112,6 @@
     },
     {
       "name": "azure2-db",
-      "machine_group": "azure2",
       "capabilities": {
         "db": {
           "priority": 1,
@@ -140,7 +135,6 @@
     },
     {
       "name": "azure2-server-amd64",
-      "machine_group": "azure2",
       "capabilities": {
         "sut": {
           "priority": 1,
@@ -168,7 +162,6 @@
     },
     {
       "name": "idna-amd-lin",
-      "machine_group": "idna",
       "capabilities": {
         "sut": {
           "priority": 1,
@@ -196,7 +189,6 @@
     },
     {
       "name": "idna-amd-win",
-      "machine_group": "idna",
       "capabilities": {
         "sut": {
           "priority": 1,
@@ -224,7 +216,6 @@
     },
     {
       "name": "idna-intel-lin",
-      "machine_group": "idna",
       "capabilities": {
         "sut": {
           "priority": 1,
@@ -252,7 +243,6 @@
     },
     {
       "name": "idna-intel-win",
-      "machine_group": "idna",
       "capabilities": {
         "sut": {
           "priority": 1,
@@ -277,110 +267,6 @@
         "idna-amd-lin",
         "azure2-db"
       ]
-    },
-    {
-      "name": "cobalt-cloud-lin-server",
-      "machine_group": "cobalt-cloud",
-      "capabilities": {
-        "sut": {
-          "priority": 1,
-          "profiles": [
-            "cobalt-cloud-lin-server-app"
-          ]
-        },
-        "load": {
-          "priority": 2,
-          "profiles": [
-            "cobalt-cloud-lin-server-load"
-          ]
-        },
-        "db": {
-          "priority": 3,
-          "profiles": [
-            "cobalt-cloud-lin-server-db"
-          ]
-        }
-      },
-      "preferred_partners": [
-        "cobalt-cloud-lin-client",
-        "cobalt-cloud-lin-db"
-      ]
-    },
-    {
-      "name": "cobalt-cloud-lin-client",
-      "machine_group": "cobalt-cloud",
-      "capabilities": {
-        "load": {
-          "priority": 1,
-          "profiles": [
-            "cobalt-cloud-lin-client-load"
-          ]
-        },
-        "db": {
-          "priority": 2,
-          "profiles": [
-            "cobalt-cloud-lin-client-db"
-          ]
-        },
-        "sut": {
-          "priority": 3,
-          "profiles": [
-            "cobalt-cloud-lin-client-app"
-          ]
-        }
-      }
-    },
-    {
-      "name": "cobalt-cloud-lin-db",
-      "machine_group": "cobalt-cloud",
-      "capabilities": {
-        "db": {
-          "priority": 1,
-          "profiles": [
-            "cobalt-cloud-lin-db-db"
-          ]
-        },
-        "load": {
-          "priority": 2,
-          "profiles": [
-            "cobalt-cloud-lin-db-load"
-          ]
-        },
-        "sut": {
-          "priority": 3,
-          "profiles": [
-            "cobalt-cloud-lin-db-app"
-          ]
-        }
-      }
-    },
-    {
-      "name": "cobalt-cloud-lin-server-azure-linux3",
-      "machine_group": "cobalt-cloud",
-      "capabilities": {
-        "sut": {
-          "priority": 1,
-          "profiles": [
-            "cobalt-cloud-lin-server-azure-linux3-app"
-          ]
-        },
-        "load": {
-          "priority": 2,
-          "profiles": [
-            "cobalt-cloud-lin-server-azure-linux3-load"
-          ]
-        },
-        "db": {
-          "priority": 3,
-          "profiles": [
-            "cobalt-cloud-lin-server-azure-linux3-db"
-          ]
-        }
-      },
-      "preferred_partners": [
-        "cobalt-cloud-lin-client",
-        "cobalt-cloud-lin-db"
-      ]
     }
   ],
   "scenarios": [
@@ -390,9 +276,7 @@
       "type": 2,
       "target_machines": [
         "azure-server-arm64",
-        "azure2-server-amd64",
-        "cobalt-cloud-lin-server",
-        "cobalt-cloud-lin-server-azure-linux3"
+        "azure2-server-amd64"
       ],
       "estimated_runtime": 30.0
     },
@@ -402,9 +286,7 @@
       "type": 3,
       "target_machines": [
         "azure-server-arm64",
-        "azure2-server-amd64",
-        "cobalt-cloud-lin-server",
-        "cobalt-cloud-lin-server-azure-linux3"
+        "azure2-server-amd64"
       ],
       "estimated_runtime": 45.0
     },
@@ -414,21 +296,9 @@
       "type": 3,
       "target_machines": [
         "azure-server-arm64",
-        "azure2-server-amd64",
-        "cobalt-cloud-lin-server",
-        "cobalt-cloud-lin-server-azure-linux3"
+        "azure2-server-amd64"
       ],
       "estimated_runtime": 90.0
-    },
-    {
-      "name": "MVC",
-      "template": "mvc-scenarios.yml",
-      "type": 3,
-      "target_machines": [
-        "cobalt-cloud-lin-server",
-        "cobalt-cloud-lin-server-azure-linux3"
-      ],
-      "estimated_runtime": 20.0
     },
     {
       "name": "Trends",
@@ -437,8 +307,6 @@
       "target_machines": [
         "azure-server-arm64",
         "azure2-server-amd64",
-        "cobalt-cloud-lin-server",
-        "cobalt-cloud-lin-server-azure-linux3",
         "idna-amd-lin",
         "idna-amd-win",
         "idna-intel-lin",
@@ -452,9 +320,7 @@
       "type": 3,
       "target_machines": [
         "azure-server-arm64",
-        "azure2-server-amd64",
-        "cobalt-cloud-lin-server",
-        "cobalt-cloud-lin-server-azure-linux3"
+        "azure2-server-amd64"
       ],
       "estimated_runtime": 15.0
     }

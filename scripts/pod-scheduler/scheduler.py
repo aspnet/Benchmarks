@@ -4,34 +4,52 @@ Core scheduling algorithm for pod-based crank scheduling.
 Uses a greedy longest-job-first approach with machine-collision avoidance.
 Since pods define fixed machine groupings, the scheduler only needs to
 ensure no physical machine is used twice in the same stage.
+
+Output is deterministic: identical input JSON always produces identical
+schedules, so generated YAML files diff cleanly across regenerations.
 """
 
-from typing import List
+from typing import List, Tuple
 
-from models import Run, Schedule, ScheduleConfig, ScenarioType, Stage
+from models import (
+    DEFAULT_RUNTIMES,
+    Run,
+    Schedule,
+    ScheduleConfig,
+    Stage,
+)
 
 
-DEFAULT_RUNTIMES = {
-    ScenarioType.SINGLE: 30.0,
-    ScenarioType.DUAL: 45.0,
-    ScenarioType.TRIPLE: 60.0,
-}
+class SchedulerError(ValueError):
+    """Raised when the scheduler refuses to build a schedule."""
 
 
-def expand_runs(config: ScheduleConfig) -> List[Run]:
-    """Expand scenarios × pods into individual runs."""
-    runs = []
+def expand_runs(config: ScheduleConfig, strict: bool = True) -> List[Run]:
+    """Expand scenarios x pods into individual runs.
+
+    With ``strict=True`` (the default) an unknown pod or a pod that cannot
+    satisfy a scenario's type raises :class:`SchedulerError`. With
+    ``strict=False`` the offending entry is skipped and a warning is printed.
+    """
+    runs: List[Run] = []
     for scenario in config.scenarios:
         for pod_name in scenario.pods:
             pod = config.pods.get(pod_name)
             if pod is None:
-                print(f"  WARNING: Scenario '{scenario.name}' references "
-                      f"unknown pod '{pod_name}', skipping")
+                msg = (
+                    f"Scenario '{scenario.name}' references unknown pod "
+                    f"'{pod_name}'"
+                )
+                if strict:
+                    raise SchedulerError(msg)
+                print(f"  WARNING: {msg}, skipping")
                 continue
             error = pod.validate(scenario.type)
             if error:
-                print(f"  WARNING: {error} for scenario "
-                      f"'{scenario.name}', skipping")
+                msg = f"{error} for scenario '{scenario.name}'"
+                if strict:
+                    raise SchedulerError(msg)
+                print(f"  WARNING: {msg}, skipping")
                 continue
             runtime = scenario.estimated_runtime
             if runtime <= 0:
@@ -44,59 +62,60 @@ def expand_runs(config: ScheduleConfig) -> List[Run]:
     return runs
 
 
-def create_schedule(config: ScheduleConfig) -> Schedule:
-    """
-    Create an optimized schedule from the configuration.
+def create_schedule(config: ScheduleConfig, strict: bool = True) -> Schedule:
+    """Create a schedule by greedy longest-job-first packing.
 
-    Algorithm:
-    1. Expand all scenario × pod combinations into runs
-    2. Sort by runtime descending (longest-job-first heuristic)
-    3. Greedily pack runs into stages, checking machine collisions
+    1. Expand all scenario x pod combinations into runs.
+    2. Sort by runtime descending (longest-job-first heuristic).
+    3. Greedily pack runs into stages, checking machine collisions.
+
+    Sort key includes the run name as a tie-breaker so the result is stable.
     """
-    runs = expand_runs(config)
+    runs = expand_runs(config, strict=strict)
     queue_count = len(config.queues)
+    if queue_count == 0:
+        raise SchedulerError(
+            "Cannot schedule with zero queues. Configure metadata.queues."
+        )
 
-    # Longest-job-first for better bin packing
-    runs.sort(key=lambda r: r.estimated_runtime, reverse=True)
+    runs.sort(key=lambda r: (-r.estimated_runtime, r.name))
 
     schedule = Schedule()
     for run in runs:
-        placed = False
         for stage in schedule.stages:
             if stage.can_add(run, queue_count):
                 stage.runs.append(run)
-                placed = True
                 break
-        if not placed:
-            new_stage = Stage(runs=[run])
-            schedule.stages.append(new_stage)
+        else:
+            schedule.stages.append(Stage(runs=[run]))
 
     return schedule
 
 
 def split_schedule(schedule: Schedule, target_count: int) -> List[Schedule]:
-    """
-    Split a schedule into multiple sub-schedules using bin-packing.
+    """Split a schedule into multiple sub-schedules using bin-packing.
 
-    Assigns stages to bins (sub-schedules) to balance total runtime.
+    Stages are packed longest-first into the lightest bin to balance total
+    runtime, then each bin's stages are restored to their original ordering
+    so the generated YAML files preserve scenario sequence.
     """
     if target_count <= 1:
         return [schedule]
 
-    # Sort stages by duration descending for better packing
-    sorted_stages = sorted(
-        schedule.stages, key=lambda s: s.duration, reverse=True
-    )
+    indexed: List[Tuple[int, Stage]] = list(enumerate(schedule.stages))
+    indexed.sort(key=lambda pair: -pair[1].duration)
 
-    # Create bins, pack longest-first into lightest bin
-    bins: List[Schedule] = [Schedule() for _ in range(target_count)]
-    for stage in sorted_stages:
-        lightest = min(bins, key=lambda b: b.total_duration)
-        lightest.stages.append(stage)
+    bins: List[List[Tuple[int, Stage]]] = [[] for _ in range(target_count)]
+    bin_durations = [0.0] * target_count
+    for original_index, stage in indexed:
+        target = min(range(target_count), key=lambda i: bin_durations[i])
+        bins[target].append((original_index, stage))
+        bin_durations[target] += stage.duration
 
-    # Re-sort stages within each bin to maintain original ordering
-    stage_order = {id(s): i for i, s in enumerate(schedule.stages)}
-    for b in bins:
-        b.stages.sort(key=lambda s: stage_order.get(id(s), 0))
-
-    return [b for b in bins if b.stages]
+    result: List[Schedule] = []
+    for entries in bins:
+        if not entries:
+            continue
+        entries.sort(key=lambda pair: pair[0])
+        result.append(Schedule(stages=[stage for _, stage in entries]))
+    return result

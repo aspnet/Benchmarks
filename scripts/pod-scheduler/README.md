@@ -30,6 +30,14 @@ python main.py --config ../../build/benchmarks_ci_pods.json --show-conflicts
 python main.py --config ../../build/benchmarks_ci_pods.json --list-runs
 ```
 
+The scheduler runs in **strict mode** by default: any unknown pod or invalid
+pod-for-scenario reference fails with a non-zero exit code so config typos
+cannot silently drop scenarios from the pipeline. Pass `--lenient` to fall
+back to the previous warn-and-skip behavior.
+
+Output is **deterministic**: identical input JSON always produces identical
+YAML, so regenerations diff cleanly.
+
 ## Configuration Format
 
 ```json
@@ -41,6 +49,11 @@ python main.py --config ../../build/benchmarks_ci_pods.json --list-runs
         "yaml_generation": {
             "target_yaml_count": 2,
             "schedule_offset_hours": 6
+        },
+        "pipeline": {
+            "pool": "server",
+            "service_bus_connection": "ASPNET Benchmarks Service Bus",
+            "service_bus_namespace": "aspnetbenchmarks"
         }
     },
     "pods": [
@@ -56,11 +69,18 @@ python main.py --config ../../build/benchmarks_ci_pods.json --list-runs
             "template": "baselines-scenarios.yml",
             "type": 2,
             "pods": ["gold-lin", "gold-win"],
-            "estimated_runtime": 30.0
+            "estimated_runtime": 30.0,
+            "timeout": 120
         }
     ]
 }
 ```
+
+The `pipeline` block is optional; defaults match the legacy hardcoded values.
+
+The `schedule` field's **hour** must be a `H` or `H/N` cron expression
+(e.g. `3` or `3/12`). Lists, ranges, and `*` are rejected at load time so the
+hour-offset used for split YAMLs cannot silently no-op.
 
 ### Pod Definition
 
@@ -74,6 +94,17 @@ python main.py --config ../../build/benchmarks_ci_pods.json --list-runs
 | `profiles.load` | Crank profile name for Load (optional) |
 | `profiles.db` | Crank profile name for DB (optional) |
 
+### Scenario Definition
+
+| Field | Description |
+|-------|-------------|
+| `name` | Display name (also used as part of the AzDO job id) |
+| `template` | YAML scenario template to invoke |
+| `type` | 1=SINGLE, 2=DUAL, 3=TRIPLE (see below) |
+| `pods` | List of pod names this scenario targets (no duplicates) |
+| `estimated_runtime` | Runtime estimate in minutes; defaults per type if omitted |
+| `timeout` | Optional explicit AzDO `timeoutInMinutes` override. When unset, the generator picks `max(120, min(240, ceil(2 * estimated_runtime)))` |
+
 ### Scenario Types
 
 | Type | Machines Used | Example |
@@ -81,6 +112,13 @@ python main.py --config ../../build/benchmarks_ci_pods.json --list-runs
 | 1 (SINGLE) | SUT only | Build, GC |
 | 2 (DUAL) | SUT + Load | Baselines, Grpc, SignalR |
 | 3 (TRIPLE) | SUT + Load + DB | Baselines Database, PGO, Proxies |
+
+### Queue Assignment
+
+The N-th run within a stage is assigned to `queues[N % len(queues)]`. Queues
+are treated as interchangeable workers; if a queue is pinned to specific
+hardware in your service-bus topology, set `metadata.queues` accordingly so
+the order matches your hardware layout.
 
 ### Handling Shared Machines
 
@@ -108,20 +146,32 @@ share load/DB machines.
 ## Algorithm
 
 1. **Expand** each scenario × pod into individual "runs"
-2. **Sort** runs by runtime descending (longest-job-first)
+2. **Sort** runs by runtime descending (longest-job-first), with the run name
+   as a stable tie-breaker so output is deterministic
 3. **Pack** into stages greedily — each run goes into the first stage where no
    physical machines conflict and the queue limit isn't exceeded
 4. **Split** stages across multiple YAML files using bin-packing for balanced
-   runtime
+   runtime, restoring the original stage order within each bin
 
 ## Files
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `main.py` | ~160 | CLI entry point, summary display |
-| `models.py` | ~115 | Data classes (Pod, Scenario, Run, Stage, Schedule) |
-| `scheduler.py` | ~95 | Scheduling algorithm |
-| `config_loader.py` | ~50 | JSON config parser |
-| `generator.py` | ~150 | YAML generation |
+| File | Purpose |
+|------|---------|
+| `main.py` | CLI entry point, summary display |
+| `models.py` | Data classes (Pod, Scenario, Run, Stage, Schedule, PipelineSettings) |
+| `scheduler.py` | Scheduling algorithm |
+| `config_loader.py` | JSON config parser + validation |
+| `generator.py` | YAML generation |
+| `tests/` | Unit + snapshot tests (`python -m unittest`) |
 
-Total: ~570 lines (vs ~2000 in the full crank-scheduler)
+This is intentionally script-style: the modules use absolute imports
+(`from models import …`) and are run as `python main.py …`. To run the
+tests, `cd scripts/pod-scheduler && python -m unittest discover tests`.
+
+## Tradeoffs vs. the full crank-scheduler
+
+By collapsing capabilities, priorities, preferred-partners, and machine groups
+into fixed pod definitions, this scheduler is much smaller — but loses some
+expressivity. If the hardware layout grows beyond "fixed SUT + load + DB
+triples", the constraint solver from the full crank-scheduler may be a better
+fit. For today's hardware, the simplification is intentional.

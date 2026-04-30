@@ -14,12 +14,18 @@ Usage:
 
 import argparse
 import json
+import sys
 from typing import List
 
-from config_loader import load_config
-from generator import generate_yamls, schedule_to_template_data
+from config_loader import ConfigError, load_config
+from generator import GeneratorError, generate_yamls, schedule_to_template_data
 from models import Schedule, ScheduleConfig
-from scheduler import create_schedule, expand_runs, split_schedule
+from scheduler import (
+    SchedulerError,
+    create_schedule,
+    expand_runs,
+    split_schedule,
+)
 
 
 def print_summary(config: ScheduleConfig, schedule: Schedule) -> None:
@@ -36,7 +42,6 @@ def print_summary(config: ScheduleConfig, schedule: Schedule) -> None:
           f"({schedule.total_duration / 60:.1f} hrs)")
     print()
 
-    # Machine utilization
     machine_time = {}
     machine_total = {}
     for stage in schedule.stages:
@@ -62,11 +67,7 @@ def print_summary(config: ScheduleConfig, schedule: Schedule) -> None:
                   f"({busy:.0f}/{total:.0f} min)")
         print()
 
-    # Stage breakdown
     print("STAGE BREAKDOWN:")
-    if not config.queues:
-        print("  ERROR: No queues configured.")
-        return
     for i, stage in enumerate(schedule.stages):
         print(f"\n  Stage {i} (Duration: {stage.duration:.0f} min)")
         print(f"  {'Queue':<8} {'Scenario':<40} {'Runtime':>8}  "
@@ -94,7 +95,6 @@ def print_split_summary(schedules: List[Schedule], config: ScheduleConfig) -> No
 
 def print_pod_conflicts(config: ScheduleConfig) -> None:
     """Show which pods share physical machines (potential conflicts)."""
-    # Build reverse map: machine -> pods
     machine_pods = {}
     for pod in config.pods.values():
         for role in ["sut", "load", "db"]:
@@ -113,7 +113,7 @@ def print_pod_conflicts(config: ScheduleConfig) -> None:
         print()
 
 
-def main():
+def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Pod-based crank scheduler"
     )
@@ -145,57 +145,65 @@ def main():
         "--show-conflicts", action="store_true",
         help="Show pods that share physical machines"
     )
+    parser.add_argument(
+        "--lenient", action="store_true",
+        help="Warn instead of fail on unknown or invalid pod references. "
+             "Off by default so config typos do not silently drop scenarios."
+    )
+    return parser
 
-    args = parser.parse_args()
 
-    # Load config
-    print(f"Loading config: {args.config}")
-    config = load_config(args.config)
-    print(f"  Loaded {len(config.pods)} pods, "
-          f"{len(config.scenarios)} scenarios")
+def main(argv: List[str] = None) -> int:
+    parser = _build_arg_parser()
+    args = parser.parse_args(argv)
 
-    if args.show_conflicts:
+    try:
+        print(f"Loading config: {args.config}")
+        config = load_config(args.config)
+        print(f"  Loaded {len(config.pods)} pods, "
+              f"{len(config.scenarios)} scenarios")
+
+        strict = not args.lenient
+
+        if args.show_conflicts:
+            print_pod_conflicts(config)
+
+        if args.list_runs:
+            runs = expand_runs(config, strict=strict)
+            print(f"\nAll runs ({len(runs)} total):")
+            for r in runs:
+                machines = ", ".join(sorted(r.machines_used))
+                print(f"  {r.name:<45} type={r.scenario.type.value}  "
+                      f"runtime={r.estimated_runtime:.0f}m  "
+                      f"machines=[{machines}]")
+            return 0
+
+        schedule = create_schedule(config, strict=strict)
+        print_summary(config, schedule)
         print_pod_conflicts(config)
 
-    if args.list_runs:
-        runs = expand_runs(config)
-        print(f"\nAll runs ({len(runs)} total):")
-        for r in runs:
-            machines = ", ".join(sorted(r.machines_used))
-            print(f"  {r.name:<45} type={r.scenario.type.value}  "
-                  f"runtime={r.estimated_runtime:.0f}m  "
-                  f"machines=[{machines}]")
-        return
+        yaml_count = args.target_yamls or config.target_yaml_count
+        schedules = split_schedule(schedule, yaml_count)
+        print_split_summary(schedules, config)
 
-    # Create schedule
-    schedule = create_schedule(config)
-    print_summary(config, schedule)
-    print_pod_conflicts(config)
+        if args.template_data:
+            for i, sched in enumerate(schedules):
+                data = schedule_to_template_data(sched, config)
+                print(f"\n--- Template data for YAML {i + 1} ---")
+                print(json.dumps(data, indent=2))
 
-    # Split for multi-YAML
-    yaml_count = args.target_yamls or config.target_yaml_count
-    schedules = split_schedule(schedule, yaml_count)
-    print_split_summary(schedules, config)
-
-    # Template data output
-    if args.template_data:
-        for i, sched in enumerate(schedules):
-            data = schedule_to_template_data(sched, config)
-            print(f"\n--- Template data for YAML {i + 1} ---")
-            print(json.dumps(data, indent=2))
-
-    # Generate YAML files
-    if args.yaml_output:
-        if not config.queues:
-            print("ERROR: No queues configured, cannot generate YAML.")
-            return
-        print(f"Generating {len(schedules)} YAML file(s)...")
-        generate_yamls(
-            schedules, config, args.yaml_output,
-            base_name=args.base_name,
-        )
-        print("Done!")
+        if args.yaml_output:
+            print(f"Generating {len(schedules)} YAML file(s)...")
+            generate_yamls(
+                schedules, config, args.yaml_output,
+                base_name=args.base_name,
+            )
+            print("Done!")
+        return 0
+    except (ConfigError, SchedulerError, GeneratorError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
