@@ -14,6 +14,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 from typing import List
 
@@ -113,6 +114,27 @@ def print_pod_conflicts(config: ScheduleConfig) -> None:
         print()
 
 
+def _format_source_path(path: str) -> str:
+    """Render a config path for embedding in generated YAML headers.
+
+    Tries to express the path relative to the repo root using forward slashes
+    so the regen command is identical on Windows and POSIX shells. Falls back
+    to ``./<basename>`` if the path is outside the repo.
+    """
+    repo_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..")
+    )
+    abs_path = os.path.abspath(path)
+    try:
+        rel = os.path.relpath(abs_path, repo_root)
+    except ValueError:
+        rel = os.path.basename(abs_path)
+    rel = rel.replace(os.sep, "/")
+    if rel.startswith("../"):
+        rel = os.path.basename(abs_path)
+    return f"./{rel}"
+
+
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Pod-based crank scheduler"
@@ -197,6 +219,7 @@ def main(argv: List[str] = None) -> int:
             generate_yamls(
                 schedules, config, args.yaml_output,
                 base_name=args.base_name,
+                source_config=_format_source_path(args.config),
             )
             print("Done!")
         return 0

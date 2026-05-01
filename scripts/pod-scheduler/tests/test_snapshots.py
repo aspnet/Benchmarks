@@ -46,6 +46,7 @@ class TestSnapshots(unittest.TestCase):
                 with tempfile.TemporaryDirectory() as tmp:
                     generate_yamls(
                         schedules, config, tmp, base_name=base_name,
+                        source_config=f"./build/{config_name}",
                     )
                     for name in expected_files:
                         generated = os.path.join(tmp, name)
@@ -66,7 +67,8 @@ class TestSnapshots(unittest.TestCase):
                             gen_text,
                             comm_text,
                             f"{name} differs from committed snapshot. "
-                            f"Run: python scripts/pod-scheduler/main.py "
+                            f"Run from repo root: python "
+                            f"scripts/pod-scheduler/main.py "
                             f"--config build/{config_name} "
                             f"--yaml-output build "
                             f"--base-name {base_name}",

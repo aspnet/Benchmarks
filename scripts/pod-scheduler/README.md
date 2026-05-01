@@ -15,20 +15,35 @@ cannot run in the same stage. The scheduler handles this automatically.
 
 ## Quick Start
 
+Run from the repository root:
+
 ```bash
 # Show schedule summary
-python main.py --config ../../build/benchmarks_ci_pods.json
+python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.json
 
 # Generate pipeline YAML files
-python main.py --config ../../build/benchmarks_ci_pods.json \
-    --yaml-output ../../build
+python scripts/pod-scheduler/main.py \
+    --config build/benchmarks_ci_pods.json \
+    --yaml-output build
+
+# Regenerate the Azure or Cobalt pipelines
+python scripts/pod-scheduler/main.py \
+    --config build/benchmarks_ci_azure_pods.json \
+    --base-name benchmarks-ci-azure --yaml-output build
+
+python scripts/pod-scheduler/main.py \
+    --config build/benchmarks_ci_cobalt_pods.json \
+    --base-name benchmarks-ci-cobalt --yaml-output build
 
 # Show which pods share machines
-python main.py --config ../../build/benchmarks_ci_pods.json --show-conflicts
+python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.json --show-conflicts
 
 # List all runs without scheduling
-python main.py --config ../../build/benchmarks_ci_pods.json --list-runs
+python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.json --list-runs
 ```
+
+The header of every generated YAML embeds the exact regen command for that
+file, so you can also copy the command from there.
 
 The scheduler runs in **strict mode** by default: any unknown pod or invalid
 pod-for-scenario reference fails with a non-zero exit code so config typos
@@ -36,7 +51,12 @@ cannot silently drop scenarios from the pipeline. Pass `--lenient` to fall
 back to the previous warn-and-skip behavior.
 
 Output is **deterministic**: identical input JSON always produces identical
-YAML, so regenerations diff cleanly.
+YAML, so regenerations diff cleanly. To verify, run the snapshot tests:
+
+```bash
+cd scripts/pod-scheduler
+python -m unittest discover tests
+```
 
 ## Configuration Format
 

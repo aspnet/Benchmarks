@@ -1,8 +1,10 @@
+import os
 import unittest
 
 import tests  # noqa: F401  # ensures sys.path is set up
 
 from generator import GeneratorError, _job_timeout, _offset_cron
+from main import _format_source_path
 from models import Pod, Run, Scenario, ScenarioType
 
 
@@ -54,6 +56,25 @@ class TestJobTimeout(unittest.TestCase):
 
     def test_mid_runtime_doubles(self):
         self.assertEqual(_job_timeout(self._run(90)), 180)
+
+
+class TestFormatSourcePath(unittest.TestCase):
+    def test_paths_in_repo_become_repo_relative(self):
+        repo_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        )
+        candidate = os.path.join(repo_root, "build", "benchmarks_ci_pods.json")
+        self.assertEqual(
+            _format_source_path(candidate),
+            "./build/benchmarks_ci_pods.json",
+        )
+
+    def test_outside_repo_falls_back_to_basename(self):
+        # Use a path that's definitely outside the repo by jumping above root.
+        far = os.path.abspath(os.sep + "definitely-not-in-repo.json")
+        self.assertEqual(
+            _format_source_path(far), "./definitely-not-in-repo.json"
+        )
 
 
 if __name__ == "__main__":
