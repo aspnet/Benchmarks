@@ -1,0 +1,213 @@
+{
+    "metadata": {
+        "name": "CI Benchmarks Configuration",
+        "description": "Pod-based scheduling for continuous integration benchmarks",
+        "version": "2.0",
+        "schedule": "0 3/12 * * *",
+        "queues": [
+            "citrine1",
+            "citrine2",
+            "citrine3",
+            "mono"
+        ],
+        "yaml_generation": {
+            "target_yaml_count": 2,
+            "schedule_offset_hours": 6
+        }
+    },
+    "pods": [
+        {
+            "name": "intel-lin",
+            "machines": { "sut": "intel-lin", "load": "intel-load", "db": "intel-db" },
+            "profiles": { "sut": "intel-lin-app", "load": "intel-load-load", "db": "intel-db-db" }
+        },
+        {
+            "name": "intel-win",
+            "machines": { "sut": "intel-win", "load": "intel-load2", "db": "intel-db" },
+            "profiles": { "sut": "intel-win-app", "load": "intel-load2-load", "db": "intel-db-db" }
+        },
+        {
+            "name": "gold-lin",
+            "machines": { "sut": "gold-lin", "load": "gold-load", "db": "gold-db" },
+            "profiles": { "sut": "gold-lin-app", "load": "gold-load-load", "db": "gold-db-db" }
+        },
+        {
+            "name": "gold-win",
+            "machines": { "sut": "gold-win", "load": "gold-load2", "db": "gold-db" },
+            "profiles": { "sut": "gold-win-app", "load": "gold-load2-load", "db": "gold-db-db" }
+        },
+        {
+            "name": "amd-lin2",
+            "machines": { "sut": "amd-lin2", "load": "gold-load", "db": "gold-db" },
+            "profiles": { "sut": "amd-lin2-app", "load": "gold-load-load", "db": "gold-db-db" }
+        },
+        {
+            "name": "intel-perflin",
+            "machines": { "sut": "intel-perflin", "load": "intel-perfload" },
+            "profiles": { "sut": "intel-perflin-app", "load": "intel-perfload-load" }
+        }
+    ],
+    "scenarios": [
+        {
+            "name": "Baselines",
+            "template": "baselines-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win", "amd-lin2"],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "Baselines Database",
+            "template": "baselines-database-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win", "amd-lin2"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Blazor",
+            "template": "blazor-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "intel-lin", "intel-perflin"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Build",
+            "template": "build-perf-scenarios.yml",
+            "type": 1,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 1.0
+        },
+        {
+            "name": "Containers",
+            "template": "containers-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "intel-lin"],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Crossgen",
+            "template": "crossgen2-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win", "amd-lin2"],
+            "estimated_runtime": 5.0
+        },
+        {
+            "name": "Custom Proxies",
+            "template": "proxies-custom-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "intel-lin"],
+            "estimated_runtime": 5.0
+        },
+        {
+            "name": "EF Core",
+            "template": "efcore-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-win", "intel-win"],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Frameworks",
+            "template": "frameworks-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "intel-lin", "amd-lin2"],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Frameworks Database",
+            "template": "frameworks-database-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "intel-lin", "amd-lin2"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "GC",
+            "template": "gc-scenarios.yml",
+            "type": 1,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Grpc",
+            "template": "grpc-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 70.0
+        },
+        {
+            "name": "HttpClient",
+            "template": "httpclient-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "MVC",
+            "template": "mvc-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "NativeAOT",
+            "template": "nativeaot-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "PGO",
+            "template": "pgo-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Proxies",
+            "template": "proxies-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "intel-lin"],
+            "estimated_runtime": 150.0
+        },
+        {
+            "name": "SignalR",
+            "template": "signalr-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "Single File",
+            "template": "singlefile-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 10.0
+        },
+        {
+            "name": "SslStream",
+            "template": "sslstream-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "intel-lin"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Trends",
+            "template": "trend-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win", "amd-lin2"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends Database",
+            "template": "trend-database-scenarios.yml",
+            "type": 3,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win", "amd-lin2"],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "WebSockets",
+            "template": "websocket-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin", "gold-win", "intel-lin", "intel-win"],
+            "estimated_runtime": 6.0
+        }
+    ]
+}

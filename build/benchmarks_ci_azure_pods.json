@@ -1,0 +1,107 @@
+{
+    "metadata": {
+        "name": "Azure CI Benchmarks Configuration",
+        "description": "Pod-based scheduling for Azure CI benchmarks (includes cobalt cloud from eastus2)",
+        "version": "2.1",
+        "schedule": "0 2/12 * * *",
+        "queues": [
+            "azure",
+            "azurearm64"
+        ],
+        "yaml_generation": {
+            "target_yaml_count": 1,
+            "schedule_offset_hours": 0
+        }
+    },
+    "pods": [
+        {
+            "name": "azure-arm64",
+            "machines": { "sut": "azure-server-arm64", "load": "azure-client", "db": "azure-db" },
+            "profiles": { "sut": "azure-server-arm64-app", "load": "azure-client-load", "db": "azure-db-db" }
+        },
+        {
+            "name": "azure2-amd64",
+            "machines": { "sut": "azure2-server-amd64", "load": "azure2-client", "db": "azure2-db" },
+            "profiles": { "sut": "azure2-server-amd64-app", "load": "azure2-client-load", "db": "azure2-db-db" }
+        },
+        {
+            "name": "cobalt-cloud-lin",
+            "machines": { "sut": "cobalt-cloud-lin-server", "load": "cobalt-cloud-lin-client", "db": "cobalt-cloud-lin-db" },
+            "profiles": { "sut": "cobalt-cloud-lin-server-app", "load": "cobalt-cloud-lin-client-load", "db": "cobalt-cloud-lin-db-db" }
+        },
+        {
+            "name": "cobalt-cloud-lin-azl3",
+            "machines": { "sut": "cobalt-cloud-lin-server-azl3", "load": "cobalt-cloud-lin-client", "db": "cobalt-cloud-lin-db" },
+            "profiles": { "sut": "cobalt-cloud-lin-server-azure-linux3-app", "load": "cobalt-cloud-lin-client-load", "db": "cobalt-cloud-lin-db-db" }
+        },
+        {
+            "name": "cobalt-cloud-lin-azl3-dual",
+            "machines": { "sut": "cobalt-cloud-lin-server-azl3", "load": "cobalt-cloud-lin-db" },
+            "profiles": { "sut": "cobalt-cloud-lin-server-azure-linux3-app", "load": "cobalt-cloud-lin-db-load" }
+        },
+        {
+            "name": "idna-amd-lin",
+            "machines": { "sut": "idna-amd-lin", "load": "idna-intel-lin" },
+            "profiles": { "sut": "idna-amd-lin-app", "load": "idna-intel-lin-load" }
+        },
+        {
+            "name": "idna-amd-win",
+            "machines": { "sut": "idna-amd-win", "load": "azure2-db" },
+            "profiles": { "sut": "idna-amd-win-app", "load": "azure2-db-load" }
+        },
+        {
+            "name": "idna-intel-lin",
+            "machines": { "sut": "idna-intel-lin", "load": "idna-amd-lin" },
+            "profiles": { "sut": "idna-intel-lin-app", "load": "idna-amd-lin-load" }
+        },
+        {
+            "name": "idna-intel-win",
+            "machines": { "sut": "idna-intel-win", "load": "azure2-db" },
+            "profiles": { "sut": "idna-intel-win-app", "load": "azure2-db-load" }
+        }
+    ],
+    "scenarios": [
+        {
+            "name": "Containers",
+            "template": "containers-scenarios.yml",
+            "type": 3,
+            "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Baselines Database",
+            "template": "baselines-database-scenarios.yml",
+            "type": 3,
+            "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Baselines",
+            "template": "baselines-scenarios.yml",
+            "type": 2,
+            "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3-dual"],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "MVC",
+            "template": "mvc-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends",
+            "template": "trend-scenarios.yml",
+            "type": 2,
+            "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3-dual", "idna-amd-lin", "idna-amd-win", "idna-intel-lin", "idna-intel-win"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends Database",
+            "template": "trend-database-scenarios.yml",
+            "type": 3,
+            "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "estimated_runtime": 15.0
+        }
+    ]
+}
