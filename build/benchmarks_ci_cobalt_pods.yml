@@ -16,108 +16,132 @@ metadata:
   version: "2.0"
   schedule: "0 3/12 * * *"
   queues:
-    - cobalthosted
-    - cobalthosted_azurelinux3
+  - cobalthosted
+  - cobalthosted_azurelinux3
   yaml_generation:
     target_yaml_count: 1
     schedule_offset_hours: 0
 
-# Each pod's `machines` and `profiles` use positional shorthand:
-# 1 entry  = [sut]                 (single-type scenarios)
-# 2 entries = [sut, load]          (dual-type scenarios)
-# 3 entries = [sut, load, db]      (triple-type scenarios)
-# The named-dict form ({sut: ..., load: ..., db: ...}) is still accepted
-# if you ever need to declare just a subset of roles explicitly.
+# Each pod's `machines` and `profiles` are parallel arrays: machines[i]
+# runs profiles[i]. The number of entries decides which scenarios the pod
+# can run:
+#   1 entry   -> SUT only          (single-type scenarios)
+#   2 entries -> SUT + load        (dual-type scenarios)
+#   3 entries -> SUT + load + db   (triple-type scenarios)
 #
 # The "-28" pods reuse the same physical machines as their non-28 siblings
 # (just a different SUT crank profile that pins to 28 cores). The scheduler
 # automatically keeps each physical machine to one stage at a time.
 pods:
-  - name: cobalt-hosted-lin
-    machines: [cobalt-hosted-lin-server, cobalt-hosted-lin-client, cobalt-hosted-lin-db]
-    profiles: [cobalt-hosted-lin-server-app, cobalt-hosted-lin-client-load, cobalt-hosted-lin-db-db]
+- name: cobalt-hosted-lin
+  machines:
+  - cobalt-hosted-lin-server
+  - cobalt-hosted-lin-client
+  - cobalt-hosted-lin-db
+  profiles:
+  - cobalt-hosted-lin-server-app
+  - cobalt-hosted-lin-client-load
+  - cobalt-hosted-lin-db-db
 
-  - name: cobalt-hosted-lin-azl3
-    machines: [cobalt-hosted-lin-server-azl3, cobalt-hosted-lin-client-azl3, cobalt-hosted-lin-db-azl3]
-    profiles: [cobalt-hosted-lin-server-azure-linux3-app, cobalt-hosted-lin-client-azure-linux3-load, cobalt-hosted-lin-db-azure-linux3-db]
+- name: cobalt-hosted-lin-azl3
+  machines:
+  - cobalt-hosted-lin-server-azl3
+  - cobalt-hosted-lin-client-azl3
+  - cobalt-hosted-lin-db-azl3
+  profiles:
+  - cobalt-hosted-lin-server-azure-linux3-app
+  - cobalt-hosted-lin-client-azure-linux3-load
+  - cobalt-hosted-lin-db-azure-linux3-db
 
-  - name: cobalt-hosted-lin-28
-    machines: [cobalt-hosted-lin-server, cobalt-hosted-lin-client, cobalt-hosted-lin-db]
-    profiles: [cobalt-hosted-lin-server-28-app, cobalt-hosted-lin-client-load, cobalt-hosted-lin-db-db]
+- name: cobalt-hosted-lin-28
+  machines:
+  - cobalt-hosted-lin-server
+  - cobalt-hosted-lin-client
+  - cobalt-hosted-lin-db
+  profiles:
+  - cobalt-hosted-lin-server-28-app
+  - cobalt-hosted-lin-client-load
+  - cobalt-hosted-lin-db-db
 
-  - name: cobalt-hosted-lin-azl3-28
-    machines: [cobalt-hosted-lin-server-azl3, cobalt-hosted-lin-client-azl3, cobalt-hosted-lin-db-azl3]
-    profiles: [cobalt-hosted-lin-server-azure-linux3-28-app, cobalt-hosted-lin-client-azure-linux3-load, cobalt-hosted-lin-db-azure-linux3-db]
+- name: cobalt-hosted-lin-azl3-28
+  machines:
+  - cobalt-hosted-lin-server-azl3
+  - cobalt-hosted-lin-client-azl3
+  - cobalt-hosted-lin-db-azl3
+  profiles:
+  - cobalt-hosted-lin-server-azure-linux3-28-app
+  - cobalt-hosted-lin-client-azure-linux3-load
+  - cobalt-hosted-lin-db-azure-linux3-db
 
 scenarios:
-  - name: Containers
-    template: containers-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3]
-    estimated_runtime: 90
+- name: Containers
+  template: containers-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3]
+  estimated_runtime: 90
 
-  - name: PGO
-    template: pgo-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 90
+- name: PGO
+  template: pgo-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 90
 
-  - name: Baselines Database
-    template: baselines-database-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 45
+- name: Baselines Database
+  template: baselines-database-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 45
 
-  - name: Baselines
-    template: baselines-scenarios.yml
-    type: dual
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 30
+- name: Baselines
+  template: baselines-scenarios.yml
+  type: dual
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 30
 
-  - name: Frameworks Database
-    template: frameworks-database-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 20
+- name: Frameworks Database
+  template: frameworks-database-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 20
 
-  - name: MVC
-    template: mvc-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3]
-    estimated_runtime: 20
+- name: MVC
+  template: mvc-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3]
+  estimated_runtime: 20
 
-  - name: NativeAOT
-    template: nativeaot-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 20
+- name: NativeAOT
+  template: nativeaot-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 20
 
-  - name: Trends
-    template: trend-scenarios.yml
-    type: dual
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 20
+- name: Trends
+  template: trend-scenarios.yml
+  type: dual
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 20
 
-  - name: Trends Database
-    template: trend-database-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 15
+- name: Trends Database
+  template: trend-database-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 15
 
-  - name: Crossgen
-    template: crossgen2-scenarios.yml
-    type: dual
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 5
+- name: Crossgen
+  template: crossgen2-scenarios.yml
+  type: dual
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 5
 
-  - name: Frameworks
-    template: frameworks-scenarios.yml
-    type: triple
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 15
+- name: Frameworks
+  template: frameworks-scenarios.yml
+  type: triple
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 15
 
-  - name: GC
-    template: gc-scenarios.yml
-    type: single
-    pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
-    estimated_runtime: 15
+- name: GC
+  template: gc-scenarios.yml
+  type: single
+  pods: [cobalt-hosted-lin, cobalt-hosted-lin-azl3, cobalt-hosted-lin-28, cobalt-hosted-lin-azl3-28]
+  estimated_runtime: 15

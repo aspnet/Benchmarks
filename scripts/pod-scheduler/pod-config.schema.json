@@ -91,48 +91,20 @@
           "minLength": 1
         },
         "machines": {
-          "description": "Physical machine names by role. Two pods that share a physical machine cannot run in the same stage. Accepts either a named-key object {sut, load, db} or a positional list [sut] / [sut, load] / [sut, load, db].",
-          "oneOf": [
-            {
-              "type": "object",
-              "required": ["sut"],
-              "additionalProperties": false,
-              "properties": {
-                "sut":  { "type": "string", "minLength": 1, "description": "System Under Test machine. Required." },
-                "load": { "type": "string", "minLength": 1, "description": "Load generator machine. Required for dual/triple scenarios." },
-                "db":   { "type": "string", "minLength": 1, "description": "Database machine. Required for triple scenarios." }
-              }
-            },
-            {
-              "type": "array",
-              "description": "Positional shorthand: [sut], [sut, load], or [sut, load, db]. Length must match the corresponding profiles array.",
-              "items": { "type": "string", "minLength": 1 },
-              "minItems": 1,
-              "maxItems": 3
-            }
-          ]
+          "type": "array",
+          "description": "Physical machines used by this pod, paired position-by-position with the profiles array. Two pods that share a physical machine cannot run in the same stage.",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true
         },
         "profiles": {
-          "description": "Crank profile name for each role. Same shape and length as machines (named-key object or positional list of 1-3).",
-          "oneOf": [
-            {
-              "type": "object",
-              "required": ["sut"],
-              "additionalProperties": false,
-              "properties": {
-                "sut":  { "type": "string", "minLength": 1 },
-                "load": { "type": "string", "minLength": 1 },
-                "db":   { "type": "string", "minLength": 1 }
-              }
-            },
-            {
-              "type": "array",
-              "description": "Positional shorthand: [sut], [sut, load], or [sut, load, db]. Length must match the corresponding machines array.",
-              "items": { "type": "string", "minLength": 1 },
-              "minItems": 1,
-              "maxItems": 3
-            }
-          ]
+          "type": "array",
+          "description": "Crank profile names, paired position-by-position with the machines array. The Nth entry's role is the Nth of [sut, load, db]; a 1-entry list declares a SUT-only pod, 2 entries adds a load generator, 3 entries adds a database.",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true
         }
       }
     },

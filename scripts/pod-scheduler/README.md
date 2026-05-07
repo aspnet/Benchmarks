@@ -92,12 +92,19 @@ metadata:
     service_bus_namespace: aspnetbenchmarks
 
 pods:
-  - name: gold-lin
-    # gold-lin and gold-win share gold-db; the scheduler keeps them out of
-    # the same stage when both run a triple-type scenario. Pods use
-    # positional shorthand: [sut], [sut, load], or [sut, load, db].
-    machines: [gold-lin, gold-load,  gold-db]
-    profiles: [gold-lin-app, gold-load-load, gold-db-db]
+- name: gold-lin
+  # gold-lin and gold-win share gold-db; the scheduler keeps them out of
+  # the same stage when both run a triple-type scenario. machines[i]
+  # pairs with profiles[i]; length determines role count (1=SUT only,
+  # 2=SUT+load, 3=SUT+load+db).
+  machines:
+  - gold-lin
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-app
+  - gold-load-load
+  - gold-db-db
 
 scenarios:
   - name: Baselines
@@ -137,41 +144,41 @@ grounding so agents are far less likely to hallucinate keys or invalid
 
 ### Pod Definition
 
-A pod has a `name`, a `machines` block, and a `profiles` block. Each block can be written in two forms:
+A pod has a `name`, a `machines` list, and a `profiles` list. They are parallel arrays: `machines[i]` runs `profiles[i]`. The number of entries decides which scenarios the pod can run:
 
-**Positional shorthand (recommended for new pods):** a list of 1-3 entries interpreted as `[sut]`, `[sut, load]`, or `[sut, load, db]`.
-
-```yaml
-- name: gold-lin
-  machines: [gold-lin, gold-load, gold-db]
-  profiles: [gold-lin-app, gold-load-load, gold-db-db]
-```
-
-**Named-key form** (still accepted, useful when you only want a subset of roles or want to be very explicit about role mapping for a pod that re-uses machines across roles):
+| Entries | Roles | Eligible scenario types |
+|---------|-------|-------------------------|
+| 1 | SUT only | `single` |
+| 2 | SUT + load | `single`, `dual` |
+| 3 | SUT + load + db | `single`, `dual`, `triple` |
 
 ```yaml
 - name: gold-lin
-  machines: { sut: gold-lin, load: gold-load, db: gold-db }
-  profiles: { sut: gold-lin-app, load: gold-load-load, db: gold-db-db }
+  # gold-lin and gold-win share gold-db; the scheduler keeps them out of
+  # the same stage when both run a triple-type scenario.
+  machines:
+  - gold-lin
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-app
+  - gold-load-load
+  - gold-db-db
 ```
-
-`machines` and `profiles` for a single pod must use the same shape and declare the same set of roles. Mixing list/dict or mismatched lengths raises `ConfigError` at load time.
 
 | Field | Description |
 |-------|-------------|
 | `name` | Unique identifier for the pod |
-| `machines` | Physical machine names per role; positional list `[sut, load?, db?]` or named-key dict |
-| `profiles` | Crank profile names per role; same shape and roles as `machines` |
+| `machines` | Physical machines used by this pod (1-3 unique strings) |
+| `profiles` | Crank profile names paired with `machines` by position (same length, all unique) |
 
-**Role semantics:**
+The loader enforces:
 
-| Role | Required for | Description |
-|------|--------------|-------------|
-| `sut` | All scenarios | System Under Test machine |
-| `load` | dual + triple | Load generator machine |
-| `db` | triple | Database machine |
+- `len(machines) == len(profiles)` — each machine pairs with exactly one profile.
+- All entries are non-empty strings; bools are rejected (YAML's `yes`/`no` trap).
+- Within a single pod, machines are unique and profiles are unique.
 
-A pod that omits `load` cannot run dual or triple scenarios; a pod that omits `db` cannot run triple scenarios. The scheduler validates this at load time (strict mode).
+The role of slot `i` is determined by length: a pod with three entries has `[sut, load, db]`; with two it has `[sut, load]`; with one it's SUT-only. Across pods, the same physical machine may legitimately play different roles (e.g., `azure2-db` is the db machine for `azure2-amd64` but the load machine for `idna-amd-win`); only the per-pod pairing is enforced.
 
 ### Scenario Definition
 
@@ -219,12 +226,24 @@ create separate pods for each. They can share load/DB:
 
 ```yaml
 - name: gold-lin-1
-  machines: [gold-lin-1, gold-load, gold-db]
-  profiles: [gold-lin-1-app, gold-load-load, gold-db-db]
+  machines:
+  - gold-lin-1
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-1-app
+  - gold-load-load
+  - gold-db-db
 
 - name: gold-lin-2
-  machines: [gold-lin-2, gold-load, gold-db]
-  profiles: [gold-lin-2-app, gold-load-load, gold-db-db]
+  machines:
+  - gold-lin-2
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-2-app
+  - gold-load-load
+  - gold-db-db
 ```
 
 The scheduler automatically prevents them from running simultaneously when they

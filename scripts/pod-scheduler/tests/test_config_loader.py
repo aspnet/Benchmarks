@@ -19,8 +19,8 @@ _BASE = {
     "pods": [
         {
             "name": "p1",
-            "machines": {"sut": "m1"},
-            "profiles": {"sut": "m1-app"},
+            "machines": ["m1"],
+            "profiles": ["m1-app"],
         }
     ],
     "scenarios": [
@@ -134,11 +134,11 @@ class TestLoadConfig(unittest.TestCase):
                 payload = json.loads(json.dumps(_BASE))
                 payload["scenarios"][0]["type"] = raw
                 if raw.lower() in ("dual", "triple"):
-                    payload["pods"][0]["machines"]["load"] = "m2"
-                    payload["pods"][0]["profiles"]["load"] = "m2-load"
+                    payload["pods"][0]["machines"].append("m2")
+                    payload["pods"][0]["profiles"].append("m2-load")
                 if raw.lower() == "triple":
-                    payload["pods"][0]["machines"]["db"] = "m3"
-                    payload["pods"][0]["profiles"]["db"] = "m3-db"
+                    payload["pods"][0]["machines"].append("m3")
+                    payload["pods"][0]["profiles"].append("m3-db")
                 path = _write(tmp, payload)
                 cfg = load_config(path)
                 self.assertEqual(
@@ -238,21 +238,22 @@ class TestLoadConfig(unittest.TestCase):
             cfg = load_config(path)
             self.assertEqual(cfg.scenarios[0].type.value, 1)
 
-    def test_unknown_extension_rejected(self):
+    def test_unknown_extension_loads_via_yaml(self):
+        # The loader no longer dispatches on extension; YAML parses any
+        # text file (including .txt) and JSON-as-YAML works transparently.
         with tempfile.TemporaryDirectory() as tmp:
             payload = json.loads(json.dumps(_BASE))
             path = os.path.join(tmp, "cfg.txt")
             with open(path, "w", encoding="utf-8") as f:
                 yaml.safe_dump(payload, f)
-            with self.assertRaises(ConfigError):
-                load_config(path)
+            cfg = load_config(path)
+            self.assertIn("p1", cfg.pods)
 
 
-class TestRoleShorthand(unittest.TestCase):
-    """Positional shorthand form for ``machines`` / ``profiles``."""
+class TestPodRoles(unittest.TestCase):
+    """Parallel-array form for ``machines`` / ``profiles``."""
 
-    def _payload(self):
-        # Triple-pod payload using shorthand throughout.
+    def _payload(self, machines, profiles, scenario_type="triple"):
         return {
             "metadata": {
                 "name": "t",
@@ -260,116 +261,112 @@ class TestRoleShorthand(unittest.TestCase):
                 "queues": ["a", "b"],
             },
             "pods": [
-                {
-                    "name": "p1",
-                    "machines": ["m1", "m2", "m3"],
-                    "profiles": ["m1-app", "m2-load", "m3-db"],
-                }
+                {"name": "p1", "machines": machines, "profiles": profiles},
             ],
             "scenarios": [
                 {
                     "name": "S",
                     "template": "s.yml",
-                    "type": "triple",
+                    "type": scenario_type,
                     "pods": ["p1"],
                 }
             ],
         }
 
-    def test_list_triple_happy_path(self):
+    def test_triple_happy_path(self):
+        payload = self._payload(["m1", "m2", "m3"], ["m1-app", "m2-load", "m3-db"])
         with tempfile.TemporaryDirectory() as tmp:
-            cfg = load_config(_write(tmp, self._payload()))
+            cfg = load_config(_write(tmp, payload))
             pod = cfg.pods["p1"]
-            self.assertEqual(pod.sut, "m1")
-            self.assertEqual(pod.load, "m2")
-            self.assertEqual(pod.db, "m3")
-            self.assertEqual(pod.sut_profile, "m1-app")
-            self.assertEqual(pod.load_profile, "m2-load")
-            self.assertEqual(pod.db_profile, "m3-db")
+            self.assertEqual((pod.sut, pod.load, pod.db), ("m1", "m2", "m3"))
+            self.assertEqual(
+                (pod.sut_profile, pod.load_profile, pod.db_profile),
+                ("m1-app", "m2-load", "m3-db"),
+            )
 
-    def test_list_dual_happy_path(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = ["m1", "m2"]
-        payload["pods"][0]["profiles"] = ["m1-app", "m2-load"]
-        payload["scenarios"][0]["type"] = "dual"
+    def test_dual_happy_path(self):
+        payload = self._payload(["m1", "m2"], ["m1-app", "m2-load"], "dual")
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(_write(tmp, payload))
             pod = cfg.pods["p1"]
             self.assertEqual((pod.sut, pod.load, pod.db), ("m1", "m2", None))
 
-    def test_list_single_happy_path(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = ["m1"]
-        payload["pods"][0]["profiles"] = ["m1-app"]
-        payload["scenarios"][0]["type"] = "single"
+    def test_single_happy_path(self):
+        payload = self._payload(["m1"], ["m1-app"], "single")
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(_write(tmp, payload))
             pod = cfg.pods["p1"]
             self.assertEqual((pod.sut, pod.load, pod.db), ("m1", None, None))
 
-    def test_dict_form_still_accepted(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = {"sut": "m1", "load": "m2", "db": "m3"}
-        payload["pods"][0]["profiles"] = {
-            "sut": "m1-app", "load": "m2-load", "db": "m3-db",
-        }
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg = load_config(_write(tmp, payload))
-            pod = cfg.pods["p1"]
-            self.assertEqual(pod.db, "m3")
-            self.assertEqual(pod.db_profile, "m3-db")
-
-    def test_mixed_shape_rejected(self):
-        # machines list, profiles dict — ambiguous role mapping.
-        payload = self._payload()
-        payload["pods"][0]["profiles"] = {
-            "sut": "m1-app", "load": "m2-load", "db": "m3-db",
-        }
+    def test_length_mismatch_rejected(self):
+        # 3 machines, 2 profiles — each machine must pair with one profile.
+        payload = self._payload(["m1", "m2", "m3"], ["m1-app", "m2-load"])
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ConfigError):
                 load_config(_write(tmp, payload))
 
-    def test_length_mismatch_rejected(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = ["m1", "m2", "m3"]
-        payload["pods"][0]["profiles"] = ["m1-app", "m2-load"]
+    def test_machines_must_be_unique(self):
+        # Same machine listed twice in one pod — ambiguous role mapping.
+        payload = self._payload(["m1", "m1"], ["m1-app", "m1-load"], "dual")
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+    def test_profiles_must_be_unique(self):
+        payload = self._payload(["m1", "m2"], ["m1-app", "m1-app"], "dual")
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ConfigError):
                 load_config(_write(tmp, payload))
 
     def test_empty_list_rejected(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = []
-        payload["pods"][0]["profiles"] = []
+        payload = self._payload([], [])
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ConfigError):
                 load_config(_write(tmp, payload))
 
     def test_too_long_list_rejected(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = ["m1", "m2", "m3", "m4"]
-        payload["pods"][0]["profiles"] = ["m1-app", "m2-load", "m3-db", "m4"]
+        payload = self._payload(
+            ["m1", "m2", "m3", "m4"],
+            ["p1", "p2", "p3", "p4"],
+        )
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ConfigError):
                 load_config(_write(tmp, payload))
 
-    def test_bool_entry_in_shorthand_rejected(self):
-        # YAML's yes/no/true/false coerce to bool; reject in role lists too.
-        payload = self._payload()
-        payload["pods"][0]["machines"] = ["m1", True, "m3"]
+    def test_dict_form_rejected(self):
+        # Old named-key form is no longer accepted.
+        payload = self._payload(
+            {"sut": "m1", "load": "m2"},
+            {"sut": "m1-app", "load": "m2-load"},
+            "dual",
+        )
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ConfigError):
                 load_config(_write(tmp, payload))
 
-    def test_unknown_named_role_rejected(self):
-        payload = self._payload()
-        payload["pods"][0]["machines"] = {
-            "sut": "m1", "loadgen": "m2",  # 'loadgen' is not a valid role
-        }
-        payload["pods"][0]["profiles"] = {"sut": "m1-app"}
+    def test_bool_entry_in_list_rejected(self):
+        # YAML's yes/no/true/false coerce to bool; reject in role lists.
+        payload = self._payload(["m1", True], ["m1-app", "m2-load"], "dual")
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ConfigError):
                 load_config(_write(tmp, payload))
+
+    def test_global_machine_can_have_different_profiles_across_pods(self):
+        # The same physical machine can legitimately serve different
+        # profiles in different pods (e.g., 'azure2-db' is db for one pod
+        # and load for another). The loader does NOT enforce a global
+        # 1:1 machine->profile invariant; only per-pod pairing.
+        payload = self._payload(["m1", "shared"], ["m1-app", "shared-db"], "dual")
+        payload["pods"].append({
+            "name": "p2",
+            "machines": ["m9", "shared"],
+            "profiles": ["m9-app", "shared-load"],
+        })
+        payload["scenarios"][0]["pods"] = ["p1", "p2"]
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(_write(tmp, payload))
+            self.assertEqual(cfg.pods["p1"].load_profile, "shared-db")
+            self.assertEqual(cfg.pods["p2"].load_profile, "shared-load")
 
 
 if __name__ == "__main__":
