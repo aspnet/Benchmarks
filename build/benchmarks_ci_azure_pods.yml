@@ -1,0 +1,104 @@
+# yaml-language-server: $schema=../scripts/pod-scheduler/pod-config.schema.json
+
+# Azure CI pod-scheduler config.
+#
+# Covers Azure cloud pods plus the merged eastus2 cobalt-cloud pods (folded
+# in here when their dedicated pipeline was retired). Generates a single
+# ./benchmarks-ci-azure.yml.
+#
+# Edit this file then regenerate from the repo root:
+#   python ./scripts/pod-scheduler/main.py \
+#       --config ./build/benchmarks_ci_azure_pods.yml \
+#       --base-name benchmarks-ci-azure --yaml-output ./build
+metadata:
+  name: Azure CI Benchmarks Configuration
+  description: Pod-based scheduling for Azure CI benchmarks (includes cobalt cloud from eastus2)
+  version: "2.1"
+  schedule: "0 2/12 * * *"
+  queues:
+    - azure
+    - azurearm64
+  yaml_generation:
+    target_yaml_count: 1
+    schedule_offset_hours: 0
+
+pods:
+  - name: azure-arm64
+    machines: { sut: azure-server-arm64,  load: azure-client,  db: azure-db }
+    profiles: { sut: azure-server-arm64-app, load: azure-client-load, db: azure-db-db }
+
+  - name: azure2-amd64
+    machines: { sut: azure2-server-amd64, load: azure2-client, db: azure2-db }
+    profiles: { sut: azure2-server-amd64-app, load: azure2-client-load, db: azure2-db-db }
+
+  # eastus2 cobalt-cloud pods, merged in when the dedicated pipeline was retired.
+  - name: cobalt-cloud-lin
+    machines: { sut: cobalt-cloud-lin-server, load: cobalt-cloud-lin-client, db: cobalt-cloud-lin-db }
+    profiles: { sut: cobalt-cloud-lin-server-app, load: cobalt-cloud-lin-client-load, db: cobalt-cloud-lin-db-db }
+
+  - name: cobalt-cloud-lin-azl3
+    # Same load + db machines as cobalt-cloud-lin but a different SUT image
+    # (Azure Linux 3). Cannot share a stage with cobalt-cloud-lin triples.
+    machines: { sut: cobalt-cloud-lin-server-azl3, load: cobalt-cloud-lin-client, db: cobalt-cloud-lin-db }
+    profiles: { sut: cobalt-cloud-lin-server-azure-linux3-app, load: cobalt-cloud-lin-client-load, db: cobalt-cloud-lin-db-db }
+
+  - name: cobalt-cloud-lin-azl3-dual
+    # Dual-only variant: re-uses the db box as the load generator so we can
+    # run dual scenarios without needing a separate load machine.
+    machines: { sut: cobalt-cloud-lin-server-azl3, load: cobalt-cloud-lin-db }
+    profiles: { sut: cobalt-cloud-lin-server-azure-linux3-app, load: cobalt-cloud-lin-db-load }
+
+  - name: idna-amd-lin
+    # idna-amd-lin and idna-intel-lin are mutually each other's load box.
+    machines: { sut: idna-amd-lin, load: idna-intel-lin }
+    profiles: { sut: idna-amd-lin-app, load: idna-intel-lin-load }
+
+  - name: idna-amd-win
+    # Borrows azure2-db as the load box for cross-cluster idna jobs.
+    machines: { sut: idna-amd-win, load: azure2-db }
+    profiles: { sut: idna-amd-win-app, load: azure2-db-load }
+
+  - name: idna-intel-lin
+    machines: { sut: idna-intel-lin, load: idna-amd-lin }
+    profiles: { sut: idna-intel-lin-app, load: idna-amd-lin-load }
+
+  - name: idna-intel-win
+    machines: { sut: idna-intel-win, load: azure2-db }
+    profiles: { sut: idna-intel-win-app, load: azure2-db-load }
+
+scenarios:
+  - name: Containers
+    template: containers-scenarios.yml
+    type: triple
+    pods: [azure-arm64, azure2-amd64, cobalt-cloud-lin, cobalt-cloud-lin-azl3]
+    estimated_runtime: 90
+
+  - name: Baselines Database
+    template: baselines-database-scenarios.yml
+    type: triple
+    pods: [azure-arm64, azure2-amd64, cobalt-cloud-lin, cobalt-cloud-lin-azl3]
+    estimated_runtime: 45
+
+  - name: Baselines
+    template: baselines-scenarios.yml
+    type: dual
+    pods: [azure-arm64, azure2-amd64, cobalt-cloud-lin, cobalt-cloud-lin-azl3-dual]
+    estimated_runtime: 30
+
+  - name: MVC
+    template: mvc-scenarios.yml
+    type: triple
+    pods: [cobalt-cloud-lin, cobalt-cloud-lin-azl3]
+    estimated_runtime: 20
+
+  - name: Trends
+    template: trend-scenarios.yml
+    type: dual
+    pods: [azure-arm64, azure2-amd64, cobalt-cloud-lin, cobalt-cloud-lin-azl3-dual, idna-amd-lin, idna-amd-win, idna-intel-lin, idna-intel-win]
+    estimated_runtime: 20
+
+  - name: Trends Database
+    template: trend-database-scenarios.yml
+    type: triple
+    pods: [azure-arm64, azure2-amd64, cobalt-cloud-lin, cobalt-cloud-lin-azl3]
+    estimated_runtime: 15

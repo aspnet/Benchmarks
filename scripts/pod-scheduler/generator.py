@@ -114,7 +114,7 @@ def _render_yaml(
     else:
         lines.append(
             "#   python ./scripts/pod-scheduler/main.py "
-            "--config ./build/<config>.json "
+            "--config ./build/<config>.yml "
             "--yaml-output ./build"
         )
     lines.append("")
@@ -209,9 +209,9 @@ def generate_yamls(
     unique within the produced YAML; collisions raise GeneratorError instead
     of producing AzDO-invalid output.
 
-    ``source_config`` is the path to the JSON config that produced the
-    schedule. When provided, it's embedded in the generated YAML header so
-    each file documents the exact command needed to regenerate it.
+    ``source_config`` is the path to the config that produced the schedule.
+    When provided, it's embedded in the generated YAML header so each file
+    documents the exact command needed to regenerate it.
     """
     os.makedirs(output_dir, exist_ok=True)
     output_files = []

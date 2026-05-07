@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Set
 # none of its own. Lives here so models, scheduler, and tests share one source.
 DEFAULT_RUNTIMES: Dict["ScenarioType", float] = {}  # populated below
 
-# Pipeline plumbing defaults. Override in JSON metadata.pipeline.* if needed.
+# Pipeline plumbing defaults. Override in metadata.pipeline.* in the config.
 DEFAULT_PIPELINE_POOL = "server"
 DEFAULT_PIPELINE_CONNECTION = "ASPNET Benchmarks Service Bus"
 DEFAULT_PIPELINE_NAMESPACE = "aspnetbenchmarks"
@@ -183,7 +183,7 @@ class PipelineSettings:
 
 @dataclass
 class ScheduleConfig:
-    """Top-level configuration loaded from JSON."""
+    """Top-level configuration loaded from a YAML or JSON file."""
     name: str
     schedule: str
     queues: List[str]

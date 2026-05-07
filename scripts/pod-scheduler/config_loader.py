@@ -1,10 +1,17 @@
 """
-JSON configuration loader for pod-based scheduling.
+Configuration loader for pod-based scheduling.
+
+Accepts YAML (`.yml`/`.yaml`) and JSON (`.json`) files. YAML is preferred so
+configs can carry inline comments; JSON is supported for back-compat. The
+file format is dispatched purely on extension.
 """
 
 import json
+import os
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Union
+
+import yaml
 
 from models import (
     PipelineSettings,
@@ -16,10 +23,21 @@ from models import (
 
 
 class ConfigError(ValueError):
-    """Raised when a JSON config is malformed or self-inconsistent."""
+    """Raised when a config is malformed or self-inconsistent."""
 
 
 _CRON_HOUR_RE = re.compile(r"^\d+(/\d+)?$")
+
+# Accepted spellings for ``scenario.type``. Strings (case-insensitive) are the
+# preferred form; integers stay supported so legacy configs keep loading.
+_SCENARIO_TYPE_ALIASES: Dict[Union[str, int], ScenarioType] = {
+    "single": ScenarioType.SINGLE,
+    "dual":   ScenarioType.DUAL,
+    "triple": ScenarioType.TRIPLE,
+    1:        ScenarioType.SINGLE,
+    2:        ScenarioType.DUAL,
+    3:        ScenarioType.TRIPLE,
+}
 
 
 def _require(node: Dict[str, Any], key: str, context: str) -> Any:
@@ -43,10 +61,58 @@ def _validate_cron(schedule: str) -> None:
         )
 
 
-def load_config(path: str) -> ScheduleConfig:
-    """Load and validate a pod-scheduler JSON configuration file."""
+def _parse_scenario_type(raw: Any, scenario_name: str) -> ScenarioType:
+    """Resolve a scenario type from string, int, or ScenarioType.
+
+    Accepts ``single``/``dual``/``triple`` (case-insensitive) or ``1``/``2``/``3``.
+    Bools are rejected explicitly because YAML happily turns ``yes``/``no``
+    into bools, which would otherwise quietly resolve to ``1``/``0``.
+    """
+    if isinstance(raw, ScenarioType):
+        return raw
+    if isinstance(raw, bool):
+        raise ConfigError(
+            f"scenario '{scenario_name}' has invalid type {raw!r}; "
+            f"use 'single', 'dual', or 'triple' (or 1/2/3)"
+        )
+    key: Any = raw
+    if isinstance(raw, str):
+        key = raw.strip().lower()
+    if key not in _SCENARIO_TYPE_ALIASES:
+        raise ConfigError(
+            f"scenario '{scenario_name}' has invalid type {raw!r}; "
+            f"use 'single', 'dual', or 'triple' (or 1/2/3)"
+        )
+    return _SCENARIO_TYPE_ALIASES[key]
+
+
+def _load_raw(path: str) -> Any:
+    """Read the config file as a Python dict, dispatching on extension."""
+    ext = os.path.splitext(path)[1].lower()
     with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+        text = f.read()
+    if ext in (".yml", ".yaml"):
+        try:
+            return yaml.safe_load(text)
+        except yaml.YAMLError as exc:
+            raise ConfigError(f"Failed to parse YAML config {path}: {exc}")
+    if ext == ".json":
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ConfigError(f"Failed to parse JSON config {path}: {exc}")
+    raise ConfigError(
+        f"Unsupported config extension {ext!r}; expected .yml, .yaml, or .json"
+    )
+
+
+def load_config(path: str) -> ScheduleConfig:
+    """Load and validate a pod-scheduler configuration file (YAML or JSON)."""
+    data = _load_raw(path)
+    if not isinstance(data, dict):
+        raise ConfigError(
+            f"Config root must be a mapping, got {type(data).__name__}"
+        )
 
     metadata = _require(data, "metadata", "config root")
     schedule = _require(metadata, "schedule", "metadata")
@@ -113,10 +179,11 @@ def load_config(path: str) -> ScheduleConfig:
                 raise ConfigError(
                     f"scenario '{name}' has non-positive timeout {timeout}"
                 )
+        raw_type = _require(sc_data, "type", f"scenario '{name}'")
         scenarios.append(Scenario(
             name=name,
             template=_require(sc_data, "template", f"scenario '{name}'"),
-            type=ScenarioType(_require(sc_data, "type", f"scenario '{name}'")),
+            type=_parse_scenario_type(raw_type, name),
             pods=list(scenario_pods),
             estimated_runtime=float(runtime_raw) if runtime_raw else 0.0,
             timeout=timeout,

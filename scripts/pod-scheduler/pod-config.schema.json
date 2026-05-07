@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/pod-scheduler/pod-config.schema.json",
+  "title": "Pod Scheduler Config",
+  "description": "Configuration for the pod-based crank scheduler. Defines the cron schedule, available worker queues, machine pods, and benchmark scenarios. The scheduler expands every (scenario x pod) combination into runs, packs them into stages so no physical machine is double-booked, and emits an Azure DevOps pipeline YAML.",
+  "type": "object",
+  "required": ["metadata", "pods", "scenarios"],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": { "$ref": "#/$defs/metadata" },
+    "pods": {
+      "type": "array",
+      "description": "All available machine pods. Each pod is a fixed group of machines (SUT + optional load + optional DB) that always run together.",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/pod" }
+    },
+    "scenarios": {
+      "type": "array",
+      "description": "Benchmark scenarios to run. Each scenario targets one or more pods.",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/scenario" }
+    }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "required": ["name", "schedule", "queues"],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name shown in the schedule summary."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional free-form description."
+        },
+        "version": {
+          "type": "string",
+          "description": "Optional config version tag."
+        },
+        "schedule": {
+          "type": "string",
+          "description": "5-field cron expression. The hour field must be a single integer or 'H/N' (no lists/ranges/'*') so split YAMLs can offset the hour deterministically.",
+          "pattern": "^[^ ]+ \\d+(/\\d+)? [^ ]+ [^ ]+ [^ ]+$"
+        },
+        "queues": {
+          "type": "array",
+          "description": "Service-bus queue names. The Nth run in a stage is dispatched to queues[N % len(queues)].",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "yaml_generation": {
+          "type": "object",
+          "description": "Controls how the schedule is split across multiple YAML files.",
+          "additionalProperties": false,
+          "properties": {
+            "target_yaml_count": {
+              "type": "integer",
+              "description": "Number of pipeline YAML files to produce. Use >1 to spread runtime across separate scheduled pipelines.",
+              "minimum": 1
+            },
+            "schedule_offset_hours": {
+              "type": "integer",
+              "description": "Hours to offset the cron between split YAMLs. The Nth split shifts the hour field by N * schedule_offset_hours.",
+              "minimum": 0
+            }
+          }
+        },
+        "pipeline": {
+          "type": "object",
+          "description": "Optional overrides for pipeline-level plumbing rendered into the YAML.",
+          "additionalProperties": false,
+          "properties": {
+            "pool":                   { "type": "string" },
+            "service_bus_connection": { "type": "string" },
+            "service_bus_namespace":  { "type": "string" }
+          }
+        }
+      }
+    },
+    "pod": {
+      "type": "object",
+      "required": ["name", "machines", "profiles"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique pod identifier referenced by scenarios.pods.",
+          "minLength": 1
+        },
+        "machines": {
+          "type": "object",
+          "description": "Physical machine names by role. Two pods that share a physical machine cannot run in the same stage.",
+          "required": ["sut"],
+          "additionalProperties": false,
+          "properties": {
+            "sut":  { "type": "string", "description": "System Under Test machine. Required." },
+            "load": { "type": "string", "description": "Load generator machine. Required for dual/triple scenarios." },
+            "db":   { "type": "string", "description": "Database machine. Required for triple scenarios." }
+          }
+        },
+        "profiles": {
+          "type": "object",
+          "description": "Crank profile name for each role.",
+          "required": ["sut"],
+          "additionalProperties": false,
+          "properties": {
+            "sut":  { "type": "string" },
+            "load": { "type": "string" },
+            "db":   { "type": "string" }
+          }
+        }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["name", "template", "type", "pods"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name. Combined with the pod name to form the AzDO job id (after sanitization).",
+          "minLength": 1
+        },
+        "template": {
+          "type": "string",
+          "description": "Path to the AzDO scenario template invoked by every run of this scenario (relative to the build/ directory)."
+        },
+        "type": {
+          "description": "Number of machine roles required. Use 'single' (SUT only), 'dual' (SUT+load), or 'triple' (SUT+load+db). Integer 1/2/3 is also accepted for back-compat.",
+          "oneOf": [
+            { "type": "string", "enum": ["single", "dual", "triple"] },
+            { "type": "integer", "enum": [1, 2, 3] }
+          ]
+        },
+        "pods": {
+          "type": "array",
+          "description": "Pods this scenario targets. Each entry must match a pods[].name. Duplicates are rejected.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "estimated_runtime": {
+          "type": "number",
+          "description": "Estimated runtime in minutes. Used by the scheduler's longest-job-first packing.",
+          "minimum": 0
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Optional explicit AzDO timeoutInMinutes override. When unset, the generator picks max(120, min(240, ceil(2 * estimated_runtime))).",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

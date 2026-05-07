@@ -7,8 +7,8 @@ pipeline YAML files. Pods define fixed machine groupings (SUT + load + DB),
 and the scheduler ensures no physical machine is double-booked per stage.
 
 Usage:
-    python main.py --config ./build/benchmarks_ci_pods.json
-    python main.py --config ./build/benchmarks_ci_pods.json \\
+    python main.py --config ./build/benchmarks_ci_pods.yml
+    python main.py --config ./build/benchmarks_ci_pods.yml \\
         --yaml-output ./build
 """
 
@@ -141,7 +141,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--config", required=True,
-        help="Path to JSON configuration file"
+        help="Path to YAML or JSON configuration file"
     )
     parser.add_argument(
         "--yaml-output",

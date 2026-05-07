@@ -63,17 +63,17 @@ class TestFormatSourcePath(unittest.TestCase):
         repo_root = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "..", "..", "..")
         )
-        candidate = os.path.join(repo_root, "build", "benchmarks_ci_pods.json")
+        candidate = os.path.join(repo_root, "build", "benchmarks_ci_pods.yml")
         self.assertEqual(
             _format_source_path(candidate),
-            "./build/benchmarks_ci_pods.json",
+            "./build/benchmarks_ci_pods.yml",
         )
 
     def test_outside_repo_falls_back_to_basename(self):
         # Use a path that's definitely outside the repo by jumping above root.
-        far = os.path.abspath(os.sep + "definitely-not-in-repo.json")
+        far = os.path.abspath(os.sep + "definitely-not-in-repo.yml")
         self.assertEqual(
-            _format_source_path(far), "./definitely-not-in-repo.json"
+            _format_source_path(far), "./definitely-not-in-repo.yml"
         )
 
 
