@@ -15,6 +15,16 @@ cannot run in the same stage. The scheduler handles this automatically.
 
 ## Quick Start
 
+### Prerequisites
+
+The scheduler needs Python 3.10+ and PyYAML. From the repo root:
+
+```bash
+python -m pip install -r scripts/pod-scheduler/requirements.txt
+```
+
+### Run
+
 Run from the repository root:
 
 ```bash
@@ -213,6 +223,7 @@ share load/DB machines.
 | `config_loader.py` | YAML/JSON config parser + validation |
 | `generator.py` | YAML generation |
 | `pod-config.schema.json` | JSON Schema describing the config; consumed by editor LSPs |
+| `requirements.txt` | Runtime Python dependencies (PyYAML) |
 | `tests/` | Unit + snapshot tests (`python -m unittest`) |
 
 This is intentionally script-style: the modules use absolute imports

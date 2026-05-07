@@ -9,7 +9,7 @@ file format is dispatched purely on extension.
 import json
 import os
 import re
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import yaml
 
@@ -38,6 +38,47 @@ _SCENARIO_TYPE_ALIASES: Dict[Union[str, int], ScenarioType] = {
     2:        ScenarioType.DUAL,
     3:        ScenarioType.TRIPLE,
 }
+
+
+def _reject_bool(raw: Any, context: str) -> None:
+    """Reject Python bools in numeric fields.
+
+    PyYAML's ``safe_load`` happily turns ``yes``/``no``/``true``/``false``/
+    ``on``/``off`` into Python bools, and because ``bool`` is a subclass of
+    ``int`` those values would otherwise sail through ``int(...)`` /
+    ``float(...)`` coercions and silently resolve to ``1`` or ``0``.
+    """
+    if isinstance(raw, bool):
+        raise ConfigError(
+            f"{context} must not be a boolean (YAML coerces "
+            f"yes/no/true/false into bools); got {raw!r}"
+        )
+
+
+def _coerce_int(raw: Any, *, context: str, minimum: Optional[int] = None) -> int:
+    """Parse a value as an integer with bool/range checking."""
+    _reject_bool(raw, context)
+    if isinstance(raw, int):
+        value = raw
+    else:
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            raise ConfigError(f"{context} must be an integer, got {raw!r}")
+    if minimum is not None and value < minimum:
+        raise ConfigError(f"{context} must be >= {minimum}, got {value}")
+    return value
+
+
+def _coerce_float(raw: Any, *, context: str, minimum: Optional[float] = None) -> float:
+    """Parse a value as a float with bool/range checking."""
+    _reject_bool(raw, context)
+    if not isinstance(raw, (int, float)):
+        raise ConfigError(f"{context} must be a number, got {raw!r}")
+    value = float(raw)
+    if minimum is not None and value < minimum:
+        raise ConfigError(f"{context} must be >= {minimum}, got {value}")
+    return value
 
 
 def _require(node: Dict[str, Any], key: str, context: str) -> Any:
@@ -124,7 +165,19 @@ def load_config(path: str) -> ScheduleConfig:
     if len(queues) != len(set(queues)):
         raise ConfigError(f"metadata.queues contains duplicates: {queues}")
 
-    yaml_gen = metadata.get("yaml_generation", {})
+    yaml_gen = metadata.get("yaml_generation", {}) or {}
+    target_yaml_raw = yaml_gen.get("target_yaml_count", 1)
+    target_yaml_count = _coerce_int(
+        target_yaml_raw,
+        context="metadata.yaml_generation.target_yaml_count",
+        minimum=1,
+    )
+    offset_raw = yaml_gen.get("schedule_offset_hours", 6)
+    schedule_offset_hours = _coerce_int(
+        offset_raw,
+        context="metadata.yaml_generation.schedule_offset_hours",
+        minimum=0,
+    )
 
     pipeline_meta = metadata.get("pipeline", {})
     pipeline = PipelineSettings(
@@ -171,21 +224,31 @@ def load_config(path: str) -> ScheduleConfig:
             raise ConfigError(
                 f"scenario '{name}' lists duplicate pods: {dupes}"
             )
-        runtime_raw = sc_data.get("estimated_runtime") or 0
-        timeout = sc_data.get("timeout")
-        if timeout is not None:
-            timeout = int(timeout)
-            if timeout <= 0:
-                raise ConfigError(
-                    f"scenario '{name}' has non-positive timeout {timeout}"
-                )
+        runtime_raw = sc_data.get("estimated_runtime")
+        if runtime_raw is None or runtime_raw == 0:
+            estimated_runtime = 0.0
+        else:
+            estimated_runtime = _coerce_float(
+                runtime_raw,
+                context=f"scenario '{name}'.estimated_runtime",
+                minimum=0.0,
+            )
+        timeout_raw = sc_data.get("timeout")
+        if timeout_raw is None:
+            timeout = None
+        else:
+            timeout = _coerce_int(
+                timeout_raw,
+                context=f"scenario '{name}'.timeout",
+                minimum=1,
+            )
         raw_type = _require(sc_data, "type", f"scenario '{name}'")
         scenarios.append(Scenario(
             name=name,
             template=_require(sc_data, "template", f"scenario '{name}'"),
             type=_parse_scenario_type(raw_type, name),
             pods=list(scenario_pods),
-            estimated_runtime=float(runtime_raw) if runtime_raw else 0.0,
+            estimated_runtime=estimated_runtime,
             timeout=timeout,
         ))
 
@@ -193,8 +256,8 @@ def load_config(path: str) -> ScheduleConfig:
         name=metadata.get("name", ""),
         schedule=schedule,
         queues=list(queues),
-        target_yaml_count=yaml_gen.get("target_yaml_count", 1),
-        schedule_offset_hours=yaml_gen.get("schedule_offset_hours", 6),
+        target_yaml_count=target_yaml_count,
+        schedule_offset_hours=schedule_offset_hours,
         pods=pods,
         scenarios=scenarios,
         pipeline=pipeline,

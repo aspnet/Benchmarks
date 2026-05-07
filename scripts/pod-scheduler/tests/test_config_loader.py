@@ -173,6 +173,60 @@ class TestLoadConfig(unittest.TestCase):
             with self.assertRaises(ConfigError):
                 load_config(path)
 
+    def test_timeout_bool_rejected(self):
+        # ``timeout: yes`` would otherwise become 1 because bool subclasses int.
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = json.loads(json.dumps(_BASE))
+            payload["scenarios"][0]["timeout"] = True
+            path = _write(tmp, payload)
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
+    def test_estimated_runtime_bool_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = json.loads(json.dumps(_BASE))
+            payload["scenarios"][0]["estimated_runtime"] = True
+            path = _write(tmp, payload)
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
+    def test_target_yaml_count_bool_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = json.loads(json.dumps(_BASE))
+            payload["metadata"]["yaml_generation"] = {"target_yaml_count": True}
+            path = _write(tmp, payload)
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
+    def test_schedule_offset_hours_bool_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = json.loads(json.dumps(_BASE))
+            payload["metadata"]["yaml_generation"] = {
+                "schedule_offset_hours": False,
+                "target_yaml_count": 1,
+            }
+            # ``False`` is technically a falsy bool that would have coerced
+            # to 0 silently. Make sure we reject it.
+            path = _write(tmp, payload)
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
+    def test_target_yaml_count_below_minimum_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = json.loads(json.dumps(_BASE))
+            payload["metadata"]["yaml_generation"] = {"target_yaml_count": 0}
+            path = _write(tmp, payload)
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
+    def test_estimated_runtime_negative_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = json.loads(json.dumps(_BASE))
+            payload["scenarios"][0]["estimated_runtime"] = -5
+            path = _write(tmp, payload)
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
     def test_json_back_compat(self):
         # Existing .json configs must still load even though the project has
         # moved to YAML. Use the integer-typed fixture so this exercises the
