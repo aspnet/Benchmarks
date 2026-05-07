@@ -91,26 +91,48 @@
           "minLength": 1
         },
         "machines": {
-          "type": "object",
-          "description": "Physical machine names by role. Two pods that share a physical machine cannot run in the same stage.",
-          "required": ["sut"],
-          "additionalProperties": false,
-          "properties": {
-            "sut":  { "type": "string", "description": "System Under Test machine. Required." },
-            "load": { "type": "string", "description": "Load generator machine. Required for dual/triple scenarios." },
-            "db":   { "type": "string", "description": "Database machine. Required for triple scenarios." }
-          }
+          "description": "Physical machine names by role. Two pods that share a physical machine cannot run in the same stage. Accepts either a named-key object {sut, load, db} or a positional list [sut] / [sut, load] / [sut, load, db].",
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["sut"],
+              "additionalProperties": false,
+              "properties": {
+                "sut":  { "type": "string", "minLength": 1, "description": "System Under Test machine. Required." },
+                "load": { "type": "string", "minLength": 1, "description": "Load generator machine. Required for dual/triple scenarios." },
+                "db":   { "type": "string", "minLength": 1, "description": "Database machine. Required for triple scenarios." }
+              }
+            },
+            {
+              "type": "array",
+              "description": "Positional shorthand: [sut], [sut, load], or [sut, load, db]. Length must match the corresponding profiles array.",
+              "items": { "type": "string", "minLength": 1 },
+              "minItems": 1,
+              "maxItems": 3
+            }
+          ]
         },
         "profiles": {
-          "type": "object",
-          "description": "Crank profile name for each role.",
-          "required": ["sut"],
-          "additionalProperties": false,
-          "properties": {
-            "sut":  { "type": "string" },
-            "load": { "type": "string" },
-            "db":   { "type": "string" }
-          }
+          "description": "Crank profile name for each role. Same shape and length as machines (named-key object or positional list of 1-3).",
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["sut"],
+              "additionalProperties": false,
+              "properties": {
+                "sut":  { "type": "string", "minLength": 1 },
+                "load": { "type": "string", "minLength": 1 },
+                "db":   { "type": "string", "minLength": 1 }
+              }
+            },
+            {
+              "type": "array",
+              "description": "Positional shorthand: [sut], [sut, load], or [sut, load, db]. Length must match the corresponding machines array.",
+              "items": { "type": "string", "minLength": 1 },
+              "minItems": 1,
+              "maxItems": 3
+            }
+          ]
         }
       }
     },

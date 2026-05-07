@@ -22,25 +22,32 @@ metadata:
     target_yaml_count: 1
     schedule_offset_hours: 0
 
+# Each pod's `machines` and `profiles` use positional shorthand:
+# 1 entry  = [sut]                 (single-type scenarios)
+# 2 entries = [sut, load]          (dual-type scenarios)
+# 3 entries = [sut, load, db]      (triple-type scenarios)
+# The named-dict form ({sut: ..., load: ..., db: ...}) is still accepted
+# if you ever need to declare just a subset of roles explicitly.
+#
 # The "-28" pods reuse the same physical machines as their non-28 siblings
 # (just a different SUT crank profile that pins to 28 cores). The scheduler
 # automatically keeps each physical machine to one stage at a time.
 pods:
   - name: cobalt-hosted-lin
-    machines: { sut: cobalt-hosted-lin-server, load: cobalt-hosted-lin-client, db: cobalt-hosted-lin-db }
-    profiles: { sut: cobalt-hosted-lin-server-app, load: cobalt-hosted-lin-client-load, db: cobalt-hosted-lin-db-db }
+    machines: [cobalt-hosted-lin-server, cobalt-hosted-lin-client, cobalt-hosted-lin-db]
+    profiles: [cobalt-hosted-lin-server-app, cobalt-hosted-lin-client-load, cobalt-hosted-lin-db-db]
 
   - name: cobalt-hosted-lin-azl3
-    machines: { sut: cobalt-hosted-lin-server-azl3, load: cobalt-hosted-lin-client-azl3, db: cobalt-hosted-lin-db-azl3 }
-    profiles: { sut: cobalt-hosted-lin-server-azure-linux3-app, load: cobalt-hosted-lin-client-azure-linux3-load, db: cobalt-hosted-lin-db-azure-linux3-db }
+    machines: [cobalt-hosted-lin-server-azl3, cobalt-hosted-lin-client-azl3, cobalt-hosted-lin-db-azl3]
+    profiles: [cobalt-hosted-lin-server-azure-linux3-app, cobalt-hosted-lin-client-azure-linux3-load, cobalt-hosted-lin-db-azure-linux3-db]
 
   - name: cobalt-hosted-lin-28
-    machines: { sut: cobalt-hosted-lin-server, load: cobalt-hosted-lin-client, db: cobalt-hosted-lin-db }
-    profiles: { sut: cobalt-hosted-lin-server-28-app, load: cobalt-hosted-lin-client-load, db: cobalt-hosted-lin-db-db }
+    machines: [cobalt-hosted-lin-server, cobalt-hosted-lin-client, cobalt-hosted-lin-db]
+    profiles: [cobalt-hosted-lin-server-28-app, cobalt-hosted-lin-client-load, cobalt-hosted-lin-db-db]
 
   - name: cobalt-hosted-lin-azl3-28
-    machines: { sut: cobalt-hosted-lin-server-azl3, load: cobalt-hosted-lin-client-azl3, db: cobalt-hosted-lin-db-azl3 }
-    profiles: { sut: cobalt-hosted-lin-server-azure-linux3-28-app, load: cobalt-hosted-lin-client-azure-linux3-load, db: cobalt-hosted-lin-db-azure-linux3-db }
+    machines: [cobalt-hosted-lin-server-azl3, cobalt-hosted-lin-client-azl3, cobalt-hosted-lin-db-azl3]
+    profiles: [cobalt-hosted-lin-server-azure-linux3-28-app, cobalt-hosted-lin-client-azure-linux3-load, cobalt-hosted-lin-db-azure-linux3-db]
 
 scenarios:
   - name: Containers

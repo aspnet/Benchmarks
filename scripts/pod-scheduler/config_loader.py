@@ -28,6 +28,11 @@ class ConfigError(ValueError):
 
 _CRON_HOUR_RE = re.compile(r"^\d+(/\d+)?$")
 
+# Canonical ordering of pod role names. Position-based shorthand uses the
+# same order: a 1-entry list is [sut], 2-entry is [sut, load], 3-entry is
+# [sut, load, db].
+_ROLE_ORDER = ("sut", "load", "db")
+
 # Accepted spellings for ``scenario.type``. Strings (case-insensitive) are the
 # preferred form; integers stay supported so legacy configs keep loading.
 _SCENARIO_TYPE_ALIASES: Dict[Union[str, int], ScenarioType] = {
@@ -79,6 +84,51 @@ def _coerce_float(raw: Any, *, context: str, minimum: Optional[float] = None) ->
     if minimum is not None and value < minimum:
         raise ConfigError(f"{context} must be >= {minimum}, got {value}")
     return value
+
+
+def _normalize_roles(raw: Any, *, context: str) -> Dict[str, str]:
+    """Resolve a roles block (``machines`` or ``profiles``) to a canonical dict.
+
+    Accepts two shapes:
+
+    - **Named dict**: ``{sut: ..., load: ..., db: ...}`` with any subset of
+      the role keys (sut required upstream).
+    - **Positional shorthand list**: 1-3 entries interpreted as
+      ``[sut]``, ``[sut, load]``, or ``[sut, load, db]``.
+
+    Returns a dict containing only the roles present, in canonical order.
+    Bool values (which YAML happily produces from yes/no) and non-string
+    values are rejected so a typo can't slip through.
+    """
+    if isinstance(raw, list):
+        if not 1 <= len(raw) <= 3:
+            raise ConfigError(
+                f"{context} must have 1, 2, or 3 entries when written as a "
+                f"positional list (interpreted as [sut, load, db]), got "
+                f"{len(raw)}"
+            )
+        items = list(zip(_ROLE_ORDER, raw))
+    elif isinstance(raw, dict):
+        unknown = set(raw) - set(_ROLE_ORDER)
+        if unknown:
+            raise ConfigError(
+                f"{context} has unknown roles {sorted(unknown)}; valid roles "
+                f"are {list(_ROLE_ORDER)}"
+            )
+        items = [(role, raw[role]) for role in _ROLE_ORDER if role in raw]
+    else:
+        raise ConfigError(
+            f"{context} must be a dict or list, got {type(raw).__name__}"
+        )
+
+    result: Dict[str, str] = {}
+    for role, value in items:
+        if isinstance(value, bool) or not isinstance(value, str) or not value:
+            raise ConfigError(
+                f"{context}.{role} must be a non-empty string, got {value!r}"
+            )
+        result[role] = value
+    return result
 
 
 def _require(node: Dict[str, Any], key: str, context: str) -> Any:
@@ -198,14 +248,39 @@ def load_config(path: str) -> ScheduleConfig:
         pod_name = _require(pod_data, "name", "pod entry")
         if pod_name in pods:
             raise ConfigError(f"Duplicate pod name: {pod_name!r}")
-        machines = _require(pod_data, "machines", f"pod '{pod_name}'")
-        profiles = _require(pod_data, "profiles", f"pod '{pod_name}'")
+        raw_machines = _require(pod_data, "machines", f"pod '{pod_name}'")
+        raw_profiles = _require(pod_data, "profiles", f"pod '{pod_name}'")
+        if isinstance(raw_machines, list) != isinstance(raw_profiles, list):
+            raise ConfigError(
+                f"pod '{pod_name}': machines and profiles must use the same "
+                f"form (both positional list or both named dict)"
+            )
+        machines = _normalize_roles(
+            raw_machines, context=f"pod '{pod_name}'.machines"
+        )
+        profiles = _normalize_roles(
+            raw_profiles, context=f"pod '{pod_name}'.profiles"
+        )
+        if "sut" not in machines:
+            raise ConfigError(
+                f"pod '{pod_name}'.machines is missing the required 'sut' role"
+            )
+        if "sut" not in profiles:
+            raise ConfigError(
+                f"pod '{pod_name}'.profiles is missing the required 'sut' role"
+            )
+        if set(machines) != set(profiles):
+            raise ConfigError(
+                f"pod '{pod_name}': machines declares roles "
+                f"{sorted(machines)} but profiles declares "
+                f"{sorted(profiles)}; both blocks must list the same roles"
+            )
         pods[pod_name] = Pod(
             name=pod_name,
-            sut=_require(machines, "sut", f"pod '{pod_name}'.machines"),
+            sut=machines["sut"],
             load=machines.get("load"),
             db=machines.get("db"),
-            sut_profile=_require(profiles, "sut", f"pod '{pod_name}'.profiles"),
+            sut_profile=profiles["sut"],
             load_profile=profiles.get("load"),
             db_profile=profiles.get("db"),
         )

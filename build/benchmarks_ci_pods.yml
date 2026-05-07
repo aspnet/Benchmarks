@@ -24,34 +24,40 @@ metadata:
     # Stagger the second YAML by 6h so the fleet isn't slammed twice at once.
     schedule_offset_hours: 6
 
+# Each pod's `machines` and `profiles` use positional shorthand:
+# 1 entry  = [sut]                 (single-type scenarios)
+# 2 entries = [sut, load]          (dual-type scenarios)
+# 3 entries = [sut, load, db]      (triple-type scenarios)
+# The named-dict form ({sut: ..., load: ..., db: ...}) is still accepted
+# if you ever need to declare just a subset of roles explicitly.
 pods:
   - name: intel-lin
-    machines: { sut: intel-lin, load: intel-load,  db: intel-db }
-    profiles: { sut: intel-lin-app, load: intel-load-load,  db: intel-db-db }
+    machines: [intel-lin, intel-load,  intel-db]
+    profiles: [intel-lin-app, intel-load-load,  intel-db-db]
 
   - name: intel-win
     # intel-win shares intel-db with intel-lin; the scheduler keeps them out
     # of the same stage when both run a triple-type scenario.
-    machines: { sut: intel-win, load: intel-load2, db: intel-db }
-    profiles: { sut: intel-win-app, load: intel-load2-load, db: intel-db-db }
+    machines: [intel-win, intel-load2, intel-db]
+    profiles: [intel-win-app, intel-load2-load, intel-db-db]
 
   - name: gold-lin
-    machines: { sut: gold-lin, load: gold-load,  db: gold-db }
-    profiles: { sut: gold-lin-app, load: gold-load-load,  db: gold-db-db }
+    machines: [gold-lin, gold-load,  gold-db]
+    profiles: [gold-lin-app, gold-load-load,  gold-db-db]
 
   - name: gold-win
-    machines: { sut: gold-win, load: gold-load2, db: gold-db }
-    profiles: { sut: gold-win-app, load: gold-load2-load, db: gold-db-db }
+    machines: [gold-win, gold-load2, gold-db]
+    profiles: [gold-win-app, gold-load2-load, gold-db-db]
 
   - name: amd-lin2
     # Reuses gold-lin's load + db; cannot run alongside gold-lin triples.
-    machines: { sut: amd-lin2, load: gold-load, db: gold-db }
-    profiles: { sut: amd-lin2-app, load: gold-load-load, db: gold-db-db }
+    machines: [amd-lin2, gold-load, gold-db]
+    profiles: [amd-lin2-app, gold-load-load, gold-db-db]
 
   - name: intel-perflin
     # SUT+load only; not eligible for triple scenarios.
-    machines: { sut: intel-perflin, load: intel-perfload }
-    profiles: { sut: intel-perflin-app, load: intel-perfload-load }
+    machines: [intel-perflin, intel-perfload]
+    profiles: [intel-perflin-app, intel-perfload-load]
 
 scenarios:
   - name: Baselines

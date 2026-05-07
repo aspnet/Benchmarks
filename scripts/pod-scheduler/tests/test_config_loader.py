@@ -248,5 +248,129 @@ class TestLoadConfig(unittest.TestCase):
                 load_config(path)
 
 
+class TestRoleShorthand(unittest.TestCase):
+    """Positional shorthand form for ``machines`` / ``profiles``."""
+
+    def _payload(self):
+        # Triple-pod payload using shorthand throughout.
+        return {
+            "metadata": {
+                "name": "t",
+                "schedule": "0 3/12 * * *",
+                "queues": ["a", "b"],
+            },
+            "pods": [
+                {
+                    "name": "p1",
+                    "machines": ["m1", "m2", "m3"],
+                    "profiles": ["m1-app", "m2-load", "m3-db"],
+                }
+            ],
+            "scenarios": [
+                {
+                    "name": "S",
+                    "template": "s.yml",
+                    "type": "triple",
+                    "pods": ["p1"],
+                }
+            ],
+        }
+
+    def test_list_triple_happy_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(_write(tmp, self._payload()))
+            pod = cfg.pods["p1"]
+            self.assertEqual(pod.sut, "m1")
+            self.assertEqual(pod.load, "m2")
+            self.assertEqual(pod.db, "m3")
+            self.assertEqual(pod.sut_profile, "m1-app")
+            self.assertEqual(pod.load_profile, "m2-load")
+            self.assertEqual(pod.db_profile, "m3-db")
+
+    def test_list_dual_happy_path(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = ["m1", "m2"]
+        payload["pods"][0]["profiles"] = ["m1-app", "m2-load"]
+        payload["scenarios"][0]["type"] = "dual"
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(_write(tmp, payload))
+            pod = cfg.pods["p1"]
+            self.assertEqual((pod.sut, pod.load, pod.db), ("m1", "m2", None))
+
+    def test_list_single_happy_path(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = ["m1"]
+        payload["pods"][0]["profiles"] = ["m1-app"]
+        payload["scenarios"][0]["type"] = "single"
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(_write(tmp, payload))
+            pod = cfg.pods["p1"]
+            self.assertEqual((pod.sut, pod.load, pod.db), ("m1", None, None))
+
+    def test_dict_form_still_accepted(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = {"sut": "m1", "load": "m2", "db": "m3"}
+        payload["pods"][0]["profiles"] = {
+            "sut": "m1-app", "load": "m2-load", "db": "m3-db",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(_write(tmp, payload))
+            pod = cfg.pods["p1"]
+            self.assertEqual(pod.db, "m3")
+            self.assertEqual(pod.db_profile, "m3-db")
+
+    def test_mixed_shape_rejected(self):
+        # machines list, profiles dict — ambiguous role mapping.
+        payload = self._payload()
+        payload["pods"][0]["profiles"] = {
+            "sut": "m1-app", "load": "m2-load", "db": "m3-db",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+    def test_length_mismatch_rejected(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = ["m1", "m2", "m3"]
+        payload["pods"][0]["profiles"] = ["m1-app", "m2-load"]
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+    def test_empty_list_rejected(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = []
+        payload["pods"][0]["profiles"] = []
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+    def test_too_long_list_rejected(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = ["m1", "m2", "m3", "m4"]
+        payload["pods"][0]["profiles"] = ["m1-app", "m2-load", "m3-db", "m4"]
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+    def test_bool_entry_in_shorthand_rejected(self):
+        # YAML's yes/no/true/false coerce to bool; reject in role lists too.
+        payload = self._payload()
+        payload["pods"][0]["machines"] = ["m1", True, "m3"]
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+    def test_unknown_named_role_rejected(self):
+        payload = self._payload()
+        payload["pods"][0]["machines"] = {
+            "sut": "m1", "loadgen": "m2",  # 'loadgen' is not a valid role
+        }
+        payload["pods"][0]["profiles"] = {"sut": "m1-app"}
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(_write(tmp, payload))
+
+
 if __name__ == "__main__":
     unittest.main()
