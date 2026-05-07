@@ -5,7 +5,7 @@ import tests  # noqa: F401  # ensures sys.path is set up
 
 from generator import GeneratorError, _job_timeout, _offset_cron
 from main import _format_source_path
-from models import Pod, Run, Scenario, ScenarioType
+from models import Pod, Run, SCENARIO_TYPE_SINGLE, Scenario
 
 
 class TestOffsetCron(unittest.TestCase):
@@ -39,10 +39,10 @@ class TestOffsetCron(unittest.TestCase):
 class TestJobTimeout(unittest.TestCase):
     def _run(self, runtime, timeout=None):
         scenario = Scenario(
-            name="s", template="s.yml", type=ScenarioType.SINGLE,
+            name="s", template="s.yml", type=SCENARIO_TYPE_SINGLE,
             pods=["p"], estimated_runtime=runtime, timeout=timeout,
         )
-        pod = Pod(name="p", sut="sut", sut_profile="sut")
+        pod = Pod(name="p", machines=["sut"], profiles=["sut"])
         return Run(scenario=scenario, pod=pod, estimated_runtime=runtime)
 
     def test_uses_explicit_timeout(self):

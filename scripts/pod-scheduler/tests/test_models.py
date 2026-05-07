@@ -6,8 +6,10 @@ from models import (
     JOB_ID_RE,
     Pod,
     Run,
+    SCENARIO_TYPE_DUAL,
+    SCENARIO_TYPE_SINGLE,
+    SCENARIO_TYPE_TRIPLE,
     Scenario,
-    ScenarioType,
     Stage,
     sanitize_job_id,
 )
@@ -43,49 +45,73 @@ class TestSanitizeJobId(unittest.TestCase):
 
 
 class TestPodValidation(unittest.TestCase):
-    def _pod(self, **kwargs):
-        defaults = dict(
-            name="p", sut="sut",
-            sut_profile="sut-app",
-        )
-        defaults.update(kwargs)
-        return Pod(**defaults)
+    def _pod(self, machines=("sut",), profiles=("sut-app",)):
+        return Pod(name="p", machines=list(machines), profiles=list(profiles))
 
     def test_single_only_pod_rejects_dual(self):
         pod = self._pod()
-        self.assertIsNone(pod.validate(ScenarioType.SINGLE))
-        self.assertIsNotNone(pod.validate(ScenarioType.DUAL))
-        self.assertIsNotNone(pod.validate(ScenarioType.TRIPLE))
+        self.assertIsNone(pod.validate(SCENARIO_TYPE_SINGLE))
+        self.assertIsNotNone(pod.validate(SCENARIO_TYPE_DUAL))
+        self.assertIsNotNone(pod.validate(SCENARIO_TYPE_TRIPLE))
 
     def test_dual_pod_rejects_triple(self):
-        pod = self._pod(load="load", load_profile="load-load")
-        self.assertIsNone(pod.validate(ScenarioType.DUAL))
-        self.assertIsNotNone(pod.validate(ScenarioType.TRIPLE))
+        pod = self._pod(["sut", "load"], ["sut-app", "load-load"])
+        self.assertIsNone(pod.validate(SCENARIO_TYPE_DUAL))
+        self.assertIsNotNone(pod.validate(SCENARIO_TYPE_TRIPLE))
 
     def test_triple_pod_accepts_all(self):
         pod = self._pod(
-            load="load", load_profile="load-load",
-            db="db", db_profile="db-db",
+            ["sut", "load", "db"],
+            ["sut-app", "load-load", "db-db"],
         )
-        for t in ScenarioType:
+        for t in (SCENARIO_TYPE_SINGLE, SCENARIO_TYPE_DUAL, SCENARIO_TYPE_TRIPLE):
             self.assertIsNone(pod.validate(t), t)
+
+    def test_machines_profiles_length_mismatch_rejected(self):
+        with self.assertRaises(ValueError):
+            Pod(name="p", machines=["a", "b"], profiles=["a-app"])
+
+    def test_empty_machines_rejected(self):
+        with self.assertRaises(ValueError):
+            Pod(name="p", machines=[], profiles=[])
+
+    def test_named_accessors_match_list_storage(self):
+        pod = self._pod(
+            ["sut", "load", "db"],
+            ["sut-app", "load-load", "db-db"],
+        )
+        self.assertEqual((pod.sut, pod.load, pod.db), ("sut", "load", "db"))
+        self.assertEqual(
+            (pod.sut_profile, pod.load_profile, pod.db_profile),
+            ("sut-app", "load-load", "db-db"),
+        )
+
+    def test_named_accessors_return_none_for_missing_slots(self):
+        pod = self._pod()
+        self.assertIsNone(pod.load)
+        self.assertIsNone(pod.db)
+        self.assertIsNone(pod.load_profile)
+        self.assertIsNone(pod.db_profile)
 
 
 class TestStageCanAdd(unittest.TestCase):
     def _run(self, name, sut, load=None, db=None, runtime=10):
+        machines = [sut]
+        profiles = [f"{sut}-app"]
+        if load:
+            machines.append(load)
+            profiles.append(f"{load}-load")
+        if db:
+            machines.append(db)
+            profiles.append(f"{db}-db")
         scenario = Scenario(
             name=name,
             template=f"{name}.yml",
-            type=ScenarioType.TRIPLE if db else (
-                ScenarioType.DUAL if load else ScenarioType.SINGLE
-            ),
+            type=len(machines),
             pods=["p"],
             estimated_runtime=runtime,
         )
-        pod = Pod(
-            name="p", sut=sut, load=load, db=db,
-            sut_profile="sut", load_profile="load", db_profile="db",
-        )
+        pod = Pod(name="p", machines=machines, profiles=profiles)
         return Run(scenario=scenario, pod=pod, estimated_runtime=runtime)
 
     def test_collision_blocks(self):

@@ -142,7 +142,7 @@ class TestLoadConfig(unittest.TestCase):
                 path = _write(tmp, payload)
                 cfg = load_config(path)
                 self.assertEqual(
-                    cfg.scenarios[0].type.value,
+                    cfg.scenarios[0].type,
                     {"single": 1, "dual": 2, "triple": 3}[raw.lower()],
                     raw,
                 )
@@ -153,7 +153,7 @@ class TestLoadConfig(unittest.TestCase):
             payload["scenarios"][0]["type"] = 1
             path = _write(tmp, payload)
             cfg = load_config(path)
-            self.assertEqual(cfg.scenarios[0].type.value, 1)
+            self.assertEqual(cfg.scenarios[0].type, 1)
 
     def test_scenario_type_invalid_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -236,7 +236,7 @@ class TestLoadConfig(unittest.TestCase):
             payload["scenarios"][0]["type"] = 1
             path = _write_json(tmp, payload)
             cfg = load_config(path)
-            self.assertEqual(cfg.scenarios[0].type.value, 1)
+            self.assertEqual(cfg.scenarios[0].type, 1)
 
     def test_unknown_extension_loads_via_yaml(self):
         # The loader no longer dispatches on extension; YAML parses any

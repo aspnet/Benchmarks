@@ -14,7 +14,9 @@ from models import (
     PipelineSettings,
     Pod,
     Scenario,
-    ScenarioType,
+    SCENARIO_TYPE_DUAL,
+    SCENARIO_TYPE_SINGLE,
+    SCENARIO_TYPE_TRIPLE,
     ScheduleConfig,
 )
 
@@ -25,20 +27,16 @@ class ConfigError(ValueError):
 
 _CRON_HOUR_RE = re.compile(r"^\d+(/\d+)?$")
 
-# Canonical role ordering used to interpret the position of each entry in a
-# pod's ``machines`` and ``profiles`` lists. A pod with two entries declares
-# ``[sut, load]``; with three entries it declares ``[sut, load, db]``.
-_ROLE_ORDER = ("sut", "load", "db")
-
-# Accepted spellings for ``scenario.type``. Strings (case-insensitive) are the
-# preferred form; integers stay supported so legacy configs keep loading.
-_SCENARIO_TYPE_ALIASES: Dict[Any, ScenarioType] = {
-    "single": ScenarioType.SINGLE,
-    "dual":   ScenarioType.DUAL,
-    "triple": ScenarioType.TRIPLE,
-    1:        ScenarioType.SINGLE,
-    2:        ScenarioType.DUAL,
-    3:        ScenarioType.TRIPLE,
+# Accepted spellings for ``scenario.type``. Strings (case-insensitive) are
+# the preferred form; integers stay supported so legacy configs keep loading.
+# Values are the integer role count (1/2/3).
+_SCENARIO_TYPE_ALIASES: Dict[Any, int] = {
+    "single": SCENARIO_TYPE_SINGLE,
+    "dual":   SCENARIO_TYPE_DUAL,
+    "triple": SCENARIO_TYPE_TRIPLE,
+    1:        SCENARIO_TYPE_SINGLE,
+    2:        SCENARIO_TYPE_DUAL,
+    3:        SCENARIO_TYPE_TRIPLE,
 }
 
 
@@ -132,15 +130,13 @@ def _validate_cron(schedule: str) -> None:
         )
 
 
-def _parse_scenario_type(raw: Any, scenario_name: str) -> ScenarioType:
-    """Resolve a scenario type from string, int, or ScenarioType.
+def _parse_scenario_type(raw: Any, scenario_name: str) -> int:
+    """Resolve a scenario type to its integer role count.
 
     Accepts ``single``/``dual``/``triple`` (case-insensitive) or ``1``/``2``/``3``.
     Bools are rejected explicitly because YAML happily turns ``yes``/``no``
     into bools, which would otherwise quietly resolve to ``1``/``0``.
     """
-    if isinstance(raw, ScenarioType):
-        return raw
     if isinstance(raw, bool):
         raise ConfigError(
             f"scenario '{scenario_name}' has invalid type {raw!r}; "
@@ -235,17 +231,8 @@ def load_config(path: str) -> ScheduleConfig:
                 f"profiles has {len(profiles)}; the lists must be the same "
                 f"length so each machine pairs with exactly one profile"
             )
-        # Position N is the role at _ROLE_ORDER[N]; machines[N] runs profiles[N].
-        roles = dict(zip(_ROLE_ORDER, machines))
-        profile_roles = dict(zip(_ROLE_ORDER, profiles))
         pods[pod_name] = Pod(
-            name=pod_name,
-            sut=roles["sut"],
-            load=roles.get("load"),
-            db=roles.get("db"),
-            sut_profile=profile_roles["sut"],
-            load_profile=profile_roles.get("load"),
-            db_profile=profile_roles.get("db"),
+            name=pod_name, machines=machines, profiles=profiles
         )
 
     scenarios = []
