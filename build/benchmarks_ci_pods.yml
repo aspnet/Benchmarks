@@ -31,28 +31,6 @@ metadata:
 #   2 entries -> SUT + load        (dual-type scenarios)
 #   3 entries -> SUT + load + db   (triple-type scenarios)
 pods:
-- name: intel-lin
-  machines:
-  - intel-lin
-  - intel-load
-  - intel-db
-  profiles:
-  - intel-lin-app
-  - intel-load-load
-  - intel-db-db
-
-- name: intel-win
-  # intel-win shares intel-db with intel-lin; the scheduler keeps them out
-  # of the same stage when both run a triple-type scenario.
-  machines:
-  - intel-win
-  - intel-load2
-  - intel-db
-  profiles:
-  - intel-win-app
-  - intel-load2-load
-  - intel-db-db
-
 - name: gold-lin
   machines:
   - gold-lin
@@ -64,6 +42,8 @@ pods:
   - gold-db-db
 
 - name: gold-win
+  # gold-win shares gold-db with gold-lin; the scheduler keeps them out of
+  # the same stage when both run a triple-type scenario.
   machines:
   - gold-win
   - gold-load2
@@ -73,161 +53,141 @@ pods:
   - gold-load2-load
   - gold-db-db
 
-- name: amd-lin2
-  # Reuses gold-lin's load + db; cannot run alongside gold-lin triples.
-  machines:
-  - amd-lin2
-  - gold-load
-  - gold-db
-  profiles:
-  - amd-lin2-app
-  - gold-load-load
-  - gold-db-db
-
-- name: intel-perflin
-  # SUT+load only; not eligible for triple scenarios.
-  machines:
-  - intel-perflin
-  - intel-perfload
-  profiles:
-  - intel-perflin-app
-  - intel-perfload-load
-
 scenarios:
 - name: Baselines
   template: baselines-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win, amd-lin2]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 30
 
 - name: Baselines Database
   template: baselines-database-scenarios.yml
   type: triple
-  pods: [gold-lin, gold-win, intel-lin, intel-win, amd-lin2]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 45
 
 - name: Blazor
   template: blazor-scenarios.yml
   type: dual
-  pods: [gold-lin, intel-lin, intel-perflin]
+  pods: [gold-lin]
   estimated_runtime: 45
 
 - name: Build
   template: build-perf-scenarios.yml
   type: single
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 1
 
 - name: Containers
   template: containers-scenarios.yml
   type: triple
-  pods: [gold-lin, intel-lin]
+  pods: [gold-lin]
   estimated_runtime: 90
 
 - name: Crossgen
   template: crossgen2-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win, amd-lin2]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 5
 
 - name: Custom Proxies
   template: proxies-custom-scenarios.yml
   type: triple
-  pods: [gold-lin, intel-lin]
+  pods: [gold-lin]
   estimated_runtime: 5
 
 - name: EF Core
   template: efcore-scenarios.yml
   type: dual
-  pods: [gold-win, intel-win]
+  pods: [gold-win]
   estimated_runtime: 15
 
 - name: Frameworks
   template: frameworks-scenarios.yml
   type: triple
-  pods: [gold-lin, intel-lin, amd-lin2]
+  pods: [gold-lin]
   estimated_runtime: 15
 
 - name: Frameworks Database
   template: frameworks-database-scenarios.yml
   type: triple
-  pods: [gold-lin, intel-lin, amd-lin2]
+  pods: [gold-lin]
   estimated_runtime: 20
 
 - name: GC
   template: gc-scenarios.yml
   type: single
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 15
 
 - name: Grpc
   template: grpc-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 70
 
 - name: HttpClient
   template: httpclient-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 45
 
 - name: MVC
   template: mvc-scenarios.yml
   type: triple
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 20
 
 - name: NativeAOT
   template: nativeaot-scenarios.yml
   type: triple
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 20
 
 - name: PGO
   template: pgo-scenarios.yml
   type: triple
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 90
 
 - name: Proxies
   template: proxies-scenarios.yml
   type: triple
-  pods: [gold-lin, intel-lin]
+  pods: [gold-lin]
   estimated_runtime: 150
 
 - name: SignalR
   template: signalr-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 30
 
 - name: Single File
   template: singlefile-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 10
 
 - name: SslStream
   template: sslstream-scenarios.yml
   type: dual
-  pods: [gold-lin, intel-lin]
+  pods: [gold-lin]
   estimated_runtime: 45
 
 - name: Trends
   template: trend-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win, amd-lin2]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 20
 
 - name: Trends Database
   template: trend-database-scenarios.yml
   type: triple
-  pods: [gold-lin, gold-win, intel-lin, intel-win, amd-lin2]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 15
 
 - name: WebSockets
   template: websocket-scenarios.yml
   type: dual
-  pods: [gold-lin, gold-win, intel-lin, intel-win]
+  pods: [gold-lin, gold-win]
   estimated_runtime: 6

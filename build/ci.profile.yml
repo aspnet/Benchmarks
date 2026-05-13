@@ -7,28 +7,6 @@ profiles:
       warmup: 3
       duration: 7 
 
-  intel-lin-app:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 28
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-        aliases:
-          - main
-
-  intel-perflin-app:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 12
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-perf-lin:5001
-        aliases:
-          - main
-
   intel-perfload-load:
     variables:
       secondaryAddress: 10.0.0.105
@@ -39,39 +17,6 @@ profiles:
         aliases:
           - secondary
           - warmup
-
-  intel-lin-load:
-    variables:
-      secondaryAddress: 10.0.0.102
-    agents:
-      load:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-        aliases:
-          - warmup
-          - secondary
-
-  intel-win-app:
-    variables:
-      serverAddress: 10.0.0.104
-      cores: 28
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-win:5001
-        aliases:
-          - main
-
-  intel-win-load:
-    variables:
-      secondaryAddress: 10.0.0.104
-    agents:
-      load:
-        endpoints: 
-          - http://asp-citrine-win:5001
-        aliases:
-          - warmup
-          - secondary
 
   intel-db-app:
     variables:
@@ -175,40 +120,6 @@ profiles:
           - warmup
           - secondary
 
-
-  amd-lin2-app:
-    variables:
-      serverAddress: 10.0.0.109
-      cores: 48
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-amd2:5001
-        aliases:
-          - main
-
-  amd-lin2-load:
-    variables:
-      secondaryAddress: 10.0.0.109
-    agents: 
-      load:
-        endpoints: 
-          - http://asp-citrine-amd2:5001
-        aliases:
-          - warmup
-          - secondary
-
-  amd-lin2-db:
-    variables:
-      databaseServer: 10.0.0.109
-      downstreamAddress: 10.0.0.109
-    agents: 
-      db:
-        endpoints: 
-          - http://asp-citrine-amd2:5001
-        aliases:
-          - downstream
-          - extra
 
   arm-lin-app:
     variables:
