@@ -1,5 +1,5 @@
 # Examples:
-# --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile asp-perf-lin
+# --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile aspnet-gold-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/SignalRClient/signalrclient.yml
