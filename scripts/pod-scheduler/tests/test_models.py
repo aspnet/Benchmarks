@@ -75,23 +75,17 @@ class TestPodValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             Pod(name="p", machines=[], profiles=[])
 
-    def test_named_accessors_match_list_storage(self):
-        pod = self._pod(
-            ["sut", "load", "db"],
-            ["sut-app", "load-load", "db-db"],
-        )
-        self.assertEqual((pod.sut, pod.load, pod.db), ("sut", "load", "db"))
+    def test_role_count_reflects_machines_length(self):
+        self.assertEqual(self._pod().role_count, 1)
         self.assertEqual(
-            (pod.sut_profile, pod.load_profile, pod.db_profile),
-            ("sut-app", "load-load", "db-db"),
+            self._pod(["a", "b"], ["a-app", "b-load"]).role_count, 2
         )
-
-    def test_named_accessors_return_none_for_missing_slots(self):
-        pod = self._pod()
-        self.assertIsNone(pod.load)
-        self.assertIsNone(pod.db)
-        self.assertIsNone(pod.load_profile)
-        self.assertIsNone(pod.db_profile)
+        self.assertEqual(
+            self._pod(
+                ["a", "b", "c"], ["a-app", "b-load", "c-db"]
+            ).role_count,
+            3,
+        )
 
 
 class TestStageCanAdd(unittest.TestCase):

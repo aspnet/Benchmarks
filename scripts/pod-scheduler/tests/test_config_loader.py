@@ -278,25 +278,24 @@ class TestPodRoles(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(_write(tmp, payload))
             pod = cfg.pods["p1"]
-            self.assertEqual((pod.sut, pod.load, pod.db), ("m1", "m2", "m3"))
-            self.assertEqual(
-                (pod.sut_profile, pod.load_profile, pod.db_profile),
-                ("m1-app", "m2-load", "m3-db"),
-            )
+            self.assertEqual(pod.machines, ["m1", "m2", "m3"])
+            self.assertEqual(pod.profiles, ["m1-app", "m2-load", "m3-db"])
 
     def test_dual_happy_path(self):
         payload = self._payload(["m1", "m2"], ["m1-app", "m2-load"], "dual")
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(_write(tmp, payload))
             pod = cfg.pods["p1"]
-            self.assertEqual((pod.sut, pod.load, pod.db), ("m1", "m2", None))
+            self.assertEqual(pod.machines, ["m1", "m2"])
+            self.assertEqual(pod.profiles, ["m1-app", "m2-load"])
 
     def test_single_happy_path(self):
         payload = self._payload(["m1"], ["m1-app"], "single")
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(_write(tmp, payload))
             pod = cfg.pods["p1"]
-            self.assertEqual((pod.sut, pod.load, pod.db), ("m1", None, None))
+            self.assertEqual(pod.machines, ["m1"])
+            self.assertEqual(pod.profiles, ["m1-app"])
 
     def test_length_mismatch_rejected(self):
         # 3 machines, 2 profiles — each machine must pair with one profile.
@@ -365,8 +364,8 @@ class TestPodRoles(unittest.TestCase):
         payload["scenarios"][0]["pods"] = ["p1", "p2"]
         with tempfile.TemporaryDirectory() as tmp:
             cfg = load_config(_write(tmp, payload))
-            self.assertEqual(cfg.pods["p1"].load_profile, "shared-db")
-            self.assertEqual(cfg.pods["p2"].load_profile, "shared-load")
+            self.assertEqual(cfg.pods["p1"].profiles[1], "shared-db")
+            self.assertEqual(cfg.pods["p2"].profiles[1], "shared-load")
 
 
 if __name__ == "__main__":

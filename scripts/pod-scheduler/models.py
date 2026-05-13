@@ -88,34 +88,6 @@ class Pod:
         """Highest scenario type this pod can run (== ``len(machines)``)."""
         return len(self.machines)
 
-    # Backward-compat single-role accessors. The list-form storage is
-    # canonical; these properties stay so the conflicts-summary output and
-    # any external callers can still reach into named slots without caring
-    # how many roles a pod has.
-    @property
-    def sut(self) -> str:
-        return self.machines[0]
-
-    @property
-    def load(self) -> Optional[str]:
-        return self.machines[1] if len(self.machines) >= 2 else None
-
-    @property
-    def db(self) -> Optional[str]:
-        return self.machines[2] if len(self.machines) >= 3 else None
-
-    @property
-    def sut_profile(self) -> str:
-        return self.profiles[0]
-
-    @property
-    def load_profile(self) -> Optional[str]:
-        return self.profiles[1] if len(self.profiles) >= 2 else None
-
-    @property
-    def db_profile(self) -> Optional[str]:
-        return self.profiles[2] if len(self.profiles) >= 3 else None
-
     def machines_for_type(self, scenario_type: int) -> Set[str]:
         """Return the set of physical machines used for a given scenario type."""
         return set(self.machines[:scenario_type])
