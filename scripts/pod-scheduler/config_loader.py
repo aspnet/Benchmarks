@@ -41,7 +41,7 @@ _SCENARIO_TYPE_ALIASES: Dict[Any, int] = {
 
 
 def _reject_bool(raw: Any, context: str) -> None:
-    """Reject Python bools in numeric/string fields.
+    """Reject Python bools in numeric fields.
 
     PyYAML's ``safe_load`` happily turns ``yes``/``no``/``true``/``false``/
     ``on``/``off`` into Python bools, and because ``bool`` is a subclass of
@@ -85,8 +85,8 @@ def _coerce_role_list(raw: Any, *, context: str) -> List[str]:
     """Validate a 1-3 entry list of unique non-empty strings.
 
     Used for both ``machines`` and ``profiles``. The Nth entry maps to the
-    Nth role (see ``_ROLE_ORDER``). Bools and other non-string values are
-    rejected so a YAML coercion can't silently slip through.
+    Nth role (see ``models.ROLE_NAMES``). Bools and other non-string values
+    are rejected so a YAML coercion can't silently slip through.
     """
     if not isinstance(raw, list):
         raise ConfigError(

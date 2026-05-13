@@ -75,18 +75,6 @@ class TestPodValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             Pod(name="p", machines=[], profiles=[])
 
-    def test_role_count_reflects_machines_length(self):
-        self.assertEqual(self._pod().role_count, 1)
-        self.assertEqual(
-            self._pod(["a", "b"], ["a-app", "b-load"]).role_count, 2
-        )
-        self.assertEqual(
-            self._pod(
-                ["a", "b", "c"], ["a-app", "b-load", "c-db"]
-            ).role_count,
-            3,
-        )
-
 
 class TestStageCanAdd(unittest.TestCase):
     def _run(self, name, sut, load=None, db=None, runtime=10):

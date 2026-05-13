@@ -83,11 +83,6 @@ class Pod:
                 f"entries but profiles has {len(self.profiles)}"
             )
 
-    @property
-    def role_count(self) -> int:
-        """Highest scenario type this pod can run (== ``len(machines)``)."""
-        return len(self.machines)
-
     def machines_for_type(self, scenario_type: int) -> Set[str]:
         """Return the set of physical machines used for a given scenario type."""
         return set(self.machines[:scenario_type])
