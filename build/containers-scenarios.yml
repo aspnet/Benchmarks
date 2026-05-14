@@ -110,12 +110,22 @@ parameters:
     arguments: --scenario fortunes_vertx --property scenario=FortunesVertx
     condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
-  - displayName: Json NTex
-    arguments: --scenario json_ntex --property scenario=JsonNTex
-    condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
-  - displayName: Fortunes NTex
-    arguments: --scenario fortunes_ntex --property scenario=FortunesNTex
-    condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
+  # Json NTex and Fortunes NTex are disabled: their docker builds
+  # (ntex-plt.dockerfile and ntex-db.dockerfile in TechEmpower/
+  # FrameworkBenchmarks) all fail because the ntex workspace has
+  # `tokio-postgres` as a top-level dep on the fafhrd91/postgres
+  # ntex-3 fork (commit fbc7a17), which is no longer compatible
+  # with newer ntex-bytes resolved from TechEmpower's caret-versioned
+  # `ntex-bytes = "1.5"`. TechEmpower/FrameworkBenchmarks is archived
+  # (https://github.com/TechEmpower/FrameworkBenchmarks), so no fix
+  # is coming upstream. See build/frameworks-scenarios.yml and
+  # build/frameworks-database-scenarios.yml for the matching disables.
+  # - displayName: Json NTex
+  #   arguments: --scenario json_ntex --property scenario=JsonNTex
+  #   condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
+  # - displayName: Fortunes NTex
+  #   arguments: --scenario fortunes_ntex --property scenario=FortunesNTex
+  #   condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
 steps:
 - ${{ each scenario in parameters.scenarios }}:
