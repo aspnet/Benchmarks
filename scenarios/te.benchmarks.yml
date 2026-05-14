@@ -74,11 +74,16 @@ jobs:
 
   ntex: # json and plaintext scenarios
     source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
-      dockerFile: frameworks/Rust/ntex/ntex-plt.dockerfile
+      # NOTE: Local docker/ntex-techempower/ override is used here instead of pulling the
+      # dockerfile directly from TechEmpower/FrameworkBenchmarks. The local dockerfile
+      # clones TechEmpower master from inside the container and pins ntex-bytes to
+      # =1.5.4 to work around ntex-bytes 1.6 breaking the fafhrd91/postgres ntex-3
+      # tokio-postgres fork. Switch back once the upstream fork is updated.
+      repository: https://github.com/aspnet/Benchmarks.git
+      branchOrCommit: main
+      dockerFile: docker/ntex-techempower/ntex-plt.dockerfile
       dockerImageName: ntex-plt
-      dockerContextDirectory: frameworks/Rust/ntex/
+      dockerContextDirectory: docker/ntex-techempower
     readyStateText: Started http server
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
@@ -358,8 +363,10 @@ scenarios:
     application:
       job: ntex
       source: 
-        dockerFile: frameworks/Rust/ntex/ntex-db.dockerfile
+        # Override to the local ntex-db dockerfile (see ntex job above for context).
+        dockerFile: docker/ntex-techempower/ntex-db.dockerfile
         dockerImageName: ntex-db
+        dockerContextDirectory: docker/ntex-techempower
       readyStateText: Starting http server
     load:
       job: wrk

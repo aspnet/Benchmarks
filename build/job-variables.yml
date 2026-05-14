@@ -25,7 +25,10 @@ variables:
   value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/PlatformBenchmarks/benchmarks.html.json
 
 - name: blazorWasmJobs
-  value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/main/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
+  # Use the local override under docker/wasm-performance/ instead of the upstream config
+  # at dotnet/aspnetcore. The local dockerfile installs Node.js 22 (Node 21 is EOL and
+  # recent aspnetcore npm dependencies require node 18 || 20 || >=22).
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/docker/wasm-performance/benchmarks.compose.json
 
 
 - name: mvcJobs

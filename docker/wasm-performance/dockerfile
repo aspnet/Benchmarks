@@ -1,0 +1,45 @@
+# Local override of dotnet/aspnetcore's src/Components/benchmarkapps/Wasm.Performance/dockerfile.
+#
+# Differences from upstream:
+#   - Installs Node.js 22 (LTS) via setup_22.x instead of Node.js 21 (EOL).
+#     Recent npm dependencies in aspnetcore (e.g. balanced-match, brace-expansion,
+#     minimatch, eslint-visitor-keys, @tootallnate/once) require node 18, 20, or >=22.
+#     Node 21 is no longer supported and `npm run build` fails with ERR_REQUIRE_ESM.
+#
+# Track upstream: https://github.com/dotnet/aspnetcore/blob/main/src/Components/benchmarkapps/Wasm.Performance/dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:latest AS build
+
+ENV StressRunDuration=0
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Setup for nodejs
+RUN curl -sL https://deb.nodesource.com/setup_22.x | bash -
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    libunwind-dev \
+    nodejs \
+    git
+
+ARG gitBranch=main
+
+WORKDIR /src
+ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit
+
+RUN git init \
+    && git fetch https://github.com/aspnet/aspnetcore ${gitBranch} \
+    && git reset --hard FETCH_HEAD \
+    && git submodule update --init \
+    && git remote add origin https://github.com/aspnet/aspnetcore
+
+RUN ./restore.sh
+RUN npm run build
+RUN .dotnet/dotnet publish -c Release -r linux-x64 --sc true -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN chmod +x /app/Wasm.Performance.Driver
+
+WORKDIR /app
+FROM mcr.microsoft.com/playwright/dotnet:v1.58.0-jammy-amd64 AS final
+COPY --from=build ./app ./
+COPY ./exec.sh ./
+
+ENTRYPOINT [ "bash", "./exec.sh" ]
