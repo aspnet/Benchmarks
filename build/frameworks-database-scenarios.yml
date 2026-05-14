@@ -52,9 +52,20 @@ parameters:
     arguments: --scenario json_gin --load.variables.connections 512 --property scenario=JsonGin
 
   #  Ntex (Rust)
-
-  - displayName: Ntex Fortunes
-    arguments: --scenario fortunes_ntex --load.variables.connections 512 --property scenario=FortunesNtex
+  #
+  # Ntex Fortunes is disabled: the docker build for ntex-db.dockerfile
+  # is broken because the TechEmpower workspace pulls in the
+  # fafhrd91/postgres `ntex-3` tokio-postgres fork (frozen at commit
+  # fbc7a17), which is no longer compatible with the latest ntex-bytes
+  # (1.6+) that cargo resolves from TechEmpower's caret-versioned
+  # `ntex-bytes = "1.5"`. The workspace fails to compile with E0308
+  # mismatched-types errors on `BytesMut` vs `BytePages`.
+  # TechEmpower/FrameworkBenchmarks is now archived
+  # (https://github.com/TechEmpower/FrameworkBenchmarks), so a real fix
+  # upstream is unlikely and not worth chasing. Re-enable if the ntex
+  # source is brought back in-tree or pinned to a working dep set.
+  # - displayName: Ntex Fortunes
+  #   arguments: --scenario fortunes_ntex --load.variables.connections 512 --property scenario=FortunesNtex
 
   #  Vertx (Java)
 
