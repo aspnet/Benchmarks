@@ -141,7 +141,10 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
         }
 
         Log($"Shutdown deadline ({s_shutdownDeadline.TotalSeconds:n0}s) exceeded after cancellation; forcing process exit.");
-        Environment.Exit(0);
+        // Use a non-zero exit code so crank reports the run as failed. BenchmarkClient
+        // uses GlobalCts.CancelAfter as a watchdog when a scenario hangs; if we forced
+        // exit(0) here, that timeout would silently be reported as a successful run.
+        Environment.Exit(124);
     }
 
     private static Task WaitForCancellationAsync(CancellationToken ct)
