@@ -3,11 +3,17 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Runtime.InteropServices;
 
 namespace System.Net.Benchmarks;
 
 public abstract class BenchmarkApp<TOptions> where TOptions : new()
 {
+    // Maximum time to wait for graceful shutdown after cancellation is signaled
+    // before forcing process exit. Crank sends SIGTERM, waits 5s, then SIGINT,
+    // so we keep our deadline well under any subsequent SIGKILL.
+    private static readonly TimeSpan s_shutdownDeadline = TimeSpan.FromSeconds(15);
+
     private static bool s_appStarted;
 
     protected static CancellationTokenSource GlobalCts { get; } = new();
@@ -66,6 +72,26 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
             GlobalCts.Cancel();
         };
 
+        // Crank's Linux agent stops jobs with SIGTERM first (5 s grace) then SIGINT.
+        // Without an explicit SIGTERM handler, the .NET runtime's default behavior
+        // terminates the process after a short ProcessExit window and any in-flight
+        // TLS/QUIC connections never observe cancellation. That can leave sockets
+        // in a half-broken state, stranding the listen port for the next benchmark.
+        // Register SIGTERM/SIGQUIT here so GlobalCts.Cancel runs the same shutdown
+        // path on Linux as Ctrl+C does on Windows.
+        using var sigTerm = PosixSignalRegistration.Create(PosixSignal.SIGTERM, static ctx =>
+        {
+            Log("SIGTERM received...");
+            ctx.Cancel = true;
+            GlobalCts.Cancel();
+        });
+        using var sigQuit = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, static ctx =>
+        {
+            Log("SIGQUIT received...");
+            ctx.Cancel = true;
+            GlobalCts.Cancel();
+        });
+
         // NOTE:
         // It is better for metrics to be registered with some delay to ensure the metadata is collected.
         // Event listener is started (shortly) after the benchmark app starts, so it might miss the registration event.
@@ -76,9 +102,15 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
             LogHelper.LogMetric("env/processorcount", Environment.ProcessorCount);
         });
 
+        // Run the benchmark, but enforce a hard shutdown deadline once cancellation
+        // has been requested. If RunBenchmarkAsync hangs in disposal (for example a
+        // stuck SslStream close_notify or QuicConnection drain), Environment.Exit
+        // guarantees we release the port for the next run instead of waiting for
+        // crank's SIGKILL fallback.
         try
         {
-            await RunBenchmarkAsync(options, GlobalCts.Token);
+            var benchmarkTask = RunBenchmarkAsync(options, GlobalCts.Token);
+            await WaitWithShutdownDeadlineAsync(benchmarkTask).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -86,5 +118,40 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
             throw;
         }
         return 0; // on success, returning 0 explicitly; otherwise RootCommand (?) will not report unhandled exceptions to crank as failures
+    }
+
+    private static async Task WaitWithShutdownDeadlineAsync(Task benchmarkTask)
+    {
+        // Fast path: benchmark finished (or threw) before cancellation was ever requested.
+        await Task.WhenAny(benchmarkTask, WaitForCancellationAsync(GlobalCts.Token)).ConfigureAwait(false);
+
+        if (benchmarkTask.IsCompleted)
+        {
+            await benchmarkTask.ConfigureAwait(false);
+            return;
+        }
+
+        // Cancellation has been signaled. Give the benchmark a bounded time to wind
+        // down gracefully, then force-exit so we don't strand the port between runs.
+        var completed = await Task.WhenAny(benchmarkTask, Task.Delay(s_shutdownDeadline)).ConfigureAwait(false);
+        if (completed == benchmarkTask)
+        {
+            await benchmarkTask.ConfigureAwait(false);
+            return;
+        }
+
+        Log($"Shutdown deadline ({s_shutdownDeadline.TotalSeconds:n0}s) exceeded after cancellation; forcing process exit.");
+        Environment.Exit(0);
+    }
+
+    private static Task WaitForCancellationAsync(CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested)
+        {
+            return Task.CompletedTask;
+        }
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        ct.Register(static state => ((TaskCompletionSource)state!).TrySetResult(), tcs);
+        return tcs.Task;
     }
 }
