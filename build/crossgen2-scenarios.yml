@@ -33,9 +33,12 @@ parameters:
   - displayName: Default
     arguments: --property profile=default
     condition: 'true'
+  # Disabled: consistently fails with ILCompiler.CodeGenerationFailedException (IndexOutOfRangeException
+  # in CorInfoImpl.HandleToModuleToken) during the crossgen2 composite publish, and on Windows runs has
+  # caused crank to hang, blocking the rest of the jobs in the pipeline.
   - displayName: CG2 composite # since 6.0-preview4 CG2 is the default when PublishReadyToRun=true is set 
     arguments: --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true \"
-    condition: 'true'
+    condition: 'false'
   - displayName: CG2 non-composite  # /p:PublishReadyToRunComposite=false is the default
     arguments: --property profile=non-composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunComposite=false\"
     condition: 'true'
