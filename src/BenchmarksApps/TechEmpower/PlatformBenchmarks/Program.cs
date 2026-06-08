@@ -19,6 +19,8 @@ namespace PlatformBenchmarks
 
         public static async Task Main(string[] args)
         {
+            foo
+            
             Args = args;
 
             Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.ApplicationName));
