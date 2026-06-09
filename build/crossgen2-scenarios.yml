@@ -33,9 +33,12 @@ parameters:
   - displayName: Default
     arguments: --property profile=default
     condition: 'true'
-  # Disabled: consistently fails with ILCompiler.CodeGenerationFailedException (IndexOutOfRangeException
-  # in CorInfoImpl.HandleToModuleToken) during the crossgen2 composite publish, and on Windows runs has
-  # caused crank to hang, blocking the rest of the jobs in the pipeline.
+  # Disabled: fails with ILCompiler.CodeGenerationFailedException (IndexOutOfRangeException
+  # in CorInfoImpl.HandleToModuleToken) during the crossgen2 composite publish, and on
+  # Windows runs causes crank to hang, blocking the rest of the jobs in the pipeline.
+  # Root cause fixed by dotnet/runtime#129053 (composite R2R token corruption for
+  # devirtualized async-variant callees, merged 2026-06-06). Re-enable once that fix
+  # flows into the .NET 11 SDK consumed by the benchmark agents.
   - displayName: CG2 composite # since 6.0-preview4 CG2 is the default when PublishReadyToRun=true is set 
     arguments: --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true \"
     condition: 'false'
