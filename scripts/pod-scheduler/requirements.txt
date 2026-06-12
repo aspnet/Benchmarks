@@ -1,0 +1,5 @@
+# Runtime dependencies for the pod-scheduler.
+#
+# Install from the repo root with:
+#   python -m pip install -r scripts/pod-scheduler/requirements.txt
+PyYAML>=6.0
