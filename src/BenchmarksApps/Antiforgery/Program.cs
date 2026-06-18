@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,8 +60,7 @@ if (tokenAntiforgeryEnabled)
 app.MapGet("/", () => Results.Ok("hello world!"));
 
 // POST endpoint guarded only by the auto-injected cross-origin CSRF protection.
-// Sec-Fetch-Site: same-origin/none => 200; cross-site/same-site => 400.
-app.MapPost("/csrf", () => Results.Ok());
+app.MapPost("/csrf", ([FromForm] string name) => Results.Ok());
 
 // Token-based antiforgery endpoints. These depend on IAntiforgery, which is only
 // registered when the token-based antiforgery services are added above.
