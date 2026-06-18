@@ -5,6 +5,7 @@ imports:
 variables:
   serverPort: 5000
   serverScheme: http
+  scenario: antiforgery
 
 jobs:
   antiforgerybenchmarks:
@@ -13,7 +14,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/Antiforgery/Antiforgery.csproj
     readyStateText: Application started.
-    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}}"
 
 scenarios:
 
@@ -46,3 +47,27 @@ scenarios:
       job: wrk
       variables:
         path: /noOp
+
+  csrf-accepted:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: csrf
+    load:
+      job: wrk
+      variables:
+        path: /csrf
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-csrf.lua
+        scriptArguments: same-origin
+
+  csrf-rejected:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: csrf
+    load:
+      job: wrk
+      variables:
+        path: /csrf
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-csrf.lua
+        scriptArguments: cross-site
