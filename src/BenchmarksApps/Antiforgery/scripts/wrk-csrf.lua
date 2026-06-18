@@ -1,11 +1,7 @@
--- The header value is taken from the first script argument (wrk ... -- <value>),
--- e.g. "same-origin" (accepted) or "cross-site" (rejected). Defaults to same-origin.
+-- POSTs to /csrf to exercise the auto-injected cross-origin (Sec-Fetch) CSRF protection.
+-- The Sec-Fetch-Site header is supplied per scenario via the wrk `customHeaders` variable
+-- ("same-origin" => accepted/200, "cross-site" => rejected/400). wrk delivers script `--`
+-- arguments only to init(args), so the header is sent through wrk's native --header instead
+-- to guarantee the value reliably reaches the server.
 
 wrk.method = "POST"
-
-local secFetchSite = "same-origin"
-if arg and arg[1] then
-   secFetchSite = arg[1]
-end
-
-wrk.headers["Sec-Fetch-Site"] = secFetchSite

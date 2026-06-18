@@ -1,7 +1,18 @@
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+
+var debug = builder.Configuration.GetValue<bool>("debug");
+if (debug)
+{
+    builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
+    builder.Logging.AddFilter("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", LogLevel.Debug);
+}
+else
+{
+    builder.Logging.ClearProviders();
+}
 
 // "csrf" exercises the auto-injected cross-origin (Sec-Fetch) CSRF protection in isolation,
 // so the token-based antiforgery services/middleware are left out to avoid overriding its verdict.
@@ -14,6 +25,31 @@ if (tokenAntiforgeryEnabled)
 }
 
 var app = builder.Build();
+
+if (debug)
+{
+    var requestCount = 0;
+    app.Use(async (context, next) =>
+    {
+        var n = Interlocked.Increment(ref requestCount);
+        if (n <= 20)
+        {
+            var request = context.Request;
+            Console.WriteLine($"[debug] #{n} {request.Method} {request.Path}{request.QueryString}");
+            foreach (var header in request.Headers)
+            {
+                Console.WriteLine($"[debug] #{n}   {header.Key}: {header.Value}");
+            }
+        }
+
+        await next(context);
+
+        if (n <= 20)
+        {
+            Console.WriteLine($"[debug] #{n} -> {context.Response.StatusCode}");
+        }
+    });
+}
 
 if (tokenAntiforgeryEnabled)
 {
