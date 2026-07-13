@@ -6,3 +6,14 @@ updates:
       interval: weekly
       day: "sunday"
       time: "11:00" # 11am UTC
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      nuget:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
