@@ -31,7 +31,7 @@ extends:
   parameters:
     pool:
       name: ASP.NET-Performance-Controller-new
-      image: MMSWindows2022-Secure
+      image: 1es-windows-2022
       os: windows
     sdl:
       policheck:
