@@ -100,9 +100,9 @@ parameters:
   - displayName: Antiforgery Token Generation
     arguments: --scenario antiforgery-generation $(antiforgeryJobs) --property scenario=AntiforgeryTokenGeneration
   - displayName: CSRF Accepted
-    arguments: --scenario csrf-accepted $(antiforgeryJobs) --property scenario=CsrfAccepted
+    arguments: --scenario csrf-accepted $(antiforgeryJobs) --property scenario=AntiforgeryCsrfAccepted
   - displayName: CSRF Rejected
-    arguments: --scenario csrf-rejected $(antiforgeryJobs) --property scenario=CsrfRejected
+    arguments: --scenario csrf-rejected $(antiforgeryJobs) --property scenario=AntiforgeryCsrfRejected
 
 # TLS
 
