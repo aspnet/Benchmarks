@@ -1,4 +1,8 @@
 version: 2
+registries:
+  dotnet-public:
+    type: nuget-feed
+    url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 updates:
   - package-ecosystem: gomod
     directory: "/"
@@ -6,3 +10,16 @@ updates:
       interval: weekly
       day: "sunday"
       time: "11:00" # 11am UTC
+  - package-ecosystem: "nuget"
+    directory: "/"
+    registries:
+      - dotnet-public
+    schedule:
+      interval: "monthly"
+    groups:
+      nuget:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
