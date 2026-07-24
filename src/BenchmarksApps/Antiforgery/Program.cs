@@ -19,6 +19,7 @@ else
 // so the token-based antiforgery services/middleware are left out to avoid overriding its verdict.
 var scenario = builder.Configuration["scenario"] ?? "antiforgery";
 var tokenAntiforgeryEnabled = !string.Equals(scenario, "csrf", StringComparison.OrdinalIgnoreCase);
+Console.WriteLine($"Scenario: '{scenario}'. Token-based antiforgery enabled: {tokenAntiforgeryEnabled}.");
 
 if (tokenAntiforgeryEnabled)
 {
