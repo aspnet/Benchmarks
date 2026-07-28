@@ -33,29 +33,22 @@ parameters:
   - displayName: Self-contained
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=false\" --property mode=SelfContained
     condition: 'true'
-  # Disabled: hangs / fails with ILCompiler.CodeGenerationFailedException
-  # (IndexOutOfRangeException in CorInfoImpl.HandleToModuleToken) during the
-  # crossgen2 composite publish on .NET 11 preview SDKs predating
-  # dotnet/runtime#129053 ("Fix composite R2R token corruption for devirtualized
-  # async-variant callees", merged 2026-06-06). Re-enable once that fix flows
-  # into the SDK consumed by the benchmark agents.
   - displayName: Single-file
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true\" --property mode=SingleFile
-    condition: 'false'
+    condition: 'true'
   - displayName: Trimmed
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
-    condition: 'false'
+    condition: 'true'
   - displayName: AOT
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
     arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
     condition: 'true'
-  # Disabled: see note on "Single-file" above (dotnet/runtime#129053).
   - displayName: R2RComposite-Windows
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishSingleFile=true /p:RuntimeIdentifier=win-x64\" --property mode=R2RComposite --property rid=win-x64 --application.options.requiredOperatingSystem windows
-    condition: 'false'
+    condition: 'true'
   - displayName: R2RComposite-Linux
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishSingleFile=true /p:RuntimeIdentifier=linux-x64\" --property mode=R2RComposite --property rid=linux-x64 --application.options.requiredOperatingSystem linux
-    condition: 'false'
+    condition: 'true'
 
 steps:
 - ${{ each s in parameters.scenarios }}:
