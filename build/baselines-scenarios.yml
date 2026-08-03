@@ -31,6 +31,9 @@ parameters:
   - displayName: "10.0"
     arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
 
+  - displayName: "11.0"
+    arguments: --application.framework net11.0 --property framework=net11.0 --application.noGlobalJson false
+
 # Orchard Baselines (uses release/2.2 branch for net8.0 and main#eefd4a1659cd48e56b681b5bcff2cc92b349b464 for net9.0)
 - name: orchardBaselines
   type: object
@@ -44,6 +47,9 @@ parameters:
 
   - displayName: "10.0"
     arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
+
+  - displayName: "11.0"
+    arguments: --application.framework net11.0 --property framework=net11.0 --application.noGlobalJson false
 
 # Scenarios
 - name: scenarios 

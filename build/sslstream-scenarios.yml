@@ -25,13 +25,13 @@ parameters:
     type: object
     default:
       - displayName: "SslStream"
-        arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/sslstream.benchmarks.yml?raw=true --property transport=SslStream
+        arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/sslstream.benchmarks.yml --property transport=SslStream
 
   - name: quicTransport
     type: object
     default:
       - displayName: "QUIC"
-        arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/quic.benchmarks.yml?raw=true --property transport=QUIC --property tlsVersion=1.3 --property tlsResume=no-resume
+        arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --property transport=QUIC --property tlsVersion=1.3 --property tlsResume=no-resume
 
   - name: readWriteScenarios
     type: object

@@ -34,7 +34,10 @@ parameters:
 
   - displayName: Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)
     arguments: --scenario basicminimalapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1TrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
-    condition: 'true'
+    # Disabled: hits dotnet/runtime crossgen2 composite R2R bug on async-variant callees
+    # (Kestrel Http1ChunkedEncodingMessageBody.PumpAsync). Re-enable once
+    # https://github.com/dotnet/runtime/pull/129053 flows into the .NET 11 SDK.
+    condition: 'false'
 
   - displayName: Goldilocks Stage 1 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
@@ -70,7 +73,9 @@ parameters:
 
   - displayName: Goldilocks Stage 2 (CoreCLR - Trim R2R SingleFile)
     arguments: --scenario todosapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage2TrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
-    condition: 'true'
+    # Disabled: see note on "Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)" above.
+    # Re-enable once https://github.com/dotnet/runtime/pull/129053 flows into the .NET 11 SDK.
+    condition: 'false'
 
   - displayName: Goldilocks Stage 2 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
@@ -106,7 +111,9 @@ parameters:
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Trim R2R SingleFile)
     arguments: --scenario basicgrpcpublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1GrpcTrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
-    condition: 'true'
+    # Disabled: see note on "Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)" above.
+    # Re-enable once https://github.com/dotnet/runtime/pull/129053 flows into the .NET 11 SDK.
+    condition: 'false'
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version

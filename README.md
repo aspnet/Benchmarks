@@ -15,3 +15,10 @@ The scenarios that are available to use with Crank and some sample command lines
 # Contributing
 
 Microsoft employees can approve and merge contributions by joining [this team](https://repos.opensource.microsoft.com/orgs/aspnet/teams/aspnet-push)
+
+# Continuous benchmarking pipelines
+
+The Azure DevOps pipelines that drive the daily benchmark sweep are generated
+from JSON configs by the [pod-scheduler](scripts/pod-scheduler/README.md).
+See [`build/README.md`](build/README.md) for the mapping between configs and
+generated YAML files, and how to regenerate them after editing.

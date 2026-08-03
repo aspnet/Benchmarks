@@ -31,7 +31,7 @@ parameters:
     condition: 'true'
   - displayName: YARP gRPC
     scenario: proxy-yarp-grpc
-    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net11.0
+    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net11.0 --load.framework net11.0
     supportsGRPC: true
     condition: 'true'
   - displayName: YARP-net80
@@ -59,7 +59,7 @@ parameters:
     condition: Math.round(Date.now() / 43200000) % 5 == 0 # once every 5 half-days
   - displayName: NGinx gRPC
     scenario: proxy-nginx-grpc
-    arguments: $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0
+    arguments: $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0 --load.framework net11.0
     supportsGRPC: true
     condition: Math.round(Date.now() / 43200000) % 5 == 1 # once every 5 half-days
   - displayName: HAProxy
@@ -77,7 +77,7 @@ parameters:
     condition: Math.round(Date.now() / 43200000) % 5 == 3 # once every 5 half-days
   - displayName: Envoy gRPC
     scenario: proxy-envoy-grpc
-    arguments: $(proxyGRPCJobs) --property proxy=envoy
+    arguments: $(proxyGRPCJobs) --property proxy=envoy --load.framework net11.0
     supportsGRPC: true
     condition: Math.round(Date.now() / 43200000) % 5 == 4 # once every 5 half-days
 

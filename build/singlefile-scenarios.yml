@@ -32,17 +32,30 @@ parameters:
 
   - displayName: Self-contained
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=false\" --property mode=SelfContained
+    condition: 'true'
+  # Disabled: hangs / fails with ILCompiler.CodeGenerationFailedException
+  # (IndexOutOfRangeException in CorInfoImpl.HandleToModuleToken) during the
+  # crossgen2 composite publish on .NET 11 preview SDKs predating
+  # dotnet/runtime#129053 ("Fix composite R2R token corruption for devirtualized
+  # async-variant callees", merged 2026-06-06). Re-enable once that fix flows
+  # into the SDK consumed by the benchmark agents.
   - displayName: Single-file
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true\" --property mode=SingleFile
+    condition: 'false'
   - displayName: Trimmed
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
+    condition: 'false'
   - displayName: AOT
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
     arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    condition: 'true'
+  # Disabled: see note on "Single-file" above (dotnet/runtime#129053).
   - displayName: R2RComposite-Windows
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishSingleFile=true /p:RuntimeIdentifier=win-x64\" --property mode=R2RComposite --property rid=win-x64 --application.options.requiredOperatingSystem windows
+    condition: 'false'
   - displayName: R2RComposite-Linux
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishSingleFile=true /p:RuntimeIdentifier=linux-x64\" --property mode=R2RComposite --property rid=linux-x64 --application.options.requiredOperatingSystem linux
+    condition: 'false'
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -60,6 +73,6 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "condition": "(${{ parameters.condition }})",
+            "condition": "(${{ parameters.condition }}) && (${{ mode.condition }})",
             "args": [ "${{ s.arguments }} ${{ mode.arguments }} ${{ parameters.arguments }} --application.framework net11.0 --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table SingleFileBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
           }
