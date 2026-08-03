@@ -15,7 +15,7 @@ updates:
     registries:
       - dotnet-public
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     groups:
       nuget:
         patterns:
