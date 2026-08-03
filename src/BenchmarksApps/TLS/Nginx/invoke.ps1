@@ -1,1 +1,1 @@
-curl -v https://127.0.0.1:8080 --insecure
+curl -v https://127.0.0.1:5000 --insecure

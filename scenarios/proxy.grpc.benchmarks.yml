@@ -100,69 +100,6 @@ scenarios:
       job: grpcDotNetClient
 
 profiles:
-  aspnet-perf-lin:
-    variables:
-      serverAddress: 10.0.0.102
-      downstreamAddress: 10.0.0.103
-      cores: 12
-    jobs:
-      downstream:
-        endpoints: 
-          - http://asp-perf-db:5001
-      application:
-        endpoints: 
-          - http://asp-perf-lin:5001
-      load:
-        endpoints: 
-          - http://asp-perf-load:5001
-        options:
-          displayOutput: true
-  aspnet-perf-win:
-    variables:
-      serverAddress: 10.0.0.110
-      downstreamAddress: 10.0.0.104
-      cores: 12
-    jobs:
-      downstream:
-        endpoints: 
-          - http://asp-perf-load:5001
-      application:
-        endpoints: 
-          - http://asp-perf-win:5001
-      load:
-        endpoints: 
-          - http://asp-perf-db:5001
-        options:
-  aspnet-citrine-lin:
-    variables:
-      serverAddress: 10.0.0.102
-      downstreamAddress: 10.0.0.103
-      cores: 28
-    jobs: 
-      downstream:
-        endpoints: 
-          - http://asp-citrine-db:5001
-      application:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-      load:
-        endpoints: 
-          - http://asp-citrine-load:5001
-  aspnet-citrine-win:
-    variables:
-      serverAddress: 10.0.0.104
-      downstreamAddress: 10.0.0.105
-      cores: 28
-    jobs: 
-      downstream:
-        endpoints: 
-          - http://asp-citrine-load:5001
-      application:
-        endpoints: 
-          - http://asp-citrine-win:5001
-      load:
-        endpoints: 
-          - http://asp-citrine-db:5001
   local:
     variables:
       serverAddress: localhost

@@ -6,21 +6,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.4
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.4:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.5:5001
         aliases:
           - warmup
@@ -31,21 +31,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.4
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azureserver
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azureclient
         aliases:
           - warmup
@@ -56,21 +56,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.12
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.12:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.13:5001 # idna-amd-lin
         aliases:
           - warmup
@@ -81,21 +81,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.12
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintellin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
         aliases:
           - warmup
@@ -106,21 +106,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.13
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.13:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.12:5001 # idna-intel-lin
         aliases:
           - warmup
@@ -131,21 +131,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.13
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintellin
         aliases:
           - warmup
@@ -156,21 +156,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.14
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.14:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.13:5001 # idna-amd-lin
         aliases:
           - warmup
@@ -181,21 +181,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.14
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintelwin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdlin
         aliases:
           - warmup
@@ -206,21 +206,21 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.15
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.6:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.15:5001
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.12:5001 # idna-intel-lin
         aliases:
           - warmup
@@ -231,46 +231,46 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.15
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azuredb
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaamdwin
         variables:
           databaseServer: 10.0.4.6
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/idnaintellin
         aliases:
           - warmup
           - secondary
-  
+
   aspnet-azurearm64-lin:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.7
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - http://10.0.4.9:5001
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - http://10.0.4.7:5001
         variables:
           databaseServer: 10.0.4.9
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - http://10.0.4.8:5001
         aliases:
           - warmup
@@ -281,22 +281,626 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.4.7
       cores: 4
-    jobs: 
+    jobs:
       db:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azurearm64db
         aliases:
           - extra
       application:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azurearm64server
         variables:
           databaseServer: 10.0.4.9
         aliases:
           - main
       load:
-        endpoints: 
+        endpoints:
           - https://aspnetperf.servicebus.windows.net/azurearm64client
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.17
+      cores: 16
+    jobs:
+      db:
+        endpoints:
+          - http://10.0.4.19:5001
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - http://10.0.4.17:5001
+        variables:
+          databaseServer: 10.0.4.19
+        aliases:
+          - main
+      load:
+        endpoints:
+          - http://10.0.4.18:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.17
+      cores: 16
+    jobs:
+      db:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlindb
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver
+        variables:
+          databaseServer: 10.0.4.19
+        aliases:
+          - main
+      load:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinclient
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin-al3:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.20
+      cores: 16
+    jobs:
+      db:
+        endpoints:
+          - http://10.0.4.19:5001
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - http://10.0.4.20:5001
+        variables:
+          databaseServer: 10.0.4.19
+        aliases:
+          - main
+      load:
+        endpoints:
+          - http://10.0.4.18:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-cloud-lin-al3-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.20
+      cores: 16
+    jobs:
+      db:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlindb
+        aliases:
+          - extra
+      application:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinserver_azurelinux3
+        variables:
+          databaseServer: 10.0.4.19
+        aliases:
+          - main
+      load:
+        endpoints:
+          - https://aspnetperf.servicebus.windows.net/cobaltcloudlinclient
+        aliases:
+          - warmup
+          - secondary
+
+  # Add individual machine profiles for azure-db similar to ci.profile.yml
+  azure-db-app: # azurearm64db
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.9
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.9:5001
+        aliases:
+          - main
+
+  azure-db-db:
+    variables:
+      databaseServer: 10.0.4.9
+      downstreamAddress: 10.0.4.9
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.9:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-db-load:
+    variables:
+      secondaryAddress: 10.0.4.9
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.9:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-client
+  azure-client-app: # azurearm64client
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.8
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.8:5001
+        aliases:
+          - main
+
+  azure-client-db:
+    variables:
+      databaseServer: 10.0.4.8
+      downstreamAddress: 10.0.4.8
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.8:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-client-load:
+    variables:
+      secondaryAddress: 10.0.4.8
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.8:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure-server-arm64
+  azure-server-arm64-app: # azurearm64server
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.7
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.7:5001
+        aliases:
+          - main
+
+  azure-server-arm64-db:
+    variables:
+      databaseServer: 10.0.4.7
+      downstreamAddress: 10.0.4.7
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.7:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure-server-arm64-load:
+    variables:
+      secondaryAddress: 10.0.4.7
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.7:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure2-client
+  azure2-client-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.5
+      cores: 2
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.5:5001
+        aliases:
+          - main
+
+  azure2-client-db:
+    variables:
+      databaseServer: 10.0.4.5
+      downstreamAddress: 10.0.4.5
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.5:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure2-client-load:
+    variables:
+      secondaryAddress: 10.0.4.5
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.5:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure2-db
+  azure2-db-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.6
+      cores: 2
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.6:5001
+        aliases:
+          - main
+
+  azure2-db-db:
+    variables:
+      databaseServer: 10.0.4.6
+      downstreamAddress: 10.0.4.6
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.6:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure2-db-load:
+    variables:
+      secondaryAddress: 10.0.4.6
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.6:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for azure2-server-amd64
+  azure2-server-amd64-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.4
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.4:5001
+        aliases:
+          - main
+
+  azure2-server-amd64-db:
+    variables:
+      databaseServer: 10.0.4.4
+      downstreamAddress: 10.0.4.4
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.4:5001
+        aliases:
+          - downstream
+          - extra
+
+  azure2-server-amd64-load:
+    variables:
+      secondaryAddress: 10.0.4.4
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.4:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-amd-lin
+  idna-amd-lin-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.13
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.13:5001
+        aliases:
+          - main
+
+  idna-amd-lin-db:
+    variables:
+      databaseServer: 10.0.4.13
+      downstreamAddress: 10.0.4.13
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.13:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-amd-lin-load:
+    variables:
+      secondaryAddress: 10.0.4.13
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.13:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-amd-win
+  idna-amd-win-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.15
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.15:5001
+        aliases:
+          - main
+
+  idna-amd-win-db:
+    variables:
+      databaseServer: 10.0.4.15
+      downstreamAddress: 10.0.4.15
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.15:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-amd-win-load:
+    variables:
+      secondaryAddress: 10.0.4.15
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.15:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-intel-lin
+  idna-intel-lin-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.12
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.12:5001
+        aliases:
+          - main
+
+  idna-intel-lin-db:
+    variables:
+      databaseServer: 10.0.4.12
+      downstreamAddress: 10.0.4.12
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.12:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-intel-lin-load:
+    variables:
+      secondaryAddress: 10.0.4.12
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.12:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for idna-intel-win
+  idna-intel-win-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.14
+      cores: 4
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.14:5001
+        aliases:
+          - main
+
+  idna-intel-win-db:
+    variables:
+      databaseServer: 10.0.4.14
+      downstreamAddress: 10.0.4.14
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.14:5001
+        aliases:
+          - downstream
+          - extra
+
+  idna-intel-win-load:
+    variables:
+      secondaryAddress: 10.0.4.14
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.14:5001
+        aliases:
+          - warmup
+            - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-client
+  cobalt-cloud-lin-client-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.18
+      cores: 16
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.18:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-client-db:
+    variables:
+      databaseServer: 10.0.4.18
+      downstreamAddress: 10.0.4.18
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.18:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-client-load:
+    variables:
+      secondaryAddress: 10.0.4.18
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.18:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-db
+  cobalt-cloud-lin-db-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.19
+      cores: 16
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.19:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-db-db:
+    variables:
+      databaseServer: 10.0.4.19
+      downstreamAddress: 10.0.4.19
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.19:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-db-load:
+    variables:
+      secondaryAddress: 10.0.4.19
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.19:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-server
+  cobalt-cloud-lin-server-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.17
+      cores: 16
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.17:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-server-db:
+    variables:
+      databaseServer: 10.0.4.17
+      downstreamAddress: 10.0.4.17
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.17:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-server-load:
+    variables:
+      secondaryAddress: 10.0.4.17
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.17:5001
+        aliases:
+          - warmup
+          - secondary
+
+  # Individual machine profiles for cobalt-cloud-lin-server-azure-linux3
+  cobalt-cloud-lin-server-azure-linux3-app:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.20
+      cores: 16
+    agents:
+      application:
+        endpoints:
+          - http://10.0.4.20:5001
+        aliases:
+          - main
+
+  cobalt-cloud-lin-server-azure-linux3-db:
+    variables:
+      databaseServer: 10.0.4.20
+      downstreamAddress: 10.0.4.20
+    agents:
+      db:
+        endpoints:
+          - http://10.0.4.20:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-cloud-lin-server-azure-linux3-load:
+    variables:
+      secondaryAddress: 10.0.4.20
+    agents:
+      load:
+        endpoints:
+          - http://10.0.4.20:5001
         aliases:
           - warmup
           - secondary

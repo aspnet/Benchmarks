@@ -34,12 +34,10 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `aspnet-perf-win` | INTEL, 12 logical cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-citrine-lin` | INTEL, logical 28 cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
 |  `aspnet-citrine-win` | INTEL, logical 28 cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
-|  `aspnet-citrine-amd` | AMD, logical 48 cores, 1 socket, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
 |  `aspnet-citrine-amd2` | AMD, logical 48 cores, 1 socket, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
 |  `aspnet-citrine-arm-lin` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
 |  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 6.8.0-45-generic | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
 |  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
-|  `aspnet-siryn-arm-lin` | ARM64, 128 logical cores, 1 socket, 1 NUMA, 250GB | Ubuntu 20.04, Kernel 5.4.0 | Ampere(R) AmpereOne(TM) |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
@@ -562,7 +560,7 @@ These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/
 ### Sample
 
 ```
-crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-win
+crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario linq --profile aspnet-perf-win
 ```
 
 ### Available scenarios
@@ -573,7 +571,7 @@ crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.b
 The scenario named `custom` can be used to pass any custom filter variable like so:
 
 ```
-crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
+crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
 ```
 
 ## FAQ

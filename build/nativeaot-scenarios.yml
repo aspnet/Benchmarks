@@ -34,7 +34,10 @@ parameters:
 
   - displayName: Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)
     arguments: --scenario basicminimalapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1TrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
-    condition: 'true'
+    # Disabled: hits dotnet/runtime crossgen2 composite R2R bug on async-variant callees
+    # (Kestrel Http1ChunkedEncodingMessageBody.PumpAsync). Re-enable once
+    # https://github.com/dotnet/runtime/pull/129053 flows into the .NET 11 SDK.
+    condition: 'false'
 
   - displayName: Goldilocks Stage 1 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
@@ -70,7 +73,9 @@ parameters:
 
   - displayName: Goldilocks Stage 2 (CoreCLR - Trim R2R SingleFile)
     arguments: --scenario todosapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage2TrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
-    condition: 'true'
+    # Disabled: see note on "Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)" above.
+    # Re-enable once https://github.com/dotnet/runtime/pull/129053 flows into the .NET 11 SDK.
+    condition: 'false'
 
   - displayName: Goldilocks Stage 2 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
@@ -106,7 +111,9 @@ parameters:
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Trim R2R SingleFile)
     arguments: --scenario basicgrpcpublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1GrpcTrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
-    condition: 'true'
+    # Disabled: see note on "Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)" above.
+    # Re-enable once https://github.com/dotnet/runtime/pull/129053 flows into the .NET 11 SDK.
+    condition: 'false'
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
@@ -153,5 +160,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net10.0 --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net11.0 --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
         }

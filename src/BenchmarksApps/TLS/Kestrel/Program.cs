@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -21,10 +20,26 @@ var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabl
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var certPublicKeySpecified = int.TryParse(builder.Configuration["certPublicKeyLength"], out var certPublicKeyConfig);
 var certPublicKeyLength = certPublicKeySpecified ? certPublicKeyConfig : 2048;
+var enableHostHeaderValidation = bool.TryParse(builder.Configuration["enableHostHeaderValidation"], out var enableHostHeaderValidationConfig) && enableHostHeaderValidationConfig;
+var supportedTlsVersions = ParseSslProtocols(builder.Configuration["tlsProtocols"]);
 
 // endpoints
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
-var supportedTlsVersions = ParseSslProtocols(builder.Configuration["tlsProtocols"]);
+
+// determine if listening is expected only on HTTP scheme
+var httpOnly = true;
+foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+{
+    var urlPrefix = UrlPrefix.Create(endpoint);
+    if (urlPrefix.Scheme == "https")
+    {
+        httpOnly = false;
+    }
+}
+if (httpOnly)
+{
+    Console.WriteLine("[Note] Server scheme is HTTP, not HTTPS.");
+}
 
 // debug
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
@@ -38,6 +53,24 @@ if (mTlsEnabled && tlsRenegotiationEnabled)
 
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
+
+if (enableHostHeaderValidation)
+{
+    builder.Services.Configure<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>(options =>
+    {
+        var allowedHosts = new HashSet<string>();
+        foreach (var endpoint in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            var urlPrefix = UrlPrefix.Create(endpoint);
+            allowedHosts.Add(urlPrefix.Host);
+        }
+
+        Console.WriteLine("Configured HostFilteringOptions. Hosts: " + string.Join(';', allowedHosts));
+        options.AllowedHosts = allowedHosts.ToArray();
+        options.IncludeFailureMessage = true; // Suppresses the failure message in response body. It should be `true` to match http.sys behavior.
+        options.AllowEmptyHosts = true;
+    });
+}
 
 builder.WebHost.UseKestrel(options =>
 {
@@ -53,11 +86,34 @@ builder.WebHost.UseKestrel(options =>
 
         serverOptions.Listen(endpoint, listenOptions =>
         {
+            var protocol = config["protocol"] ?? "";
+            if (protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
+            {
+                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+            }
+            else if (protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+            }
+
+            if (httpOnly)
+            {
+                // all TLS related settings should be below
+                return;
+            }
+
             var certificatePath = Path.Combine("certificates", $"testCert-{certPublicKeyLength}.pfx");
             Console.WriteLine($"Using certificate: {certificatePath}");
 
+            var certPath =
+#if DEBUG
+            Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, certificatePath); // exe location
+#else
+            certificatePath;
+#endif
+
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-            listenOptions.UseHttps(certificatePath, "testPassword", options =>
+            listenOptions.UseHttps(certPath, "testPassword", options =>
             {
                 if (supportedTlsVersions is not null)
                 {
@@ -82,21 +138,17 @@ builder.WebHost.UseKestrel(options =>
                     options.ClientCertificateValidation = AllowAnyCertificateValidationWithLogging;
                 }
             });
-
-            var protocol = config["protocol"] ?? "";
-            if (protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
-            {
-                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-            }
-            else if (protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
-            {
-                listenOptions.Protocols = HttpProtocols.Http2;
-            }
         });
     }
 });
 
 var app = builder.Build();
+
+if (enableHostHeaderValidation)
+{
+    Console.WriteLine("Enabled host header filtering middleware.");
+    app.UseHostFiltering();
+}
 
 bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
 {
@@ -121,11 +173,15 @@ if (logRequestDetails)
         {
             logged = true;
 
-            var tlsHandshakeFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
+            var tlsFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
 
             Console.WriteLine("Request details:");
             Console.WriteLine("-----");
-            Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
+            Console.WriteLine($"Protocol: {tlsFeature.Protocol}");
+            Console.WriteLine($"CipherSuite: {tlsFeature.NegotiatedCipherSuite}");
+            Console.WriteLine($"CipherAlgorithm: {tlsFeature.CipherAlgorithm}");
+            Console.WriteLine($"KeyExchangeAlgorithm: {tlsFeature.KeyExchangeAlgorithm}");
+            Console.WriteLine("TLS: " + tlsFeature.Protocol);
             Console.WriteLine("-----");
         }
 
@@ -166,14 +222,18 @@ if (tlsRenegotiationEnabled)
 }
 
 app.MapGet("/hello-world", () =>
-{
+{   
     return Results.Ok("Hello World!");
 });
 
 await app.StartAsync();
 
 Console.WriteLine("Application Info:");
-LogOpenSSLVersion();
+if (!httpOnly)
+{
+    LogOpenSSLVersion();
+    Console.WriteLine($"\tsupported TLS versions: {supportedTlsVersions}");
+}
 if (mTlsEnabled)
 {
     Console.WriteLine($"\tmTLS is enabled (client cert is required)");
@@ -190,7 +250,16 @@ if (statsEnabled)
 {
     Console.WriteLine($"\tenabled logging stats to console");
 }
-Console.WriteLine($"\tsupported TLS versions: {supportedTlsVersions}");
+
+if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
+{
+#pragma warning disable CA1416 // Validate platform compatibility
+    Console.WriteLine($"OpenSSL: {System.Security.Cryptography.SafeEvpPKeyHandle.OpenSslVersion}");
+#pragma warning restore CA1416 // Validate platform compatibility
+}
+
+Console.WriteLine($"OPENSSL_CONF: {Environment.GetEnvironmentVariable("OPENSSL_CONF")}");
+Console.WriteLine($"LD_LIBRARY_PATH: {Environment.GetEnvironmentVariable("LD_LIBRARY_PATH")}");
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
 

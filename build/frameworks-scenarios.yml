@@ -41,11 +41,24 @@ parameters:
   # Scenarios are in frameworks-database-scenarios.yml since they require the db server
 
 #  Ntex (Rust)
+#
+# Ntex Plaintext and Ntex Json are disabled: the docker build for
+# ntex-plt.dockerfile is broken because the TechEmpower ntex
+# workspace has `tokio-postgres` as a top-level dependency pointing
+# at the fafhrd91/postgres `ntex-3` fork (frozen at commit fbc7a17).
+# That fork no longer compiles against the latest ntex-bytes (1.6+)
+# that cargo resolves from TechEmpower's caret-versioned
+# `ntex-bytes = "1.5"`, so every binary in the workspace - including
+# ntex-plt - fails with E0308 mismatched-types errors on `BytesMut`
+# vs `BytePages`. TechEmpower/FrameworkBenchmarks is now archived
+# (https://github.com/TechEmpower/FrameworkBenchmarks), so a real
+# fix upstream is unlikely. See build/frameworks-database-scenarios.yml
+# for the matching Ntex Fortunes disable.
 
-  - displayName: Ntex Plaintext
-    arguments: --scenario plaintext_ntex --load.variables.connections 1024 --property scenario=PlaintextNtex
-  - displayName: Ntex Json
-    arguments: --scenario json_ntex --load.variables.connections 512 --property scenario=JsonNtex
+  # - displayName: Ntex Plaintext
+  #   arguments: --scenario plaintext_ntex --load.variables.connections 1024 --property scenario=PlaintextNtex
+  # - displayName: Ntex Json
+  #   arguments: --scenario json_ntex --load.variables.connections 512 --property scenario=JsonNtex
 
 #  Vertx (Java)
 

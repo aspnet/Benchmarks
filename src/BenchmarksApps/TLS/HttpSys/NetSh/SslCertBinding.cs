@@ -2,9 +2,9 @@
 {
     public class SslCertBinding
     {
-        public string CertificateThumbprint { get; set; }
+        public string? CertificateThumbprint { get; set; }
 
-        public string ApplicationId { get; set; }
+        public string? ApplicationId { get; set; }
 
         /// <summary>
         /// if mutual TLS is enabled

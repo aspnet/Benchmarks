@@ -1,0 +1,124 @@
+{
+    "metadata": {
+        "name": "Cobalt Hosted CI Benchmarks Configuration",
+        "description": "Pod-based scheduling for cobalt hosted CI benchmarks",
+        "version": "2.0",
+        "schedule": "0 3/12 * * *",
+        "queues": [
+            "cobalthosted",
+            "cobalthosted_azurelinux3"
+        ],
+        "yaml_generation": {
+            "target_yaml_count": 1,
+            "schedule_offset_hours": 0
+        }
+    },
+    "pods": [
+        {
+            "name": "cobalt-hosted-lin",
+            "machines": { "sut": "cobalt-hosted-lin-server", "load": "cobalt-hosted-lin-client", "db": "cobalt-hosted-lin-db" },
+            "profiles": { "sut": "cobalt-hosted-lin-server-app", "load": "cobalt-hosted-lin-client-load", "db": "cobalt-hosted-lin-db-db" }
+        },
+        {
+            "name": "cobalt-hosted-lin-azl3",
+            "machines": { "sut": "cobalt-hosted-lin-server-azl3", "load": "cobalt-hosted-lin-client-azl3", "db": "cobalt-hosted-lin-db-azl3" },
+            "profiles": { "sut": "cobalt-hosted-lin-server-azure-linux3-app", "load": "cobalt-hosted-lin-client-azure-linux3-load", "db": "cobalt-hosted-lin-db-azure-linux3-db" }
+        },
+        {
+            "name": "cobalt-hosted-lin-28",
+            "machines": { "sut": "cobalt-hosted-lin-server", "load": "cobalt-hosted-lin-client", "db": "cobalt-hosted-lin-db" },
+            "profiles": { "sut": "cobalt-hosted-lin-server-28-app", "load": "cobalt-hosted-lin-client-load", "db": "cobalt-hosted-lin-db-db" }
+        },
+        {
+            "name": "cobalt-hosted-lin-azl3-28",
+            "machines": { "sut": "cobalt-hosted-lin-server-azl3", "load": "cobalt-hosted-lin-client-azl3", "db": "cobalt-hosted-lin-db-azl3" },
+            "profiles": { "sut": "cobalt-hosted-lin-server-azure-linux3-28-app", "load": "cobalt-hosted-lin-client-azure-linux3-load", "db": "cobalt-hosted-lin-db-azure-linux3-db" }
+        }
+    ],
+    "scenarios": [
+        {
+            "name": "Containers",
+            "template": "containers-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3"],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "PGO",
+            "template": "pgo-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 90.0
+        },
+        {
+            "name": "Baselines Database",
+            "template": "baselines-database-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 45.0
+        },
+        {
+            "name": "Baselines",
+            "template": "baselines-scenarios.yml",
+            "type": 2,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 30.0
+        },
+        {
+            "name": "Frameworks Database",
+            "template": "frameworks-database-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "MVC",
+            "template": "mvc-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "NativeAOT",
+            "template": "nativeaot-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends",
+            "template": "trend-scenarios.yml",
+            "type": 2,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 20.0
+        },
+        {
+            "name": "Trends Database",
+            "template": "trend-database-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "Crossgen",
+            "template": "crossgen2-scenarios.yml",
+            "type": 2,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 5.0
+        },
+        {
+            "name": "Frameworks",
+            "template": "frameworks-scenarios.yml",
+            "type": 3,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 15.0
+        },
+        {
+            "name": "GC",
+            "template": "gc-scenarios.yml",
+            "type": 1,
+            "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "estimated_runtime": 15.0
+        }
+    ]
+}

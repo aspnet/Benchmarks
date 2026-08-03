@@ -1,33 +1,11 @@
 imports:
-  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/packages.yml?raw=true
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/packages.yml
 
 profiles:
   short:
     variables:
       warmup: 3
       duration: 7 
-
-  intel-lin-app:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 28
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-        aliases:
-          - main
-
-  intel-perflin-app:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 12
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-perf-lin:5001
-        aliases:
-          - main
 
   intel-perfload-load:
     variables:
@@ -39,39 +17,6 @@ profiles:
         aliases:
           - secondary
           - warmup
-
-  intel-lin-load:
-    variables:
-      secondaryAddress: 10.0.0.102
-    agents:
-      load:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-        aliases:
-          - warmup
-          - secondary
-
-  intel-win-app:
-    variables:
-      serverAddress: 10.0.0.104
-      cores: 28
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-win:5001
-        aliases:
-          - main
-
-  intel-win-load:
-    variables:
-      secondaryAddress: 10.0.0.104
-    agents:
-      load:
-        endpoints: 
-          - http://asp-citrine-win:5001
-        aliases:
-          - warmup
-          - secondary
 
   intel-db-app:
     variables:
@@ -175,61 +120,6 @@ profiles:
           - warmup
           - secondary
 
-  amd-lin-app:
-    variables:
-      serverAddress: 10.0.0.106
-      cores: 48
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-amd:5001
-        aliases:
-          - main
-
-  amd-lin-load:
-    variables:
-      secondaryAddress: 10.0.0.106
-    agents: 
-      load:
-        endpoints: 
-          - http://asp-citrine-amd:5001
-        aliases:
-          - warmup
-          - secondary
-
-  amd-lin2-app:
-    variables:
-      serverAddress: 10.0.0.109
-      cores: 48
-    agents: 
-      application:
-        endpoints: 
-          - http://asp-citrine-amd2:5001
-        aliases:
-          - main
-
-  amd-lin2-load:
-    variables:
-      secondaryAddress: 10.0.0.109
-    agents: 
-      load:
-        endpoints: 
-          - http://asp-citrine-amd2:5001
-        aliases:
-          - warmup
-          - secondary
-
-  amd-lin2-db:
-    variables:
-      databaseServer: 10.0.0.109
-      downstreamAddress: 10.0.0.109
-    agents: 
-      db:
-        endpoints: 
-          - http://asp-citrine-amd2:5001
-        aliases:
-          - downstream
-          - extra
 
   arm-lin-app:
     variables:
@@ -413,3 +303,101 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  #############################################
+  #                                           #
+  #         COBALT NETWORKED MACHINES         #
+  #                                           #
+  #############################################
+
+  cobalt-hosted-lin-server-app:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 56
+    agents:
+      application:
+        endpoints:
+          - http://10.57.32.73:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-server-28-app:
+    variables:
+      serverAddress: 10.57.32.73
+      cores: 28
+    agents:
+      application:
+        cpuSet: 0-27
+        endpoints:
+          - http://10.57.32.73:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-client-load:
+    variables:
+      secondaryAddress: 10.57.32.72
+    agents:
+      load:
+        endpoints:
+          - http://10.57.32.72:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-hosted-lin-db-db:
+    variables:
+      databaseServer: 10.57.32.74
+      downstreamAddress: 10.57.32.74
+    agents:
+      db:
+        endpoints:
+          - http://10.57.32.74:5001
+        aliases:
+          - downstream
+          - extra
+
+  cobalt-hosted-lin-server-azure-linux3-app:
+    variables:
+      serverAddress: 10.57.32.95
+      cores: 56
+    agents:
+      application:
+        endpoints:
+          - http://10.57.32.95:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-server-azure-linux3-28-app:
+    variables:
+      serverAddress: 10.57.32.95
+      cores: 28
+    agents:
+      application:
+        cpuSet: 0-27
+        endpoints:
+          - http://10.57.32.95:5001
+        aliases:
+          - main
+
+  cobalt-hosted-lin-client-azure-linux3-load:
+    variables:
+      secondaryAddress: 10.57.32.96
+    agents:
+      load:
+        endpoints:
+          - http://10.57.32.96:5001
+        aliases:
+          - warmup
+          - secondary
+
+  cobalt-hosted-lin-db-azure-linux3-db:
+    variables:
+      databaseServer: 10.57.32.94
+      downstreamAddress: 10.57.32.94
+    agents:
+      db:
+        endpoints:
+          - http://10.57.32.94:5001
+        aliases:
+          - downstream
+          - extra

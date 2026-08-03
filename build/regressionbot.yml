@@ -55,9 +55,10 @@ extends:
         steps:
         - checkout: dotnet-crank
           path: crank
+          workspaceRepo: true
           fetchDepth: 1
           displayName: Checkout dotnet-crank
-        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.RegressionBot/
+        - powershell: dotnet build --framework net8.0 -c release src/Microsoft.Crank.RegressionBot/
           displayName: Build regression bot
         - checkout: self
           fetchDepth: 1
@@ -69,7 +70,7 @@ extends:
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: |
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
+              dotnet artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
                   --config $(Pipeline.Workspace)/benchmarks/build/regressions.config.yml `
                   --connectionstring BENCHMARKSBOT_ConnectionString `
                   --repository-id $(github.repositoryId) `
@@ -79,7 +80,7 @@ extends:
                   --app-key BENCHMARKSBOT_GitHubAppKey `
                   --verbose
               
-              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
+              dotnet artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
                   --config $(Pipeline.Workspace)/benchmarks/build/regressions.blazor.config.yml `
                   --connectionstring BENCHMARKSBOT_ConnectionString `
                   --repository-id $(github.repositoryId) `

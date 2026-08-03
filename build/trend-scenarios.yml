@@ -99,6 +99,10 @@ parameters:
     arguments: --scenario antiforgery-validation $(antiforgeryJobs) --property scenario=AntiforgeryTokenValidation
   - displayName: Antiforgery Token Generation
     arguments: --scenario antiforgery-generation $(antiforgeryJobs) --property scenario=AntiforgeryTokenGeneration
+  - displayName: CSRF Accepted
+    arguments: --scenario csrf-accepted $(antiforgeryJobs) --property scenario=AntiforgeryCsrfAccepted
+  - displayName: CSRF Rejected
+    arguments: --scenario csrf-rejected $(antiforgeryJobs) --property scenario=AntiforgeryCsrfRejected
 
 # TLS
 
@@ -113,7 +117,10 @@ parameters:
 
   - displayName: "Kestrel Linux: TLS Handshakes"
     arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=KestrelTLSHandshakes --application.options.requiredOperatingSystem linux
-    
+
+  - displayName: "Nginx: TLS Handshakes"
+    arguments: --scenario tls-handshakes-docker-nginx $(tlsJobs) --property scenario=NginxTLSHandshakes --application.options.requiredOperatingSystem linux
+
   - displayName: "Kestrel Linux: mTLS Handshakes"
     arguments: --scenario mTls-handshakes-kestrel $(tlsJobs) --property scenario=KestrelMutualTLSHandshakes --application.options.requiredOperatingSystem linux
 
@@ -157,5 +164,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net10.0 --application.collectDependencies true ${{ parameters.arguments }} --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          "args": [ "${{ s.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net11.0 --application.collectDependencies true ${{ parameters.arguments }} --application.options.collectCounters true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
         }
