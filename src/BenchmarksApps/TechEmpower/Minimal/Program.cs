@@ -36,7 +36,7 @@ app.MapGet("/db/result", async (Db db) => Results.Json(await db.LoadSingleQueryR
 app.MapGet("/fortunes", async (HttpContext context, Db db, HtmlEncoder htmlEncoder) => {
     var fortunes = await db.LoadFortunesRows();
     //var fortunes = await db.LoadFortunesRowsNoDb(); // Don't call the database
-    var template = (RazorSliceHttpResult<List<Fortune>>)Fortunes.Create(fortunes);
+    var template = Fortunes.Create(fortunes);
     template.HtmlEncoder = htmlEncoder;
     return template;
 });

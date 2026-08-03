@@ -68,7 +68,17 @@ templates:
                             {%- if diff.RepositoryUrl == empty -%}
                                 `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
                             {%- else -%}
-                                {{ diff.RepositoryUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
+                                {%- assign repoUrl = diff.RepositoryUrl -%}
+                                {%- comment -%}
+                                Post-VMR (https://github.com/dotnet/dotnet), framework-level commits live in
+                                dotnet/dotnet rather than the component repos. Rewrite the diff URL when the
+                                dependency is one of the synthetic framework deps that Crank still records
+                                with the legacy component-repo URL.
+                                {%- endcomment -%}
+                                {%- if diff.Names contains 'Microsoft.AspNetCore.App' or diff.Names contains 'Microsoft.NETCore.App' or repoUrl == 'https://github.com/dotnet/aspnetcore' or repoUrl == 'https://github.com/dotnet/runtime' -%}
+                                    {%- assign repoUrl = 'https://github.com/dotnet/dotnet' -%}
+                                {%- endif -%}
+                                {{ repoUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
                             {%- endif -%}
                         {%- else -%}
                             `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
@@ -115,7 +125,17 @@ templates:
                             {%- if diff.RepositoryUrl == empty -%}
                                 `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
                             {%- else -%}
-                                {{ diff.RepositoryUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
+                                {%- assign repoUrl = diff.RepositoryUrl -%}
+                                {%- comment -%}
+                                Post-VMR (https://github.com/dotnet/dotnet), framework-level commits live in
+                                dotnet/dotnet rather than the component repos. Rewrite the diff URL when the
+                                dependency is one of the synthetic framework deps that Crank still records
+                                with the legacy component-repo URL.
+                                {%- endcomment -%}
+                                {%- if diff.Names contains 'Microsoft.AspNetCore.App' or diff.Names contains 'Microsoft.NETCore.App' or repoUrl == 'https://github.com/dotnet/aspnetcore' or repoUrl == 'https://github.com/dotnet/runtime' -%}
+                                    {%- assign repoUrl = 'https://github.com/dotnet/dotnet' -%}
+                                {%- endif -%}
+                                {{ repoUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
                             {%- endif -%}
                         {%- else -%}
                             `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
