@@ -42,4 +42,4 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes/apex
-        connections: 512
+        connections: 1024

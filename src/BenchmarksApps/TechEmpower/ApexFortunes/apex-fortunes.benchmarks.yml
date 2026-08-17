@@ -41,4 +41,4 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
-        connections: 512
+        connections: 1024
