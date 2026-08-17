@@ -16,7 +16,7 @@ jobs:
     variables:
       serverScheme: http
     environmentVariables:
-      CONNECTION_STRING: Host={{databaseServer}};Database=hello_world;Username=benchmarkdbuser;Password=benchmarkdbpass
+      CONNECTION_STRING: "Host={{databaseServer}} Database=hello_world Username=benchmarkdbuser Password=benchmarkdbpass"
       APEX_CONNECTIONS: 56
       APEX_PIPELINING: 64
 
