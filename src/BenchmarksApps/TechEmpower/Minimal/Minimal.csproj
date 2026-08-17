@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -9,13 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
+    <PackageReference Include="Apex.PgClient" Version="$(ApexPgClientVersion)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion100)" />
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
     <PackageReference Include="Dapper.AOT" Version="$(DapperAotVersion)" />
     <PackageReference Include="RazorSlices" Version="$(RazorSlicesVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net9.0'))">
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
   </ItemGroup>
 </Project>

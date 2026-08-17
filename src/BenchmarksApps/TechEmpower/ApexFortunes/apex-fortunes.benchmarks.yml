@@ -1,0 +1,44 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  serverPort: 5000
+
+jobs:
+  apex-fortunes:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TechEmpower/ApexFortunes/ApexFortunes.csproj
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    variables:
+      serverScheme: http
+    environmentVariables:
+      CONNECTION_STRING: Host={{databaseServer}};Database=hello_world;Username=benchmarkdbuser;Password=benchmarkdbpass
+      APEX_CONNECTIONS: 56
+      APEX_PIPELINING: 64
+
+  postgresql-apex:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  apex-fortunes:
+    db:
+      job: postgresql-apex
+    application:
+      job: apex-fortunes
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        connections: 512
