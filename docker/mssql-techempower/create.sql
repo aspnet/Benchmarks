@@ -18,7 +18,7 @@ DECLARE @max INT = 10000;
 
 WHILE @cnt < @max
 BEGIN
-	INSERT INTO [world] ([randomNumber]) VALUES ( ABS(CHECKSUM(NewId())) % 10000 );
+	INSERT INTO [world] ([randomNumber]) VALUES ( (ABS(CHECKSUM(NewId())) % 10000) + 1 );
 	SET @cnt = @cnt + 1;
 END;
 GO
