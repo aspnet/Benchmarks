@@ -17,7 +17,7 @@ while [ "$attempt" -le "$max_attempts" ]; do
   fi
 
   if [ "$attempt" -eq "$max_attempts" ]; then
-    echo "Timed out waiting for SQL Server to accept connections after ${max_attempts}s." >&2
+    echo "Timed out waiting for SQL Server to accept connections after ${max_attempts} attempts." >&2
     exit 1
   fi
 
