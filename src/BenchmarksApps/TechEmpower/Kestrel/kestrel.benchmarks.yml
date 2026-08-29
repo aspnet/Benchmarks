@@ -1,0 +1,75 @@
+﻿imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.standard.yml?raw=true
+
+variables:
+    serverPort: 5000
+    
+jobs:
+  kestrel:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TechEmpower/Kestrel/Kestrel.csproj
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    variables:
+      serverScheme: http
+
+scenarios:
+  plaintext:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+
+  json-string:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json-string
+
+  json-utf8bytes:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json-utf8bytes
+
+  json-chunked:
+    application:
+      job: kestrel
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json-chunked
+
+profiles:
+  # this profile uses the local folder as the source 
+  # instead of the public repository
+  source:
+    agents:
+      main:
+        source:
+          localFolder: .
+          respository: ''
+          project: Kestrel.csproj
