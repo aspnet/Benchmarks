@@ -30,8 +30,8 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: ASP.NET-Performance-Controller-new
-      image: MMSWindows2022-Secure
+      name: NETCore1ESPool-Internal
+      image: 1es-windows-2022
       os: windows
     sdl:
       policheck:
