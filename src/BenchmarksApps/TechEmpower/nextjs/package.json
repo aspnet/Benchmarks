@@ -1,0 +1,28 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "nodemon",
+    "build": "next build && tsc --project tsconfig.server.json",
+    "start": "cross-env NODE_ENV=production node dist/server.js",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "next": "13.4.0",
+    "pg": "^8.11.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.3.0",
+    "@types/pg": "^8.10.2",
+    "@types/react": "18.2.11",
+    "@types/react-dom": "18.2.4",
+    "eslint": "8.42.0",
+    "eslint-config-next": "13.4.0",
+    "nodemon": "^2.0.20",
+    "ts-node": "^10.9.1",
+    "typescript": "5.1.3"
+  }
+}
