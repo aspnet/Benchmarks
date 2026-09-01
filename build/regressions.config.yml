@@ -8,7 +8,7 @@ sources:
           - area-perf
       - exclude: drogon|fasthttp|actix|gin|express|node|netty|spring|vertx|ntex|Siryn
       - exclude: ConnectionClose
-      - exclude: '[aA]zure|Cloud|Idna'
+      - exclude: '[aA]zure|[cC]obalt|Cloud|Idna'
       - exclude: Arm\s80
     daysToLoad: 60
     stdevCount: 7
