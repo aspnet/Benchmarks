@@ -12,7 +12,8 @@ ADD import-data.sh .
 USER root 
 
 # Grant permissions for the import-data script to be executable
-RUN chmod +x import-data.sh
+RUN chmod +x import-data.sh entrypoint.sh && \
+    test -x /opt/mssql-tools18/bin/sqlcmd
 
 USER mssql
 
