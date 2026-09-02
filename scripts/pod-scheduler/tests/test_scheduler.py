@@ -5,8 +5,10 @@ import tests  # noqa: F401  # ensures sys.path is set up
 from models import (
     PipelineSettings,
     Pod,
+    SCENARIO_TYPE_DUAL,
+    SCENARIO_TYPE_SINGLE,
+    SCENARIO_TYPE_TRIPLE,
     Scenario,
-    ScenarioType,
     Schedule,
     ScheduleConfig,
     Stage,
@@ -33,12 +35,15 @@ def _config(pods, scenarios, queues=("q1", "q2")):
 
 
 def _pod(name, sut, load=None, db=None):
-    return Pod(
-        name=name, sut=sut, load=load, db=db,
-        sut_profile=f"{sut}-app",
-        load_profile=f"{load}-load" if load else None,
-        db_profile=f"{db}-db" if db else None,
-    )
+    machines = [sut]
+    profiles = [f"{sut}-app"]
+    if load:
+        machines.append(load)
+        profiles.append(f"{load}-load")
+    if db:
+        machines.append(db)
+        profiles.append(f"{db}-db")
+    return Pod(name=name, machines=machines, profiles=profiles)
 
 
 def _scn(name, type_, pods, runtime=10):
@@ -52,7 +57,7 @@ class TestExpandRuns(unittest.TestCase):
     def test_strict_raises_on_unknown_pod(self):
         cfg = _config(
             pods=[_pod("p1", "m1")],
-            scenarios=[_scn("S", ScenarioType.SINGLE, ["missing"])],
+            scenarios=[_scn("S", SCENARIO_TYPE_SINGLE, ["missing"])],
         )
         with self.assertRaises(SchedulerError):
             expand_runs(cfg, strict=True)
@@ -60,7 +65,7 @@ class TestExpandRuns(unittest.TestCase):
     def test_lenient_skips_unknown_pod(self):
         cfg = _config(
             pods=[_pod("p1", "m1")],
-            scenarios=[_scn("S", ScenarioType.SINGLE, ["missing", "p1"])],
+            scenarios=[_scn("S", SCENARIO_TYPE_SINGLE, ["missing", "p1"])],
         )
         runs = expand_runs(cfg, strict=False)
         self.assertEqual([r.pod.name for r in runs], ["p1"])
@@ -68,7 +73,7 @@ class TestExpandRuns(unittest.TestCase):
     def test_strict_raises_on_invalid_type(self):
         cfg = _config(
             pods=[_pod("p1", "m1")],  # no load
-            scenarios=[_scn("S", ScenarioType.DUAL, ["p1"])],
+            scenarios=[_scn("S", SCENARIO_TYPE_DUAL, ["p1"])],
         )
         with self.assertRaises(SchedulerError):
             expand_runs(cfg, strict=True)
@@ -79,8 +84,8 @@ class TestCreateSchedule(unittest.TestCase):
         cfg = _config(
             pods=[_pod("p1", "m1")],
             scenarios=[
-                _scn("A", ScenarioType.SINGLE, ["p1"], runtime=5),
-                _scn("B", ScenarioType.SINGLE, ["p1"], runtime=10),
+                _scn("A", SCENARIO_TYPE_SINGLE, ["p1"], runtime=5),
+                _scn("B", SCENARIO_TYPE_SINGLE, ["p1"], runtime=10),
             ],
         )
         sched = create_schedule(cfg)
@@ -90,8 +95,8 @@ class TestCreateSchedule(unittest.TestCase):
         cfg = _config(
             pods=[_pod("p1", "m1"), _pod("p2", "m2")],
             scenarios=[
-                _scn("A", ScenarioType.SINGLE, ["p1"]),
-                _scn("B", ScenarioType.SINGLE, ["p2"]),
+                _scn("A", SCENARIO_TYPE_SINGLE, ["p1"]),
+                _scn("B", SCENARIO_TYPE_SINGLE, ["p2"]),
             ],
         )
         sched = create_schedule(cfg)
@@ -102,7 +107,7 @@ class TestCreateSchedule(unittest.TestCase):
         cfg = _config(
             pods=[_pod(f"p{i}", f"m{i}") for i in range(3)],
             scenarios=[
-                _scn(f"S{i}", ScenarioType.SINGLE, [f"p{i}"]) for i in range(3)
+                _scn(f"S{i}", SCENARIO_TYPE_SINGLE, [f"p{i}"]) for i in range(3)
             ],
             queues=("q1", "q2"),
         )
@@ -112,7 +117,7 @@ class TestCreateSchedule(unittest.TestCase):
     def test_zero_queues_raises(self):
         cfg = _config(
             pods=[_pod("p1", "m1")],
-            scenarios=[_scn("S", ScenarioType.SINGLE, ["p1"])],
+            scenarios=[_scn("S", SCENARIO_TYPE_SINGLE, ["p1"])],
             queues=(),
         )
         with self.assertRaises(SchedulerError):
@@ -122,8 +127,8 @@ class TestCreateSchedule(unittest.TestCase):
         cfg = _config(
             pods=[_pod("p1", "m1"), _pod("p2", "m2")],
             scenarios=[
-                _scn("A", ScenarioType.SINGLE, ["p1"], runtime=10),
-                _scn("B", ScenarioType.SINGLE, ["p2"], runtime=10),
+                _scn("A", SCENARIO_TYPE_SINGLE, ["p1"], runtime=10),
+                _scn("B", SCENARIO_TYPE_SINGLE, ["p2"], runtime=10),
             ],
         )
         s1 = create_schedule(cfg)
@@ -143,9 +148,9 @@ class TestSplitSchedule(unittest.TestCase):
         cfg = _config(
             pods=[_pod("p1", "m1")],
             scenarios=[
-                _scn("A", ScenarioType.SINGLE, ["p1"], runtime=30),
-                _scn("B", ScenarioType.SINGLE, ["p1"], runtime=20),
-                _scn("C", ScenarioType.SINGLE, ["p1"], runtime=10),
+                _scn("A", SCENARIO_TYPE_SINGLE, ["p1"], runtime=30),
+                _scn("B", SCENARIO_TYPE_SINGLE, ["p1"], runtime=20),
+                _scn("C", SCENARIO_TYPE_SINGLE, ["p1"], runtime=10),
             ],
         )
         sched = create_schedule(cfg)

@@ -7,8 +7,8 @@ pipeline YAML files. Pods define fixed machine groupings (SUT + load + DB),
 and the scheduler ensures no physical machine is double-booked per stage.
 
 Usage:
-    python main.py --config ./build/benchmarks_ci_pods.json
-    python main.py --config ./build/benchmarks_ci_pods.json \\
+    python main.py --config ./build/benchmarks_ci_pods.yml
+    python main.py --config ./build/benchmarks_ci_pods.yml \\
         --yaml-output ./build
 """
 
@@ -20,7 +20,7 @@ from typing import List
 
 from config_loader import ConfigError, load_config
 from generator import GeneratorError, generate_yamls, schedule_to_template_data
-from models import Schedule, ScheduleConfig
+from models import ROLE_NAMES, Schedule, ScheduleConfig
 from scheduler import (
     SchedulerError,
     create_schedule,
@@ -98,12 +98,9 @@ def print_pod_conflicts(config: ScheduleConfig) -> None:
     """Show which pods share physical machines (potential conflicts)."""
     machine_pods = {}
     for pod in config.pods.values():
-        for role in ["sut", "load", "db"]:
-            machine = getattr(pod, role)
-            if machine:
-                machine_pods.setdefault(machine, []).append(
-                    (pod.name, role)
-                )
+        for i, machine in enumerate(pod.machines):
+            role = ROLE_NAMES[i] if i < len(ROLE_NAMES) else f"slot{i}"
+            machine_pods.setdefault(machine, []).append((pod.name, role))
 
     shared = {m: pods for m, pods in machine_pods.items() if len(pods) > 1}
     if shared:
@@ -141,7 +138,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--config", required=True,
-        help="Path to JSON configuration file"
+        help="Path to YAML or JSON configuration file"
     )
     parser.add_argument(
         "--yaml-output",
@@ -195,7 +192,7 @@ def main(argv: List[str] = None) -> int:
             print(f"\nAll runs ({len(runs)} total):")
             for r in runs:
                 machines = ", ".join(sorted(r.machines_used))
-                print(f"  {r.name:<45} type={r.scenario.type.value}  "
+                print(f"  {r.name:<45} type={r.scenario.type}  "
                       f"runtime={r.estimated_runtime:.0f}m  "
                       f"machines=[{machines}]")
             return 0

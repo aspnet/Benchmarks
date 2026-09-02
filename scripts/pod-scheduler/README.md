@@ -15,31 +15,41 @@ cannot run in the same stage. The scheduler handles this automatically.
 
 ## Quick Start
 
+### Prerequisites
+
+The scheduler needs Python 3.10+ and PyYAML. From the repo root:
+
+```bash
+python -m pip install -r scripts/pod-scheduler/requirements.txt
+```
+
+### Run
+
 Run from the repository root:
 
 ```bash
 # Show schedule summary
-python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.json
+python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.yml
 
 # Generate pipeline YAML files
 python scripts/pod-scheduler/main.py \
-    --config build/benchmarks_ci_pods.json \
+    --config build/benchmarks_ci_pods.yml \
     --yaml-output build
 
 # Regenerate the Azure or Cobalt pipelines
 python scripts/pod-scheduler/main.py \
-    --config build/benchmarks_ci_azure_pods.json \
+    --config build/benchmarks_ci_azure_pods.yml \
     --base-name benchmarks-ci-azure --yaml-output build
 
 python scripts/pod-scheduler/main.py \
-    --config build/benchmarks_ci_cobalt_pods.json \
+    --config build/benchmarks_ci_cobalt_pods.yml \
     --base-name benchmarks-ci-cobalt --yaml-output build
 
 # Show which pods share machines
-python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.json --show-conflicts
+python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.yml --show-conflicts
 
 # List all runs without scheduling
-python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.json --list-runs
+python scripts/pod-scheduler/main.py --config build/benchmarks_ci_pods.yml --list-runs
 ```
 
 The header of every generated YAML embeds the exact regen command for that
@@ -50,7 +60,7 @@ pod-for-scenario reference fails with a non-zero exit code so config typos
 cannot silently drop scenarios from the pipeline. Pass `--lenient` to fall
 back to the previous warn-and-skip behavior.
 
-Output is **deterministic**: identical input JSON always produces identical
+Output is **deterministic**: identical input config always produces identical
 YAML, so regenerations diff cleanly. To verify, run the snapshot tests:
 
 ```bash
@@ -60,40 +70,49 @@ python -m unittest discover tests
 
 ## Configuration Format
 
-```json
-{
-    "metadata": {
-        "name": "Config Name",
-        "schedule": "0 3/12 * * *",
-        "queues": ["citrine1", "citrine2", "citrine3", "mono"],
-        "yaml_generation": {
-            "target_yaml_count": 2,
-            "schedule_offset_hours": 6
-        },
-        "pipeline": {
-            "pool": "server",
-            "service_bus_connection": "ASPNET Benchmarks Service Bus",
-            "service_bus_namespace": "aspnetbenchmarks"
-        }
-    },
-    "pods": [
-        {
-            "name": "gold-lin",
-            "machines": { "sut": "gold-lin", "load": "gold-load", "db": "gold-db" },
-            "profiles": { "sut": "gold-lin-app", "load": "gold-load-load", "db": "gold-db-db" }
-        }
-    ],
-    "scenarios": [
-        {
-            "name": "Baselines",
-            "template": "baselines-scenarios.yml",
-            "type": 2,
-            "pods": ["gold-lin", "gold-win"],
-            "estimated_runtime": 30.0,
-            "timeout": 120
-        }
-    ]
-}
+Configs are YAML by default (see `build/benchmarks_ci_pods.yml` for a real
+example). The loader also accepts the legacy JSON form (`.json`) so older
+local copies still work, but new edits should be in YAML — comments make a
+big difference for readability and the schema-driven LSP support only kicks
+in for YAML.
+
+```yaml
+# yaml-language-server: $schema=../scripts/pod-scheduler/pod-config.schema.json
+
+metadata:
+  name: Config Name
+  schedule: "0 3/12 * * *"
+  queues: [citrine1, citrine2, citrine3, mono]
+  yaml_generation:
+    target_yaml_count: 2
+    schedule_offset_hours: 6
+  pipeline:
+    pool: server
+    service_bus_connection: ASPNET Benchmarks Service Bus
+    service_bus_namespace: aspnetbenchmarks
+
+pods:
+- name: gold-lin
+  # gold-lin and gold-win share gold-db; the scheduler keeps them out of
+  # the same stage when both run a triple-type scenario. machines[i]
+  # pairs with profiles[i]; length determines role count (1=SUT only,
+  # 2=SUT+load, 3=SUT+load+db).
+  machines:
+  - gold-lin
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-app
+  - gold-load-load
+  - gold-db-db
+
+scenarios:
+  - name: Baselines
+    template: baselines-scenarios.yml
+    type: dual            # single | dual | triple (or 1 | 2 | 3 for legacy)
+    pods: [gold-lin, gold-win]
+    estimated_runtime: 30
+    timeout: 120
 ```
 
 The `pipeline` block is optional; defaults match the legacy hardcoded values.
@@ -102,17 +121,64 @@ The `schedule` field's **hour** must be a `H` or `H/N` cron expression
 (e.g. `3` or `3/12`). Lists, ranges, and `*` are rejected at load time so the
 hour-offset used for split YAMLs cannot silently no-op.
 
+### Schema-driven editing
+
+Every shipped config opens with:
+
+```yaml
+# yaml-language-server: $schema=../scripts/pod-scheduler/pod-config.schema.json
+```
+
+VS Code (with the Red Hat YAML extension), Cursor, JetBrains IDEs, and any
+editor running [`yaml-language-server`](https://github.com/redhat-developer/yaml-language-server)
+will pick this up and provide:
+
+- autocomplete for keys and `type` values,
+- hover docs sourced from the schema's `description` fields, and
+- inline error squiggles for missing required fields, unknown keys, or
+  invalid enum values.
+
+LLM-driven edits also benefit: the schema's descriptions are reliable
+grounding so agents are far less likely to hallucinate keys or invalid
+`type` values.
+
 ### Pod Definition
+
+A pod has a `name`, a `machines` list, and a `profiles` list. They are parallel arrays: `machines[i]` runs `profiles[i]`. The number of entries decides which scenarios the pod can run:
+
+| Entries | Roles | Eligible scenario types |
+|---------|-------|-------------------------|
+| 1 | SUT only | `single` |
+| 2 | SUT + load | `single`, `dual` |
+| 3 | SUT + load + db | `single`, `dual`, `triple` |
+
+```yaml
+- name: gold-lin
+  # gold-lin and gold-win share gold-db; the scheduler keeps them out of
+  # the same stage when both run a triple-type scenario.
+  machines:
+  - gold-lin
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-app
+  - gold-load-load
+  - gold-db-db
+```
 
 | Field | Description |
 |-------|-------------|
 | `name` | Unique identifier for the pod |
-| `machines.sut` | Physical machine name for SUT role |
-| `machines.load` | Physical machine name for Load role (optional) |
-| `machines.db` | Physical machine name for DB role (optional) |
-| `profiles.sut` | Crank profile name for SUT |
-| `profiles.load` | Crank profile name for Load (optional) |
-| `profiles.db` | Crank profile name for DB (optional) |
+| `machines` | Physical machines used by this pod (1-3 unique strings) |
+| `profiles` | Crank profile names paired with `machines` by position (same length, all unique) |
+
+The loader enforces:
+
+- `len(machines) == len(profiles)` — each machine pairs with exactly one profile.
+- All entries are non-empty strings; bools are rejected (YAML's `yes`/`no` trap).
+- Within a single pod, machines are unique and profiles are unique.
+
+The role of slot `i` is determined by length: a pod with three entries has `[sut, load, db]`; with two it has `[sut, load]`; with one it's SUT-only. Across pods, the same physical machine may legitimately play different roles (e.g., `azure2-db` is the db machine for `azure2-amd64` but the load machine for `idna-amd-win`); only the per-pod pairing is enforced.
 
 ### Scenario Definition
 
@@ -120,7 +186,7 @@ hour-offset used for split YAMLs cannot silently no-op.
 |-------|-------------|
 | `name` | Display name (also used as part of the AzDO job id) |
 | `template` | YAML scenario template to invoke |
-| `type` | 1=SINGLE, 2=DUAL, 3=TRIPLE (see below) |
+| `type` | `single` / `dual` / `triple` (or 1 / 2 / 3 — see below) |
 | `pods` | List of pod names this scenario targets (no duplicates) |
 | `estimated_runtime` | Runtime estimate in minutes; defaults per type if omitted |
 | `timeout` | Optional explicit AzDO `timeoutInMinutes` override. When unset, the generator picks `max(120, min(240, ceil(2 * estimated_runtime)))` |
@@ -129,9 +195,12 @@ hour-offset used for split YAMLs cannot silently no-op.
 
 | Type | Machines Used | Example |
 |------|--------------|---------|
-| 1 (SINGLE) | SUT only | Build, GC |
-| 2 (DUAL) | SUT + Load | Baselines, Grpc, SignalR |
-| 3 (TRIPLE) | SUT + Load + DB | Baselines Database, PGO, Proxies |
+| `single` (1) | SUT only | Build, GC |
+| `dual` (2) | SUT + Load | Baselines, Grpc, SignalR |
+| `triple` (3) | SUT + Load + DB | Baselines Database, PGO, Proxies |
+
+The string form is preferred for new configs because it's self-documenting;
+the integer form is still accepted for back-compat with older configs.
 
 ### Queue Assignment
 
@@ -155,9 +224,26 @@ conflict.
 If you get 2 SUT machines of the same class (e.g., gold-lin-1 and gold-lin-2),
 create separate pods for each. They can share load/DB:
 
-```json
-{"name": "gold-lin-1", "machines": {"sut": "gold-lin-1", "load": "gold-load", "db": "gold-db"}, ...},
-{"name": "gold-lin-2", "machines": {"sut": "gold-lin-2", "load": "gold-load", "db": "gold-db"}, ...}
+```yaml
+- name: gold-lin-1
+  machines:
+  - gold-lin-1
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-1-app
+  - gold-load-load
+  - gold-db-db
+
+- name: gold-lin-2
+  machines:
+  - gold-lin-2
+  - gold-load
+  - gold-db
+  profiles:
+  - gold-lin-2-app
+  - gold-load-load
+  - gold-db-db
 ```
 
 The scheduler automatically prevents them from running simultaneously when they
@@ -180,8 +266,10 @@ share load/DB machines.
 | `main.py` | CLI entry point, summary display |
 | `models.py` | Data classes (Pod, Scenario, Run, Stage, Schedule, PipelineSettings) |
 | `scheduler.py` | Scheduling algorithm |
-| `config_loader.py` | JSON config parser + validation |
+| `config_loader.py` | YAML/JSON config parser + validation |
 | `generator.py` | YAML generation |
+| `pod-config.schema.json` | JSON Schema describing the config; consumed by editor LSPs |
+| `requirements.txt` | Runtime Python dependencies (PyYAML) |
 | `tests/` | Unit + snapshot tests (`python -m unittest`) |
 
 This is intentionally script-style: the modules use absolute imports
