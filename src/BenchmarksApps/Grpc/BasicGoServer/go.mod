@@ -1,15 +1,15 @@
 module github.com/grpc/grpc-dotnet
 
-go 1.23.0
+go 1.25.0
 
 require (
-	google.golang.org/grpc v1.64.1
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/grpc v1.83.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 )
