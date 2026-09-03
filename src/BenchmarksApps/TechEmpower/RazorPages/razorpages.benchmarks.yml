@@ -9,7 +9,7 @@ jobs:
   razorpages:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/TechEmpower/RazorPages/RazorPages.csproj
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"

@@ -14,7 +14,7 @@ jobs:
   aspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
@@ -38,7 +38,7 @@ jobs:
   mssql:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       dockerFile: docker/mssql-techempower/Dockerfile
       dockerImageName: mssql_te
       dockerContextDirectory: docker/mssql-techempower

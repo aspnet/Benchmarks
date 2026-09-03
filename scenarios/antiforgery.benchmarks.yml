@@ -12,7 +12,7 @@ jobs:
   antiforgerybenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/Antiforgery/Antiforgery.csproj
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --debug {{debug}}"
@@ -27,7 +27,7 @@ scenarios:
     load:
       job: wrk
       variables:
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-auth-token.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/Antiforgery/scripts/wrk-auth-token.lua
 
   antiforgery-generation:
     application:
@@ -58,7 +58,7 @@ scenarios:
       job: wrk
       variables:
         path: /csrf
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-csrf.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/Antiforgery/scripts/wrk-csrf.lua
         customHeaders:
           - "Sec-Fetch-Site: same-origin"
 
@@ -71,6 +71,6 @@ scenarios:
       job: wrk
       variables:
         path: /csrf
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-csrf.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/Antiforgery/scripts/wrk-csrf.lua
         customHeaders:
           - "Sec-Fetch-Site: cross-site"

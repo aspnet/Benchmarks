@@ -51,7 +51,8 @@ cannot silently drop scenarios from the pipeline. Pass `--lenient` to fall
 back to the previous warn-and-skip behavior.
 
 Output is **deterministic**: identical input JSON always produces identical
-YAML, so regenerations diff cleanly. To verify, run the snapshot tests:
+YAML, so regenerations diff cleanly. To verify, run the snapshot and Trend
+configuration contract tests:
 
 ```bash
 cd scripts/pod-scheduler
@@ -73,8 +74,10 @@ python -m unittest discover tests
         "pipeline": {
             "pool": "server",
             "service_bus_connection": "ASPNET Benchmarks Service Bus",
-            "service_bus_namespace": "aspnetbenchmarks"
-        }
+            "service_bus_namespace": "aspnetbenchmarks",
+            "trend_benchmarks_raw_base_url": "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+        },
+        "trend_lane_registry": "trend-perflab-lanes.json"
     },
     "pods": [
         {
@@ -96,7 +99,28 @@ python -m unittest discover tests
 }
 ```
 
-The `pipeline` block is optional; defaults match the legacy hardcoded values.
+The `pipeline` block is optional for non-Trend scenarios; its
+`trend_benchmarks_raw_base_url` field is required for Trend and must use
+`$(Build.SourceVersion)`, never `/main`.
+`trend_lane_registry` is required when a config schedules either Trend
+template. It maps pod names to stable PerfLab lane names, canonical PerfLab
+queues, OS/architecture/locale, core count, and hardware identity. These
+values are intentionally independent of the Service Bus worker queues.
+
+Every Trend scenario source entry must explicitly set
+`"enable_perf_lab_publication": false`. The generator passes this value as the
+boolean `enablePerfLabPublication` template parameter, and the worker receives
+`postProcess.enabled: false`; raw JSON and existing SQL writes continue, but no
+PerfLab storage or queue publication occurs. Enabling publication requires
+explicit approval and a separate single-pod canary scenario. The loader rejects
+broader or non-Trend opt-ins.
+
+Trend references the canonical repository configs through a raw GitHub base
+URL pinned to `$(Build.SourceVersion)`. Benchmarks-owned source revisions and
+raw assets use `{{benchmarksCommit}}`; the shared default is `main`, and Trend
+overrides it with `--variable benchmarksCommit=$(Build.SourceVersion)`.
+Benchmarks-owned `imports` retain their existing URLs because Crank resolves
+imports before applying command-line variables.
 
 The `schedule` field's **hour** must be a `H` or `H/N` cron expression
 (e.g. `3` or `3/12`). Lists, ranges, and `*` are rejected at load time so the
@@ -124,6 +148,7 @@ hour-offset used for split YAMLs cannot silently no-op.
 | `pods` | List of pod names this scenario targets (no duplicates) |
 | `estimated_runtime` | Runtime estimate in minutes; defaults per type if omitted |
 | `timeout` | Optional explicit AzDO `timeoutInMinutes` override. When unset, the generator picks `max(120, min(240, ceil(2 * estimated_runtime)))` |
+| `enable_perf_lab_publication` | Required for Trend; keep `false` unless an explicitly approved single-pod canary is being configured |
 
 ### Scenario Types
 

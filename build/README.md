@@ -69,3 +69,27 @@ After any edit, regenerate the YAML and commit both the JSON and the YAML
 together. The snapshot tests in
 `scripts/pod-scheduler/tests/test_snapshots.py` will fail in CI if the
 generated YAML drifts from the configs.
+
+## Trend PerfLab lanes
+
+[`trend-perflab-lanes.json`](trend-perflab-lanes.json) is the source of truth
+for Trend's stable PerfLab lane identity. Its queue convention is
+`<OS>.<version>.<architecture>.<hardware>.Perf`. The pod scheduler copies the
+matching lane into every Trend template call. Service Bus queue names such as
+`citrine1`, `azure`, and `cobalthosted` remain worker-routing details and must
+never be used as PerfLab `Run.Queue`.
+
+Trend scenarios declare `testName`, `family`, and `categories` directly in the
+scenario templates. Plaintext variants use `aspnet-plaintext`, JSON variants
+use `aspnet-json`, and the remaining families are antiforgery, TLS, request
+rejection, fortunes, single query, multiple queries, updates, and caching.
+`testName` remains the individual PerfLab `Test.Name`; `family` becomes
+`Run.Name`.
+
+Trend jobs load the canonical repository configs through a raw GitHub base URL
+pinned to `$(Build.SourceVersion)`. Benchmarks-owned source revisions and raw
+assets use `{{benchmarksCommit}}`, whose shared default is `main`; Trend
+overrides it with `--variable benchmarksCommit=$(Build.SourceVersion)`.
+Crank resolves `imports` before applying command-line variables, so existing
+Benchmarks-owned import URLs continue to use their declared revisions rather
+than being duplicated into a generated config tree.

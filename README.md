@@ -22,3 +22,9 @@ The Azure DevOps pipelines that drive the daily benchmark sweep are generated
 from JSON configs by the [pod-scheduler](scripts/pod-scheduler/README.md).
 See [`build/README.md`](build/README.md) for the mapping between configs and
 generated YAML files, and how to regenerate them after editing.
+
+# PerfLab export
+
+The external [Crank PerfLab exporter](src/Crank.PerfLabExporter/README.md)
+converts raw Crank JSON to canonical PerfLab JSON and optionally publishes it to
+the existing results blob and queue protocol.

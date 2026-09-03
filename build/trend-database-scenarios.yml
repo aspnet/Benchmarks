@@ -14,6 +14,69 @@ parameters:
 - name: condition
   type: string
   default: 'true'
+- name: benchmarksRawBaseUrl
+  type: string
+- name: enablePerfLabPublication
+  type: boolean
+  default: false
+- name: perfLabLaneName
+  type: string
+- name: perfLabQueue
+  type: string
+- name: perfLabOs
+  type: string
+- name: perfLabArchitecture
+  type: string
+- name: perfLabLocale
+  type: string
+- name: perfLabCores
+  type: string
+- name: perfLabHardware
+  type: string
+- name: perfLabTopology
+  type: string
+- name: runtimeRepository
+  type: string
+  default: https://github.com/dotnet/runtime
+- name: runtimeBranch
+  type: string
+  default: main
+- name: framework
+  type: string
+  default: net11.0
+- name: runtime
+  type: string
+  default: CoreCLR
+- name: configuration
+  type: string
+  default: Release
+- name: adapterPolicyPath
+  type: string
+  default: crank-perflab-counter-policy.json
+- name: perfLabStorageAccount
+  type: string
+  default: pvscmdupload
+- name: perfLabContainer
+  type: string
+  default: results
+- name: perfLabResultsQueue
+  type: string
+  default: resultsqueue
+- name: crankVersionEnvironmentVariable
+  type: string
+  default: CRANK_VERSION
+- name: perfLabTenantIdEnvironmentVariable
+  type: string
+  default: PERFLAB_UPLOAD_TENANT_ID
+- name: perfLabClientIdEnvironmentVariable
+  type: string
+  default: PERFLAB_UPLOAD_CLIENT_ID
+- name: perfLabCertificateBase64EnvironmentVariable
+  type: string
+  default: PERFLAB_UPLOAD_CERTIFICATE_BASE64
+- name: perfLabCertificatePasswordEnvironmentVariable
+  type: string
+  default: PERFLAB_UPLOAD_CERTIFICATE_PASSWORD
 
 # Scenarios
 - name: scenarios
@@ -23,49 +86,97 @@ parameters:
 # Platform
 
   - displayName: Fortunes Platform
-    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform --property protocol=http
+    testName: FortunesPlatform
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=FortunesPlatform --property protocol=http
   - displayName: Fortunes Platform EF
-    arguments: --scenario fortunes_ef $(platformJobs) --property scenario=FortunesPlatformEF --property protocol=http
+    testName: FortunesPlatformEF
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes_ef --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=FortunesPlatformEF --property protocol=http
   - displayName: Fortunes Platform Dapper
-    arguments: --scenario fortunes_dapper $(platformJobs) --property scenario=FortunesPlatformDapper --property protocol=http
+    testName: FortunesPlatformDapper
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes_dapper --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=FortunesPlatformDapper --property protocol=http
   - displayName: Single Query Platform
-    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform --property protocol=http
+    testName: SingleQueryPlatform
+    family: aspnet-single-query
+    categories: aspnet,database,single-query
+    arguments: --scenario single_query --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=SingleQueryPlatform --property protocol=http
   - displayName: Multiple Queries Platform
-    arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform --property protocol=http
+    testName: MultipleQueriesPlatform
+    family: aspnet-multiple-queries
+    categories: aspnet,database,multiple-queries
+    arguments: --scenario multiple_queries --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=MultipleQueriesPlatform --property protocol=http
   - displayName: Updates Platform
-    arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatform --property protocol=http --variable duration=30
+    testName: UpdatesPlatform
+    family: aspnet-updates
+    categories: aspnet,database,updates
+    arguments: --scenario updates --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=UpdatesPlatform --property protocol=http --variable duration=30
   - displayName: Caching Platform
-    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform --property protocol=http
+    testName: CachingPlatform
+    family: aspnet-caching
+    categories: aspnet,database,caching
+    arguments: --scenario caching --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/platform.benchmarks.yml --property scenario=CachingPlatform --property protocol=http
 
 # Middleware
 
   - displayName: Fortunes
-    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes --property protocol=http
+    testName: Fortunes
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/database.benchmarks.yml --property scenario=Fortunes --property protocol=http
   - displayName: Fortunes EF
-    arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEf --property protocol=http
+    testName: FortunesEf
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes_ef --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/database.benchmarks.yml --property scenario=FortunesEf --property protocol=http
   - displayName: Fortunes Dapper
-    arguments: --scenario fortunes_dapper $(databaseJobs) --property scenario=FortunesDapper --property protocol=http
+    testName: FortunesDapper
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes_dapper --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/database.benchmarks.yml --property scenario=FortunesDapper --property protocol=http
 
 # Minimal APIS
 
   - displayName: Fortunes Minimal APIs
-    arguments: --scenario fortunes $(minimalJobs) --property scenario=FortunesMinimalApis --property protocol=http
+    testName: FortunesMinimalApis
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes --config ${{ parameters.benchmarksRawBaseUrl }}/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml --property scenario=FortunesMinimalApis --property protocol=http
   - displayName: Single Query Minimal APIs
-    arguments: --scenario single_query $(minimalJobs) --property scenario=SingleQueryMinimalApis --property protocol=http
+    testName: SingleQueryMinimalApis
+    family: aspnet-single-query
+    categories: aspnet,database,single-query
+    arguments: --scenario single_query --config ${{ parameters.benchmarksRawBaseUrl }}/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml --property scenario=SingleQueryMinimalApis --property protocol=http
   - displayName: Multiple Queries Minimal APIs
-    arguments: --scenario multiple_queries $(minimalJobs) --property scenario=MultipleQueriesMinimalApis --property protocol=http
+    testName: MultipleQueriesMinimalApis
+    family: aspnet-multiple-queries
+    categories: aspnet,database,multiple-queries
+    arguments: --scenario multiple_queries --config ${{ parameters.benchmarksRawBaseUrl }}/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml --property scenario=MultipleQueriesMinimalApis --property protocol=http
   - displayName: Updates Minimal APIs
-    arguments: --scenario updates $(minimalJobs) --property scenario=UpdatesMinimalApis --property protocol=http --variable duration=30
+    testName: UpdatesMinimalApis
+    family: aspnet-updates
+    categories: aspnet,database,updates
+    arguments: --scenario updates --config ${{ parameters.benchmarksRawBaseUrl }}/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml --property scenario=UpdatesMinimalApis --property protocol=http --variable duration=30
 
 # Blazor
 
   - displayName: Fortunes Blazor SSR
-    arguments: --scenario fortunes $(blazorSsrJobs) --property scenario=FortunesBlazorSsr --property protocol=http
+    testName: FortunesBlazorSsr
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes --config ${{ parameters.benchmarksRawBaseUrl }}/src/BenchmarksApps/TechEmpower/BlazorSSR/blazorssr.benchmarks.yml --property scenario=FortunesBlazorSsr --property protocol=http
 
 # Razor Pages
 
   - displayName: Fortunes Razor Pages
-    arguments: --scenario fortunes $(razorPagesJobs) --property scenario=FortunesRazorPages --property protocol=http
+    testName: FortunesRazorPages
+    family: aspnet-fortunes
+    categories: aspnet,database,fortunes
+    arguments: --scenario fortunes --config ${{ parameters.benchmarksRawBaseUrl }}/src/BenchmarksApps/TechEmpower/RazorPages/razorpages.benchmarks.yml --property scenario=FortunesRazorPages --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -84,5 +195,25 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net11.0 ${{ parameters.arguments }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          "args": [ "${{ s.arguments }} --config ${{ parameters.benchmarksRawBaseUrl }}/build/azure.profile.yml --config ${{ parameters.benchmarksRawBaseUrl }}/scenarios/steadystate.profile.yml --application.framework ${{ parameters.framework }} ${{ parameters.arguments }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --property perflab.build.repo=\"${{ parameters.runtimeRepository }}\" --property perflab.build.branch=\"${{ parameters.runtimeBranch }}\" --property perflab.lane.name=\"${{ parameters.perfLabLaneName }}\" --property perflab.lane.queue=\"${{ parameters.perfLabQueue }}\" --property perflab.lane.os.name=\"${{ parameters.perfLabOs }}\" --property perflab.lane.os.architecture=\"${{ parameters.perfLabArchitecture }}\" --property perflab.lane.os.locale=\"${{ parameters.perfLabLocale }}\" --property perflab.lane.additionalData.hardware=\"${{ parameters.perfLabHardware }}\" --property perflab.configuration.Framework=\"${{ parameters.framework }}\" --property perflab.configuration.Runtime=\"${{ parameters.runtime }}\" --property perflab.configuration.Cores=\"${{ parameters.perfLabCores }}\" --property perflab.configuration.Topology=\"${{ parameters.perfLabTopology }}\" --property perflab.configuration.Configuration=\"${{ parameters.configuration }}\" --property perflab.scenario.name=\"${{ s.testName }}\" --property perflab.scenario.family=\"${{ s.family }}\" --property perflab.scenario.categories=\"${{ s.categories }}\" --property perflab.perfRepoHash=\"$(Build.SourceVersion)\" --property perflab.azureDevOps.project=\"$(System.TeamProject)\" --property perflab.azureDevOps.pipeline=\"$(Build.DefinitionName)\" --property perflab.azureDevOps.buildId=\"$(Build.BuildId)\" --property perflab.azureDevOps.buildNumber=\"$(Build.BuildNumber)\" --property perflab.azureDevOps.buildUrl=\"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)\" --property perflab.sql.session=\"$(session)\" --property perflab.sql.table=\"TrendBenchmarks\" --property perflab.policy.path=\"${{ parameters.adapterPolicyPath }}\" --property perflab.additionalData.producer=\"TrendBenchmarks\" --json crank-results.json --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ],
+          "postProcess": {
+            "enabled": ${{ lower(parameters.enablePerfLabPublication) }},
+            "name": "Crank PerfLab export",
+            "args": [
+              "upload",
+              "--crank-json", "crank-results.json",
+              "--counter-policy", "${{ parameters.adapterPolicyPath }}",
+              "--identity-source", "crank",
+              "--identity-property-prefix", "perflab.",
+              "--crank-version-environment-variable", "${{ parameters.crankVersionEnvironmentVariable }}",
+              "--storage-account", "${{ parameters.perfLabStorageAccount }}",
+              "--container", "${{ parameters.perfLabContainer }}",
+              "--queue", "${{ parameters.perfLabResultsQueue }}",
+              "--storage-authentication", "certificate",
+              "--tenant-id-environment-variable", "${{ parameters.perfLabTenantIdEnvironmentVariable }}",
+              "--client-id-environment-variable", "${{ parameters.perfLabClientIdEnvironmentVariable }}",
+              "--certificate-base64-environment-variable", "${{ parameters.perfLabCertificateBase64EnvironmentVariable }}",
+              "--certificate-password-environment-variable", "${{ parameters.perfLabCertificatePasswordEnvironmentVariable }}"
+            ]
+          }
         }

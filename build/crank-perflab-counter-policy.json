@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "mappings": [
+    {
+      "path": "jobs.load.results['http/rps/mean']",
+      "name": "Requests/sec",
+      "metricName": "requests/sec",
+      "higherIsBetter": true,
+      "topCounter": true,
+      "defaultCounter": true,
+      "regressionThreshold": 0.02
+    },
+    {
+      "path": "jobs.load.results['http/latency/mean']",
+      "name": "Mean latency",
+      "metricName": "ms",
+      "higherIsBetter": false,
+      "topCounter": true,
+      "defaultCounter": false,
+      "regressionThreshold": 0.05,
+      "excludedScenarios": [
+        "RejectionInvalidHeaderHttpSys",
+        "RejectionInvalidHeaderKestrel"
+      ]
+    },
+    {
+      "path": "jobs.load.results['http/latency/99']",
+      "name": "P99 latency",
+      "metricName": "ms",
+      "higherIsBetter": false,
+      "topCounter": true,
+      "defaultCounter": false,
+      "regressionThreshold": 0.05,
+      "excludedScenarios": [
+        "RejectionInvalidHeaderHttpSys",
+        "RejectionInvalidHeaderKestrel"
+      ]
+    },
+    {
+      "path": "jobs.application.results['benchmarks/start-time']",
+      "name": "Startup time",
+      "metricName": "ms",
+      "higherIsBetter": false,
+      "topCounter": true,
+      "defaultCounter": false,
+      "regressionThreshold": 0.05
+    },
+    {
+      "path": "jobs.application.results['benchmarks/published-size']",
+      "name": "Published size",
+      "metricName": "bytes",
+      "higherIsBetter": false,
+      "topCounter": true,
+      "defaultCounter": false,
+      "regressionThreshold": 0.02,
+      "scale": 1024
+    }
+  ]
+}

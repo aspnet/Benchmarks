@@ -48,5 +48,13 @@
     <SystemCommandLineVersion>2.0.0-beta4.22272.1</SystemCommandLineVersion>
     <MicrosoftCrankEventSourcesVersion>0.2.0-alpha.24114.2</MicrosoftCrankEventSourcesVersion>
     <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
+    <AzureIdentityVersion>1.21.0</AzureIdentityVersion>
+    <AzureStorageBlobsVersion>12.29.1</AzureStorageBlobsVersion>
+    <AzureStorageQueuesVersion>12.27.1</AzureStorageQueuesVersion>
+    <CoverletCollectorVersion>6.0.2</CoverletCollectorVersion>
+    <GitHubActionsTestLoggerVersion>3.0.5</GitHubActionsTestLoggerVersion>
+    <MicrosoftNETTestSdkVersion>17.12.0</MicrosoftNETTestSdkVersion>
+    <XunitVersion>2.9.2</XunitVersion>
+    <XunitRunnerVisualStudioVersion>2.8.2</XunitRunnerVisualStudioVersion>
   </PropertyGroup>
 </Project>
