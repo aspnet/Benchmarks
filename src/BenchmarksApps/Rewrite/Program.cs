@@ -1,5 +1,9 @@
 var builder = WebApplication.CreateBuilder(args);
 
+foreach(string item in args)
+{
+    Console.WriteLine(item);
+}
 // Add services to the container.
 
 var app = builder.Build();

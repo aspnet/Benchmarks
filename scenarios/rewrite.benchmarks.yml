@@ -9,7 +9,7 @@ variables:
   debug: false
 
 jobs:
-  antiforgerybenchmarks:
+  rewritebenchmarks:
     source:
       #repository: https://github.com/cdincer/Benchmarks.git
       localFolder: ../
@@ -17,25 +17,39 @@ jobs:
       project: src/BenchmarksApps/Rewrite/Rewrite.csproj
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --debug {{debug}}"
+    environmentVariables:
+      database: PostgresQL
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+
+  mssql:
+    source:
+      #repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      localFolder: ../docker/mssql-techempower
+      dockerFile: Dockerfile
+    readyStateText: Data imported
+    noClean: true
 
 scenarios:
 
   rewrite1:
+    db:
+      job: mssql
     application:
-      job: antiforgerybenchmarks
+      job: rewritebenchmarks
       variables:
-        scenario: antiforgery
+        scenario: rewrite
     load:
       job: wrk
       variables:
         path: /rewrite1
 
-  antiforgery-generation:
+  rewrite2:
     application:
-      job: antiforgerybenchmarks
+      job: rewritebenchmarks
       variables:
-        scenario: antiforgery
+        scenario: rewrite
     load:
       job: wrk
       variables:
-        path: /auth
+        path: /placeholder
