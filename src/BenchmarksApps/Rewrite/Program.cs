@@ -1,16 +1,56 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Data.Common;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
+using Rewrite.Configuration;
+using Rewrite.Data;
 
-foreach(string item in args)
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+var hostingConfig = new ConfigurationBuilder()
+       .AddJsonFile("hosting.json", optional: true)
+       .AddEnvironmentVariables()
+       .AddCommandLine(args)
+       .Build();
+
+string connectionString = hostingConfig["ConnectionString"] ?? "no Connectionstring found";
+string databaseServer = hostingConfig["database"] ?? "no DatabaseServer found";
+
+
+
+builder.Services.AddEntityFrameworkNpgsql();
+var pgSettings = new NpgsqlConnectionStringBuilder(connectionString);
+
+builder.Services.AddDbContextPool<ApplicationDbContext>(
+    options => options
+        .UseNpgsql(connectionString,
+            o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
+        .EnableThreadSafetyChecks(false),
+    1024);
+;
+
+
+
+WebApplication app = builder.Build();
+
+await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+
+ApplicationDbContext dbContext =
+    scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+List<Fortune> fortunes = dbContext.Fortune.ToList();
+
+
+foreach(Fortune fortune in fortunes)
 {
-    Console.WriteLine(item);
+    Console.WriteLine($"Fortune: {fortune.Id} - {fortune.Message}");
 }
-// Add services to the container.
-
-var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-var summaries = new[]
+string[] summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };

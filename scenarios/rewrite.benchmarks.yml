@@ -30,11 +30,21 @@ jobs:
     readyStateText: Data imported
     noClean: true
 
+  postgresql:
+    source:
+      #repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      localFolder: ../docker/postgres-techempower
+      dockerFile: Dockerfile
+    readyStateText: ready to accept connections
+    noClean: true
+
+
 scenarios:
 
   rewrite1:
     db:
-      job: mssql
+      job: postgresql
     application:
       job: rewritebenchmarks
       variables:
@@ -52,4 +62,4 @@ scenarios:
     load:
       job: wrk
       variables:
-        path: /placeholder
+        path: /rewrite1
