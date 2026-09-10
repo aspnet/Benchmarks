@@ -1,4 +1,5 @@
 using System.Data.Common;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -15,40 +16,38 @@ var hostingConfig = new ConfigurationBuilder()
        .Build();
 
 string connectionString = hostingConfig["ConnectionString"] ?? "no Connectionstring found";
-string databaseServer = hostingConfig["database"] ?? "no DatabaseServer found";
 
 
+await using var dataSource = NpgsqlDataSource.Create(connectionString);
 
-builder.Services.AddEntityFrameworkNpgsql();
-var pgSettings = new NpgsqlConnectionStringBuilder(connectionString);
+await using var command = dataSource.CreateCommand("SELECT id,regex,replacement FROM \"RewriteRule\"");
+await using var reader = await command.ExecuteReaderAsync();
 
-builder.Services.AddDbContextPool<ApplicationDbContext>(
-    options => options
-        .UseNpgsql(connectionString,
-            o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
-        .EnableThreadSafetyChecks(false),
-    1024);
-;
+List<RewriteRule> rewriteRules = new();
 
+while (await reader.ReadAsync())
+{
+    RewriteRule rule = new RewriteRule
+    {
+        Id = reader.GetFieldValue<int>(0),
+        Regex = reader.GetFieldValue<string>(1),
+        Replacement = reader.GetFieldValue<string>(2)
+    };
+    rewriteRules.Add(rule);
+};
+var options = new RewriteOptions();
+
+foreach(RewriteRule rewriteRule in rewriteRules)
+{
+    options.AddRewrite(rewriteRule.Regex, rewriteRule.Replacement,skipRemainingRules: false);
+}
 
 
 WebApplication app = builder.Build();
 
-await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
-
-ApplicationDbContext dbContext =
-    scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+app.UseRewriter(options);
 
 
-List<Fortune> fortunes = dbContext.Fortune.ToList();
-
-
-foreach(Fortune fortune in fortunes)
-{
-    Console.WriteLine($"Fortune: {fortune.Id} - {fortune.Message}");
-}
-
-// Configure the HTTP request pipeline.
 
 string[] summaries = new[]
 {
@@ -56,6 +55,20 @@ string[] summaries = new[]
 };
 
 app.MapGet("/rewrite1", () =>
+{
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+});
+
+
+app.MapGet("/rewrite2", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
