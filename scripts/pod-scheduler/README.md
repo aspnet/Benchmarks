@@ -59,6 +59,19 @@ cd scripts/pod-scheduler
 python -m unittest discover tests
 ```
 
+These tests include the Trend publication gate and local fake-exporter tests
+for the shared `perflab` Controller `afterJob` profile. No benchmarks, uploads,
+queues, SQL, or GitHub access are needed. Available PowerShell/Bash shells are
+tested; unavailable shells are skipped. Profile-test scratch files stay under the
+repository's `artifacts` directory and are removed afterward.
+
+On Windows, optionally set `CRANK_CONTROLLER_DLL` to a locally built
+`crank.dll` containing the `afterJob` `result` binding and run with PowerShell 7
+installed. This additionally validates the actual Controller's offline config
+merging, Fluid rendering, and Jint guards against the local three-job fixture,
+without connecting to its placeholder endpoints. It checks enabled/disabled,
+success/failure, empty/nonempty results, and Windows/Linux/macOS host selection.
+
 ## Configuration Format
 
 ```json

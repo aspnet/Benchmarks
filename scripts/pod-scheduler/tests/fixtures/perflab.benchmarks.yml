@@ -1,0 +1,26 @@
+profiles:
+  fixture:
+    agents:
+      application:
+        endpoints: [http://127.0.0.1:1]
+      load:
+        endpoints: [http://127.0.0.1:1]
+      db:
+        endpoints: [http://127.0.0.1:1]
+
+jobs:
+  application:
+    executable: unused
+  load:
+    executable: unused
+  db:
+    executable: unused
+
+scenarios:
+  perflab-fixture:
+    application:
+      job: application
+    load:
+      job: load
+    db:
+      job: db

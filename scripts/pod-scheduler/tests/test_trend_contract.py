@@ -167,7 +167,7 @@ class TestTrendTemplateContract(unittest.TestCase):
                         scenario["testName"], property_match.group(1)
                     )
 
-    def test_raw_json_identity_sql_and_post_process_are_present(self):
+    def test_raw_json_identity_sql_and_after_job_profile_are_present(self):
         required_properties = [
             "perflab.build.repo",
             "perflab.build.branch",
@@ -207,71 +207,86 @@ class TestTrendTemplateContract(unittest.TestCase):
                 self.assertIn("--sql SQL_CONNECTION_STRING", text)
                 for property_name in required_properties:
                     self.assertIn(property_name, text)
-                self.assertIn('"name": "Crank PerfLab export"', text)
                 self.assertRegex(
                     text,
                     r"- name: enablePerfLabPublication\n"
                     r"  type: boolean\n"
                     r"  default: false",
                 )
-                self.assertIn('"--identity-source", "crank"', text)
-                self.assertIn(
-                    '"--crank-json", "crank-results.json"', text
-                )
-                self.assertIn(
-                    '"--counter-policy", '
-                    '"${{ parameters.adapterPolicyPath }}"',
-                    text,
-                )
-                self.assertIn(
-                    '"--storage-account", '
-                    '"${{ parameters.perfLabStorageAccount }}"',
-                    text,
-                )
-                self.assertIn(
-                    '"--container", '
-                    '"${{ parameters.perfLabContainer }}"',
-                    text,
-                )
-                self.assertIn(
-                    '"--queue", '
-                    '"${{ parameters.perfLabResultsQueue }}"',
-                    text,
-                )
                 payload = _payload(template)
                 self.assertEqual("crank", payload["name"])
+                self.assertNotIn("postProcess", payload)
+                self.assertEqual(1, len(payload["args"]))
+                command = payload["args"][0]
                 self.assertEqual(
-                    "Crank PerfLab export",
-                    payload["postProcess"]["name"],
+                    1,
+                    command.count(
+                        "--config ${{ parameters.benchmarksRawBaseUrl }}"
+                        "/build/perflab.profile.yml"
+                    ),
                 )
-                self.assertFalse(payload["postProcess"]["enabled"])
+                self.assertEqual(1, command.count("--profile perflab"))
+                self.assertIn("--variable perfLabPublication=false", command)
+                for variable, parameter in [
+                    ("perfLabCounterPolicy", "adapterPolicyPath"),
+                    ("perfLabStorageAccount", "perfLabStorageAccount"),
+                    ("perfLabContainer", "perfLabContainer"),
+                    ("perfLabResultsQueue", "perfLabResultsQueue"),
+                    ("crankVersionEnvironmentVariable",
+                     "crankVersionEnvironmentVariable"),
+                    ("perfLabTenantIdEnvironmentVariable",
+                     "perfLabTenantIdEnvironmentVariable"),
+                    ("perfLabClientIdEnvironmentVariable",
+                     "perfLabClientIdEnvironmentVariable"),
+                    ("perfLabCertificateBase64EnvironmentVariable",
+                     "perfLabCertificateBase64EnvironmentVariable"),
+                    ("perfLabCertificatePasswordEnvironmentVariable",
+                     "perfLabCertificatePasswordEnvironmentVariable"),
+                ]:
+                    self.assertIn(
+                        '--variable ' + variable
+                        + '="${{ parameters.' + parameter + ' }}"',
+                        command,
+                    )
 
-    def test_post_process_uses_only_credential_environment_references(self):
+    def test_profile_uses_only_credential_environment_references(self):
+        profile = _read("perflab.profile.yml")
+        for option in [
+            "--tenant-id-environment-variable",
+            "--client-id-environment-variable",
+            "--certificate-base64-environment-variable",
+            "--certificate-password-environment-variable",
+        ]:
+            self.assertEqual(2, profile.count(option))
+        self.assertNotRegex(
+            profile, r"--(tenant-id|client-id|certificate-path)[ ']"
+        )
+        self.assertNotIn("PERFLAB_UPLOAD_CERTIFICATE_BASE64)", profile)
+        self.assertNotIn("imports:", profile)
+
+    def test_enabling_publication_changes_only_the_gate_not_benchmark_runs(self):
+        expected_scenarios = {
+            "trend-scenarios.yml": 49,
+            "trend-database-scenarios.yml": 16,
+        }
         for template in _TEMPLATES:
             with self.subTest(template=template):
-                text = _read(template)
-                post_process = text[text.index('"postProcess"'):]
-                self.assertIn(
-                    '"--storage-authentication", "certificate"',
-                    post_process,
+                disabled = _payload(template)
+                enabled = _payload(template, publication_enabled=True)
+                self.assertEqual(1, len(disabled["args"]))
+                self.assertEqual(1, len(enabled["args"]))
+                self.assertEqual(
+                    disabled["args"][0].replace(
+                        "--variable perfLabPublication=false",
+                        "--variable perfLabPublication=true",
+                    ),
+                    enabled["args"][0],
                 )
-                self.assertIn(
-                    "--tenant-id-environment-variable", post_process
+                self.assertEqual(
+                    expected_scenarios[template], len(_scenarios(template))
                 )
-                self.assertIn(
-                    "--client-id-environment-variable", post_process
-                )
-                self.assertIn(
-                    "--certificate-base64-environment-variable",
-                    post_process,
-                )
-                self.assertIn(
-                    "--certificate-password-environment-variable",
-                    post_process,
-                )
-                self.assertNotRegex(
-                    post_process,
-                    r'"--(tenant-id|client-id|certificate-path)"\s*,',
+                self.assertEqual(
+                    1, _read(template).count("PublishToAzureServiceBus@2")
                 )
 
     def test_generated_trend_callers_use_registered_perflab_lanes(self):
@@ -384,7 +399,7 @@ class TestTrendTemplateContract(unittest.TestCase):
                 "perfLabTopology",
             ]:
                 self.assertIn(required, parameters)
-        self.assertGreater(call_count, 0)
+        self.assertEqual(24, call_count)
 
     def test_current_source_configs_disable_perflab_publication(self):
         scenario_count = 0
@@ -420,7 +435,12 @@ class TestTrendTemplateContract(unittest.TestCase):
             )
             for _ in _scenarios(call["template"]):
                 payload_count += 1
-                self.assertFalse(payload["postProcess"]["enabled"])
+                self.assertNotIn("postProcess", payload)
+                self.assertEqual(1, len(payload["args"]))
+                self.assertIn(
+                    "--variable perfLabPublication=false",
+                    payload["args"][0],
+                )
         for pipeline in _PIPELINES:
             self.assertNotIn(
                 "enablePerfLabPublication: true",

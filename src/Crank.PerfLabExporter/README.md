@@ -65,37 +65,51 @@ blob name is deterministic, and the queue message matches
 {"container_name": "results", "blob_name": "crank/.../report.perflab.json"}
 ```
 
-## Worker post-process
+## Controller afterJob
 
-Trend carries a disabled-by-default Crank worker post-process:
+Trend loads the canonical
+[`build/perflab.profile.yml`](../../build/perflab.profile.yml), pinned to the
+same Benchmarks revision as the scenario configs, and selects `--profile perflab`
+in its existing Crank invocation. The profile attaches one `perflab-export`
+`afterJob` command to **application only**; it does not add benchmark runs or
+hooks to load/database jobs. There is no worker `postProcess` payload.
 
-```json
-{
-  "postProcess": {
-    "enabled": false,
-    "name": "Crank PerfLab export",
-    "args": [
-      "upload",
-      "--crank-json", "crank-results.json",
-      "--counter-policy", "crank-perflab-counter-policy.json",
-      "--identity-source", "crank",
-      "--identity-property-prefix", "perflab.",
-      "--crank-version-environment-variable", "CRANK_VERSION",
-      "--storage-account", "pvscmdupload",
-      "--container", "results",
-      "--queue", "resultsqueue",
-      "--storage-authentication", "certificate",
-      "--tenant-id-environment-variable", "PERFLAB_UPLOAD_TENANT_ID",
-      "--client-id-environment-variable", "PERFLAB_UPLOAD_CLIENT_ID",
-      "--certificate-base64-environment-variable", "PERFLAB_UPLOAD_CERTIFICATE_BASE64",
-      "--certificate-password-environment-variable", "PERFLAB_UPLOAD_CERTIFICATE_PASSWORD"
-    ]
-  }
-}
-```
+Publication defaults to off. All current generated Trend callers explicitly
+set `enablePerfLabPublication: false`, which becomes
+`--variable perfLabPublication=false`. Enabling the caller changes only that
+gate. The command exports only when publication is enabled and the Controller
+supplies `result.returnCode == 0 && result.jobResults.jobs.Count > 0`.
+Disabled, failed, and empty/skipped runs select explicit logging no-op commands,
+so the command runner never sees an all-false selection on supported hosts.
+Other `afterJob` cleanup is not globally suppressed.
 
-Only environment-variable names cross Service Bus. Publication remains off
-until `enablePerfLabPublication` is explicitly enabled in a Trend caller.
+Use a Controller version that exposes the final `ExecutionResult` as `result`
+before running `afterJob`, after its final JSON writes. The exporter runs on
+the **Controller/worker host**, selected by `job.environment.platform`, not the
+remote SUT OS: Windows uses `powershell.exe`; Linux/macOS use Bash. It reads
+`crank-results.json` in the worker attempt's working directory, not beside the
+generated hook script. A nonzero exporter exit fails the command
+(`continueOnError: false`) and is subject to the existing worker retry policy.
+Export time is part of the existing job timeout, not a separate timeout budget.
+
+Before enabling publication, deploy the exporter and policy to the worker.
+Set the trusted worker environment variable
+`CRANK_AZDO_POST_PROCESS_EXECUTABLE` to the exporter executable/path (no arguments).
+The historical variable name is retained for deployment compatibility only;
+the worker no longer interprets a post-process configuration. Do not put an
+executable path or credential values in a Service Bus message.
+
+Existing Trend parameters remain supported via profile variables: policy path,
+storage account/container/queue, Crank version environment-variable name, and
+the four certificate-authentication environment-variable names. Defaults remain
+`crank-perflab-counter-policy.json`, `pvscmdupload`, `results`, `resultsqueue`,
+`CRANK_VERSION`, and the `PERFLAB_UPLOAD_*` names declared in the profile.
+Shell arguments are single-quoted with embedded apostrophes escaped for each
+shell; only environment-variable **names**, never credential values, enter the
+profile scripts. Credentials are read by the external exporter.
+
+Local `convert` and optional `upload` remain independent exporter commands;
+neither conversion nor upload logic is built into the Controller.
 
 ## Build and test
 

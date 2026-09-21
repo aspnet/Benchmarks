@@ -93,3 +93,18 @@ overrides it with `--variable benchmarksCommit=$(Build.SourceVersion)`.
 Crank resolves `imports` before applying command-line variables, so existing
 Benchmarks-owned import URLs continue to use their declared revisions rather
 than being duplicated into a generated config tree.
+
+Trend also loads [`perflab.profile.yml`](perflab.profile.yml) from that pinned
+base URL and selects `--profile perflab` in the same Crank invocation. This adds
+one application-only Controller `afterJob` hook, not a worker `postProcess`
+message or another benchmark run. All 24 generated Trend callers retain
+`enablePerfLabPublication: false`. The profile also defaults to disabled;
+disabled, failed, and empty/skipped results run a logging no-op.
+
+The hook runs the external exporter only for an enabled, successful, nonempty
+final result, after Crank has written `crank-results.json` in the worker attempt
+directory. Its shell is selected by the Controller host, not the SUT OS.
+Existing policy/storage/environment-name overrides remain Trend parameters.
+For required Controller support, trusted worker executable deployment,
+credential environment variables, failure behavior, and timeout semantics,
+see the [exporter documentation](../src/Crank.PerfLabExporter/README.md#controller-afterjob).
