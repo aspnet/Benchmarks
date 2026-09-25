@@ -1,0 +1,39 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
+
+variables:
+  serverPort: 5000
+  serverScheme: http
+  scenario: antiforgery
+  debug: false
+
+jobs:
+  rewritebenchmarks:
+    source:
+      #repository: https://github.com/cdincer/Benchmarks.git
+      localFolder: ../src/BenchmarksApps
+      branchOrCommit: main
+      project: Rewrite/Rewrite.csproj
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --debug {{debug}}"
+    environmentVariables:
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+
+scenarios:
+
+  rewrite1:
+    application:
+      job: rewritebenchmarks
+    load:
+      job: wrk
+      variables:
+        path: /rewrite1
+
+  rewrite2:
+    application:
+      job: rewritebenchmarks
+    load:
+      job: wrk
+      variables:
+        path: /rewrite2
