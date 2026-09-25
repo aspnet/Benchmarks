@@ -20,6 +20,10 @@ from models import (
 
 
 _CRON_HOUR_RE = re.compile(r"^(\d+)(/\d+)?$")
+_TREND_TEMPLATES = {
+    "trend-scenarios.yml",
+    "trend-database-scenarios.yml",
+}
 
 
 class GeneratorError(ValueError):
@@ -78,12 +82,29 @@ def schedule_to_template_data(
     for stage in schedule.stages:
         jobs = []
         for run in stage.runs:
+            lane = run.pod.perf_lab_lane
             jobs.append({
                 "name": run.name,
                 "job_id": run.job_name,
                 "template": run.scenario.template,
                 "profiles": run.profiles,
                 "timeout": _job_timeout(run),
+                "enable_perf_lab_publication": (
+                    run.scenario.enable_perf_lab_publication
+                ),
+                "perf_lab_lane": None if lane is None else {
+                    "name": lane.name,
+                    "queue": lane.queue,
+                    "os": lane.os,
+                    "architecture": lane.architecture,
+                    "locale": lane.locale,
+                    "cores": lane.cores,
+                    "hardware": lane.hardware,
+                },
+                "perf_lab_topology": {
+                    2: "SUT+Load",
+                    3: "SUT+Load+DB",
+                }.get(int(run.scenario.type)),
             })
         groups.append({"jobs": jobs})
 
@@ -186,8 +207,56 @@ def _render_yaml(
             lines.append(
                 f"      serviceBusNamespace: {pipeline.service_bus_namespace}"
             )
+            if job["template"] in _TREND_TEMPLATES:
+                raw_base_url = pipeline.trend_benchmarks_raw_base_url
+                if not raw_base_url:
+                    raise GeneratorError(
+                        f"Trend job {job['name']!r} has no pinned "
+                        "Benchmarks raw base URL"
+                    )
+                lane = job["perf_lab_lane"]
+                if lane is None:
+                    raise GeneratorError(
+                        f"Trend job {job['name']!r} has no PerfLab lane mapping"
+                    )
+                lines.append(
+                    "      benchmarksRawBaseUrl: "
+                    f'"{raw_base_url}"'
+                )
+                publication_enabled = str(
+                    job.get("enable_perf_lab_publication", False)
+                ).lower()
+                lines.append(
+                    "      enablePerfLabPublication: "
+                    f"{publication_enabled}"
+                )
+                lines.append(f"      perfLabLaneName: {lane['name']}")
+                lines.append(f"      perfLabQueue: {lane['queue']}")
+                lines.append(f'      perfLabOs: "{lane["os"]}"')
+                lines.append(
+                    f"      perfLabArchitecture: {lane['architecture']}"
+                )
+                lines.append(f"      perfLabLocale: {lane['locale']}")
+                lines.append(f'      perfLabCores: "{lane["cores"]}"')
+                lines.append(f"      perfLabHardware: {lane['hardware']}")
+                lines.append(
+                    f'      perfLabTopology: "{job["perf_lab_topology"]}"'
+                )
+            ci_profile = (
+                "--config "
+                f"{pipeline.trend_benchmarks_raw_base_url}/"
+                "build/ci.profile.yml"
+                if job["template"] in _TREND_TEMPLATES
+                else "$(ciProfile)"
+            )
+            pin_argument = (
+                "--variable benchmarksCommit=$(Build.SourceVersion) "
+                if job["template"] in _TREND_TEMPLATES
+                else ""
+            )
             lines.append(
-                f'      arguments: "$(ciProfile) {profiles_args} "'
+                f'      arguments: "{ci_profile} '
+                f'{pin_argument}{profiles_args} "'
             )
             lines.append("")
 

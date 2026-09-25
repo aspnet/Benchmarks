@@ -15,7 +15,7 @@ jobs:
   aspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
@@ -29,7 +29,7 @@ jobs:
   mapaction:
     source:
       repository: https://github.com/aspnet/Benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/MapAction/MapAction.csproj
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"

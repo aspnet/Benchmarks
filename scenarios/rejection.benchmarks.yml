@@ -16,7 +16,7 @@ jobs:
   httpSysServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
     variables:
@@ -36,7 +36,7 @@ jobs:
   kestrelServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
     readyStateText: Application started.
     variables:

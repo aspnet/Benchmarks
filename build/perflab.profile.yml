@@ -1,0 +1,73 @@
+variables:
+  perfLabPublication: "false"
+  perfLabCounterPolicy: crank-perflab-counter-policy.json
+  perfLabStorageAccount: pvscmdupload
+  perfLabContainer: results
+  perfLabResultsQueue: resultsqueue
+  crankVersionEnvironmentVariable: CRANK_VERSION
+  perfLabTenantIdEnvironmentVariable: PERFLAB_UPLOAD_TENANT_ID
+  perfLabClientIdEnvironmentVariable: PERFLAB_UPLOAD_CLIENT_ID
+  perfLabCertificateBase64EnvironmentVariable: PERFLAB_UPLOAD_CERTIFICATE_BASE64
+  perfLabCertificatePasswordEnvironmentVariable: PERFLAB_UPLOAD_CERTIFICATE_PASSWORD
+
+profiles:
+  perflab:
+    agents:
+      application:
+        afterJob:
+          - perflab-export
+
+commands:
+  perflab-export:
+    - condition: "job.environment.platform == 'windows' && ('{{ perfLabPublication }}' != 'true' || result.returnCode != 0 || result.jobResults.jobs.Count == 0)"
+      scriptType: powershell
+      script: Write-Host 'Skipping PerfLab export (disabled, failed, or empty result).'
+    - condition: "job.environment.platform != 'windows' && ('{{ perfLabPublication }}' != 'true' || result.returnCode != 0 || result.jobResults.jobs.Count == 0)"
+      scriptType: bash
+      script: echo 'Skipping PerfLab export (disabled, failed, or empty result).'
+    - condition: "job.environment.platform == 'windows' && '{{ perfLabPublication }}' == 'true' && result.returnCode == 0 && result.jobResults.jobs.Count > 0"
+      scriptType: powershell
+      continueOnError: false
+      script: |
+        $ErrorActionPreference = 'Stop'
+        if (-not $env:CRANK_AZDO_POST_PROCESS_EXECUTABLE) {
+          throw 'CRANK_AZDO_POST_PROCESS_EXECUTABLE must identify the deployed PerfLab exporter.'
+        }
+        $exportArguments = @(
+          'upload',
+          '--crank-json', 'crank-results.json',
+          '--counter-policy', '{{ perfLabCounterPolicy | replace: "'", "''" }}',
+          '--identity-source', 'crank',
+          '--identity-property-prefix', 'perflab.',
+          '--crank-version-environment-variable', '{{ crankVersionEnvironmentVariable | replace: "'", "''" }}',
+          '--storage-account', '{{ perfLabStorageAccount | replace: "'", "''" }}',
+          '--container', '{{ perfLabContainer | replace: "'", "''" }}',
+          '--queue', '{{ perfLabResultsQueue | replace: "'", "''" }}',
+          '--storage-authentication', 'certificate',
+          '--tenant-id-environment-variable', '{{ perfLabTenantIdEnvironmentVariable | replace: "'", "''" }}',
+          '--client-id-environment-variable', '{{ perfLabClientIdEnvironmentVariable | replace: "'", "''" }}',
+          '--certificate-base64-environment-variable', '{{ perfLabCertificateBase64EnvironmentVariable | replace: "'", "''" }}',
+          '--certificate-password-environment-variable', '{{ perfLabCertificatePasswordEnvironmentVariable | replace: "'", "''" }}'
+        )
+        & $env:CRANK_AZDO_POST_PROCESS_EXECUTABLE @exportArguments
+        exit $LASTEXITCODE
+    - condition: "(job.environment.platform == 'linux' || job.environment.platform == 'osx') && '{{ perfLabPublication }}' == 'true' && result.returnCode == 0 && result.jobResults.jobs.Count > 0"
+      scriptType: bash
+      continueOnError: false
+      script: |
+        set -eu
+        : "${CRANK_AZDO_POST_PROCESS_EXECUTABLE:?CRANK_AZDO_POST_PROCESS_EXECUTABLE must identify the deployed PerfLab exporter.}"
+        exec "$CRANK_AZDO_POST_PROCESS_EXECUTABLE" upload \
+          --crank-json crank-results.json \
+          --counter-policy '{{ perfLabCounterPolicy | replace: "'", "'\\''" }}' \
+          --identity-source crank \
+          --identity-property-prefix perflab. \
+          --crank-version-environment-variable '{{ crankVersionEnvironmentVariable | replace: "'", "'\\''" }}' \
+          --storage-account '{{ perfLabStorageAccount | replace: "'", "'\\''" }}' \
+          --container '{{ perfLabContainer | replace: "'", "'\\''" }}' \
+          --queue '{{ perfLabResultsQueue | replace: "'", "'\\''" }}' \
+          --storage-authentication certificate \
+          --tenant-id-environment-variable '{{ perfLabTenantIdEnvironmentVariable | replace: "'", "'\\''" }}' \
+          --client-id-environment-variable '{{ perfLabClientIdEnvironmentVariable | replace: "'", "'\\''" }}' \
+          --certificate-base64-environment-variable '{{ perfLabCertificateBase64EnvironmentVariable | replace: "'", "'\\''" }}' \
+          --certificate-password-environment-variable '{{ perfLabCertificatePasswordEnvironmentVariable | replace: "'", "'\\''" }}'

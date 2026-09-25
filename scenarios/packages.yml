@@ -1,3 +1,6 @@
+variables:
+  benchmarksCommit: main
+
 profiles:
 
   latest-extensions-packages:

@@ -11,7 +11,7 @@ jobs:
   httpSysServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
     variables:
@@ -28,7 +28,7 @@ jobs:
   kestrelServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
     readyStateText: Application started.
     variables:
@@ -47,7 +47,7 @@ jobs:
     sources:
       dockerKestrel:
         repository: https://github.com/aspnet/benchmarks.git
-        branchOrCommit: main
+        branchOrCommit: "{{benchmarksCommit}}"
     dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile
     dockerImageName: dockerKestrel
     dockerContextDirectory: dockerKestrel/src/BenchmarksApps/TLS/Kestrel
@@ -64,7 +64,7 @@ jobs:
     sources:
       dockerNginx:
         repository: https://github.com/aspnet/benchmarks.git
-        branchOrCommit: main
+        branchOrCommit: "{{benchmarksCommit}}"
     dockerFile: dockerNginx/src/BenchmarksApps/TLS/Nginx/Dockerfile
     dockerImageName: dockerNginx
     dockerContextDirectory: dockerNginx/src/BenchmarksApps/TLS
@@ -106,7 +106,7 @@ scenarios:
         connections: 32
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
@@ -125,7 +125,7 @@ scenarios:
         connections: 32
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
@@ -178,7 +178,7 @@ scenarios:
         connections: 32
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12
@@ -198,7 +198,7 @@ scenarios:
         connections: 32
         serverScheme: https
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy cert for testing")]
-        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/{{benchmarksCommit}}/src/BenchmarksApps/TLS/Certificates/2048/testCert-2048.pfx
         # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="This is a dummy password for testing")]
         certPwd: testPassword
         sslProtocol: tls12

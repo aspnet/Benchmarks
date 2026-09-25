@@ -252,7 +252,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-gold-linux-x64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetGold.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "56"
+      perfLabHardware: AspNetGold
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile gold-lin-app --profile gold-load-load "
 
 - job: Trends_Database_gold_win
   displayName: 8- Trends Database gold-win
@@ -266,7 +276,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine2
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-win-app --profile gold-load2-load --profile gold-db-db "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-gold-windows-x64
+      perfLabQueue: Windows.Server2022.Amd64.AspNetGold.Perf
+      perfLabOs: "Windows Server 2022"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "56"
+      perfLabHardware: AspNetGold
+      perfLabTopology: "SUT+Load+DB"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile gold-win-app --profile gold-load2-load --profile gold-db-db "
 
 # GROUP 9
 

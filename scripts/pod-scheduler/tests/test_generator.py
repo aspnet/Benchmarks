@@ -3,9 +3,14 @@ import unittest
 
 import tests  # noqa: F401  # ensures sys.path is set up
 
-from generator import GeneratorError, _job_timeout, _offset_cron
+from generator import (
+    GeneratorError,
+    _job_timeout,
+    _offset_cron,
+    _render_yaml,
+)
 from main import _format_source_path
-from models import Pod, Run, Scenario, ScenarioType
+from models import PipelineSettings, Pod, Run, Scenario, ScenarioType
 
 
 class TestOffsetCron(unittest.TestCase):
@@ -75,6 +80,69 @@ class TestFormatSourcePath(unittest.TestCase):
         self.assertEqual(
             _format_source_path(far), "./definitely-not-in-repo.json"
         )
+
+
+class TestTrendLaneRendering(unittest.TestCase):
+    def test_routing_queue_and_perflab_queue_are_distinct(self):
+        data = {
+            "schedule": "0 3/12 * * *",
+            "queues": ["citrine1"],
+            "groups": [{
+                "jobs": [{
+                    "name": "Trends gold-lin",
+                    "job_id": "Trends_gold_lin",
+                    "template": "trend-scenarios.yml",
+                    "profiles": ["gold-lin-app", "gold-load-load"],
+                    "timeout": 120,
+                    "enable_perf_lab_publication": False,
+                    "perf_lab_lane": {
+                        "name": "aspnet-gold-linux-x64",
+                        "queue": "Ubuntu.2204.Amd64.AspNetGold.Perf",
+                        "os": "Ubuntu 22.04",
+                        "architecture": "x64",
+                        "locale": "en-US",
+                        "cores": 56,
+                        "hardware": "AspNetGold",
+                    },
+                    "perf_lab_topology": "SUT+Load",
+                }]
+            }],
+        }
+
+        yaml = _render_yaml(
+            data,
+            PipelineSettings(
+                trend_benchmarks_raw_base_url=(
+                    "https://raw.githubusercontent.com/aspnet/Benchmarks/"
+                    "$(Build.SourceVersion)"
+                )
+            ),
+        )
+
+        self.assertIn("serviceBusQueueName: citrine1", yaml)
+        self.assertIn(
+            'benchmarksRawBaseUrl: "'
+            "https://raw.githubusercontent.com/aspnet/Benchmarks/"
+            '$(Build.SourceVersion)"',
+            yaml,
+        )
+        self.assertIn("enablePerfLabPublication: false", yaml)
+        self.assertNotIn("enablePerfLabPublication: true", yaml)
+        self.assertIn(
+            'arguments: "--config '
+            "https://raw.githubusercontent.com/aspnet/Benchmarks/"
+            "$(Build.SourceVersion)/build/ci.profile.yml "
+            "--variable benchmarksCommit=$(Build.SourceVersion) "
+            '--profile gold-lin-app --profile gold-load-load "',
+            yaml,
+        )
+        self.assertNotIn("trend-configs", yaml)
+        self.assertNotIn("$(ciProfile)", yaml)
+        self.assertIn(
+            "perfLabQueue: Ubuntu.2204.Amd64.AspNetGold.Perf", yaml
+        )
+        self.assertNotIn("perfLabQueue: citrine1", yaml)
+        self.assertIn('perfLabTopology: "SUT+Load"', yaml)
 
 
 if __name__ == "__main__":
