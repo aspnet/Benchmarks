@@ -79,7 +79,12 @@ parameters:
   - displayName: Netty Plaintext
     arguments: --scenario plaintext_netty --load.variables.connections 1024 --property scenario=PlaintextNetty
   - displayName: Netty Json
-    arguments: --scenario json_netty --load.variables.connections 512 --property scenario=JsonNetty
+    arguments: --scenario json_netty --load.variables.connections 1024 --property scenario=JsonNetty
+
+  # Libreactor (C)
+
+  - displayName: Libreactor Json
+    arguments: --scenario json_libreactor --load.variables.connections 2048 --property scenario=JsonLibreactor
 
 steps:
 - ${{ each s in parameters.scenarios }}:
