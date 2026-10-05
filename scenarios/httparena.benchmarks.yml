@@ -50,17 +50,11 @@ jobs:
     # /json/{count} reads its dataset from DATASET_PATH (default /data/dataset.json),
     # which HttpArena's own harness bind-mounts at run time. We vendor just that one
     # small static fixture and stage it next to the published app via outputFiles.
-    # outputFiles/buildFiles only accept local paths (no URL download, despite
-    # --help's claim), so these are resolved relative to the working directory
-    # crank itself is invoked from - run crank from a checkout of this repo's root:
+    # outputFiles only accepts local paths (no URL download, despite --help's claim),
+    # so this is resolved relative to the working directory crank itself is invoked
+    # from - run crank from a checkout of this repo's root:
     #   crank --config scenarios/httparena.benchmarks.yml ...
     options:
-      # Project has no NuGet.config of its own; Crank always creates/patches one with
-      # only its own curated feeds (and a leading <clear/>) which excludes nuget.org.
-      # aspnet-minimal-11 only needs mainstream packages that resolve fine there, but
-      # it's included for consistency/future-proofing with genhttp-ioxide below.
-      buildFiles:
-        - scenarios/assets/httparena/NuGet.config
       outputFiles:
         - scenarios/assets/httparena-dataset.json
     environmentVariables:
@@ -74,10 +68,6 @@ jobs:
     framework: net11.0
     # Same DATASET_PATH contract as aspnet-minimal-11's /json/{count}.
     options:
-      # GenHTTP.* and ioxide.* packages only exist on nuget.org - required here, unlike
-      # the aspnet-minimal-11 job above, or restore fails with NU1101.
-      buildFiles:
-        - scenarios/assets/httparena/NuGet.config
       outputFiles:
         - scenarios/assets/httparena-dataset.json
     environmentVariables:
