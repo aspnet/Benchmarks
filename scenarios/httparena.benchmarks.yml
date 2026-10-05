@@ -1,0 +1,131 @@
+# HttpArena (https://www.http-arena.com/, https://github.com/MDA2AV/HttpArena) framework
+# comparison benchmarks. HttpArena is the community benchmark platform that effectively
+# replaced TechEmpower (archived) for cross-framework HTTP throughput comparisons.
+#
+# Only the two entries we actively track are wired up here:
+#   - frameworks/aspnet-minimal-11 (ASP.NET Core Minimal APIs on .NET 11)
+#   - frameworks/genhttp-ioxide    (GenHTTP on the Ioxide/io_uring engine, .NET 11)
+#
+# Both apps are built directly from HttpArena's own repository/commit (no vendored app
+# source in this repo) using Crank's normal "project + framework" build, the same way
+# scenarios/platform.benchmarks.yml builds PlatformBenchmarks - Docker is not required.
+#
+# Both apps target net11.0 and deliberately have no "channel"/SDK version pinned here:
+# Crank's agent (Microsoft.Crank.Agent/Startup.cs) already maps framework net11.0 to
+# channel "latest", so every run always builds against the most recently published
+# .NET 11 preview SDK/runtime, rather than a hardcoded preview build number like
+# HttpArena's own Dockerfiles use (e.g. 11.0.100-preview.7).
+#
+# Both apps hardcode their plaintext HTTP/1.1 listener to port 8080 in code (no --urls
+# support), and both intentionally disable all console logging for throughput, so no
+# readyStateText is set here - Crank falls back to its normal startup-delay based
+# readiness detection for apps that don't print a ready signal.
+#
+# Examples:
+# --config scenarios/httparena.benchmarks.yml --scenario json_aspnet_minimal_11 --profile aspnet-gold-lin
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  serverScheme: http
+  serverPort: 8080
+  urls: "{{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+  # Number of dataset items returned by GET /json/{count}.
+  jsonCount: 50
+
+jobs:
+  httparena_aspnet_minimal_11:
+    source:
+      repository: https://github.com/MDA2AV/HttpArena.git
+      # Pinned for reproducibility; bump deliberately. This is independent from the
+      # .NET SDK/runtime version, which always floats to "latest" (see note above).
+      # Crank only shallow-clones with `-b <branch>` when branchOrCommit has no '#';
+      # pinning an exact commit requires the `branch#commit` form (full clone of
+      # branch, then `git checkout commit`) - see Microsoft.Crank.Agent/Startup.cs.
+      branchOrCommit: main#5b111b8889fee61076f1d7dd14fdb3dfd12c8492
+      project: frameworks/aspnet-minimal-11/aspnet-minimal-11.csproj
+    framework: net11.0
+    # /json/{count} reads its dataset from DATASET_PATH (default /data/dataset.json),
+    # which HttpArena's own harness bind-mounts at run time. We vendor just that one
+    # small static fixture and stage it next to the published app via outputFiles.
+    # outputFiles/buildFiles only accept local paths (no URL download, despite
+    # --help's claim), so these are resolved relative to the working directory
+    # crank itself is invoked from - run crank from a checkout of this repo's root:
+    #   crank --config scenarios/httparena.benchmarks.yml ...
+    options:
+      # Project has no NuGet.config of its own; Crank always creates/patches one with
+      # only its own curated feeds (and a leading <clear/>) which excludes nuget.org.
+      # aspnet-minimal-11 only needs mainstream packages that resolve fine there, but
+      # it's included for consistency/future-proofing with genhttp-ioxide below.
+      buildFiles:
+        - scenarios/assets/httparena/NuGet.config
+      outputFiles:
+        - scenarios/assets/httparena-dataset.json
+    environmentVariables:
+      DATASET_PATH: httparena-dataset.json
+
+  httparena_genhttp_ioxide:
+    source:
+      repository: https://github.com/MDA2AV/HttpArena.git
+      branchOrCommit: main#5b111b8889fee61076f1d7dd14fdb3dfd12c8492
+      project: frameworks/genhttp-ioxide/genhttp.csproj
+    framework: net11.0
+    # Same DATASET_PATH contract as aspnet-minimal-11's /json/{count}.
+    options:
+      # GenHTTP.* and ioxide.* packages only exist on nuget.org - required here, unlike
+      # the aspnet-minimal-11 job above, or restore fails with NU1101.
+      buildFiles:
+        - scenarios/assets/httparena/NuGet.config
+      outputFiles:
+        - scenarios/assets/httparena-dataset.json
+    environmentVariables:
+      DATASET_PATH: httparena-dataset.json
+
+scenarios:
+  pipeline_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /pipeline
+        pipeline: 16
+        connections: 4096
+
+  json_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: "/json/{{jsonCount}}"
+        connections: 512
+
+  pipeline_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /pipeline
+        pipeline: 16
+        connections: 4096
+
+  json_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: "/json/{{jsonCount}}"
+        connections: 512

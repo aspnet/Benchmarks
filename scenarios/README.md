@@ -153,6 +153,37 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `updates`
 - `caching`
 
+## HttpArena benchmarks
+
+[HttpArena](https://www.http-arena.com/) ([MDA2AV/HttpArena](https://github.com/MDA2AV/HttpArena)) is a community
+cross-framework HTTP benchmark suite that has effectively replaced the now-archived TechEmpower benchmarks. These
+scenarios build and run two HttpArena framework entries directly from HttpArena's own repository (no vendored app
+source in this repo):
+
+- `aspnet-minimal-11` - ASP.NET Core Minimal APIs on .NET 11
+- `genhttp-ioxide` - [GenHTTP](https://genhttp.org/) on the Ioxide/io_uring engine, .NET 11 (requires a Linux kernel
+  with io_uring support; it will not run on Windows)
+
+Both apps target the latest available .NET 11 SDK/runtime (no version is pinned), and the HttpArena commit they're
+built from is pinned in `scenarios/httparena.benchmarks.yml` for reproducibility.
+
+### Sample
+
+```
+crank --config scenarios/httparena.benchmarks.yml --scenario pipeline_aspnet_minimal_11 --profile aspnet-gold-lin
+crank --config scenarios/httparena.benchmarks.yml --scenario json_genhttp_ioxide --profile aspnet-gold-lin
+```
+
+Must be run from a checkout of this repo (not via a raw GitHub URL) so the dataset fixture and NuGet.config under
+`scenarios/assets/` can be found.
+
+### Available scenarios
+
+- `pipeline_aspnet_minimal_11`
+- `json_aspnet_minimal_11`
+- `pipeline_genhttp_ioxide`
+- `json_genhttp_ioxide`
+
 ## Proxy benchmarks
 
 These scenarios are running several web proxies, including [YARP](https://github.com/microsoft/reverse-proxy).
