@@ -14,7 +14,8 @@ jobs:
       dockerContextDirectory: frameworks/CSharp/aspnetcore/
     readyStateText: Application started
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   nodejs:
     source:
@@ -25,7 +26,8 @@ jobs:
       dockerContextDirectory: frameworks/JavaScript/nodejs/
     readyStateText: NodeJS worker listening
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   bun:
     source:
@@ -36,7 +38,8 @@ jobs:
       dockerContextDirectory: frameworks/TypeScript/bun/
     readyStateText: Listening
 #    arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   express:
     source:
@@ -47,7 +50,8 @@ jobs:
       dockerContextDirectory: frameworks/JavaScript/express/
     readyStateText: is running
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   express_postgresql:
     source:
@@ -58,7 +62,8 @@ jobs:
       dockerContextDirectory: frameworks/JavaScript/express/
     readyStateText: listening
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   gin:
     source:
@@ -70,7 +75,8 @@ jobs:
     readyStateText: Listening
     port: 8080 # used to poll the application to detect startup
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   ntex: # json and plaintext scenarios
     source:
@@ -81,7 +87,8 @@ jobs:
       dockerContextDirectory: frameworks/Rust/ntex/
     readyStateText: Started http server
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   xitca:
     source:
@@ -93,7 +100,8 @@ jobs:
     # readyStateText: Starting http server
     port: 8080 # used to poll the application to detect startup
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   fasthttp:
     source:
@@ -105,7 +113,8 @@ jobs:
     arguments: --add-host="tfb-database:{{databaseServer}}"
     # readyStateText:
     port: 8080 # used to poll the application to detect startup
-    noClean: true
+    options:
+      reuseBuild: true
 
   netty:
     source:
@@ -116,7 +125,8 @@ jobs:
       dockerContextDirectory: frameworks/Java/netty/
     readyStateText: Httpd started
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   vertx:
     source:
@@ -127,7 +137,8 @@ jobs:
       dockerContextDirectory: frameworks/Java/vertx/
     readyStateText: Server listening
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   spring:
     source:
@@ -138,7 +149,8 @@ jobs:
       dockerContextDirectory: frameworks/Java/spring/
     readyStateText: Application is ready
     arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
+    options:
+      reuseBuild: true
 
   postgresql:
     source:
@@ -148,7 +160,8 @@ jobs:
       dockerImageName: postgres_te
       dockerContextDirectory: toolset/databases/postgres
     readyStateText: ready to accept connections
-    noClean: true
+    options:
+      reuseBuild: true
 
   mysql:
     source:
@@ -158,7 +171,8 @@ jobs:
       dockerImageName: mysql_te
       dockerContextDirectory: toolset/databases/mysql
     readyStateText: Ready for start up
-    noClean: true
+    options:
+      reuseBuild: true
 
 scenarios:
 
@@ -458,6 +472,7 @@ scenarios:
         path: /updates?queries=20
         serverPort: 8080
 
+
   cached_queries_vertx:
     db:
       job: postgresql
@@ -734,4 +749,3 @@ scenarios:
         presetHeaders: json
         path: /updates?queries=20
         serverPort: 8080
-

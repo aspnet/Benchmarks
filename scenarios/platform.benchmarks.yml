@@ -32,7 +32,8 @@ jobs:
       dockerImageName: postgres_te
       dockerContextDirectory: toolset/databases/postgres
     readyStateText: ready to accept connections
-    noClean: true
+    options:
+      reuseBuild: true
 
 scenarios:
   plaintext:

@@ -20,7 +20,8 @@ jobs:
     environmentVariables:
       database: "PostgreSQL"
       connectionString: '"Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"'
-    noClean: true
+    options:
+      reuseBuild: true
 
 scenarios:
   json_aspnet:
