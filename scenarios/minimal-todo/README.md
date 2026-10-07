@@ -71,15 +71,3 @@ and project settings. This round floated the Docker base images and moved the
 C# project to `net11.0`; that calibration has not been re-run against the new
 images, so a post-merge scheduled run is the first operational confirmation
 under the new images, not a re-validation.
-
-## Offline resolution
-
-From the repository root, with no agent/network/Docker required:
-
-```powershell
-crank --config .\scenarios\minimal-todo\minimal-todo.benchmarks.yml --config .\scenarios\steadystate.profile.yml --scenario rust --profile offline --iterations 1 --debug resolved.json
-```
-
-The `offline` profile sets both role endpoints to an empty array and a dummy
-all-zero `sourceRevision`; this resolves and validates the configuration
-structure without a real deploy.

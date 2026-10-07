@@ -11,7 +11,6 @@ variables:
   duration: 15
   connections: 8
   requestTimeout: 2
-  offline: false
 
 jobs:
   todo-csharp:
@@ -28,17 +27,9 @@ jobs:
     readyStateText: Application started.
     environmentVariables:
       PORT: "{{serverPort}}"
-    noClean: false
-    variables:
-      language: csharp
-      framework: net11.0
-      sdkImage: mcr.microsoft.com/dotnet/nightly/sdk:11.0
-      runtimeImage: mcr.microsoft.com/dotnet/nightly/aspnet:11.0
     onConfigure:
       - |
         job.Sources["app"].LocalFolder = null;
-        if (job.Variables["offline"] === true)
-          job.Endpoints.Clear();
         if (!/^[0-9a-f]{40}$/.test(String(job.Variables["sourceRevision"])))
           throw new Error("sourceRevision must be an explicit repository commit");
         job.CpuLimitRatio = Number(job.Variables["cpu"]);
@@ -49,13 +40,6 @@ jobs:
             !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
           throw new Error("Invalid CPU quota, memory bytes or server port");
     options:
-      reuseBuild: false
-      reuseSource: false
-      displayBuild: true
-      displayOutput: true
-      downloadOutput: true
-      downloadOutputOutput: application.log
-      collectCounters: false
       requiredOperatingSystem: linux
 
   todo-go:
@@ -72,17 +56,9 @@ jobs:
     readyStateText: Application started.
     environmentVariables:
       PORT: "{{serverPort}}"
-    noClean: false
-    variables:
-      language: go
-      framework: net-http
-      sdkImage: golang:1.27-bookworm
-      runtimeImage: ubuntu:26.04
     onConfigure:
       - |
         job.Sources["app"].LocalFolder = null;
-        if (job.Variables["offline"] === true)
-          job.Endpoints.Clear();
         if (!/^[0-9a-f]{40}$/.test(String(job.Variables["sourceRevision"])))
           throw new Error("sourceRevision must be an explicit repository commit");
         job.CpuLimitRatio = Number(job.Variables["cpu"]);
@@ -93,13 +69,6 @@ jobs:
             !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
           throw new Error("Invalid CPU quota, memory bytes or server port");
     options:
-      reuseBuild: false
-      reuseSource: false
-      displayBuild: true
-      displayOutput: true
-      downloadOutput: true
-      downloadOutputOutput: application.log
-      collectCounters: false
       requiredOperatingSystem: linux
 
   todo-rust:
@@ -116,17 +85,9 @@ jobs:
     readyStateText: Application started.
     environmentVariables:
       PORT: "{{serverPort}}"
-    noClean: false
-    variables:
-      language: rust
-      framework: axum-tokio
-      sdkImage: rust:1.96-bookworm
-      runtimeImage: ubuntu:26.04
     onConfigure:
       - |
         job.Sources["app"].LocalFolder = null;
-        if (job.Variables["offline"] === true)
-          job.Endpoints.Clear();
         if (!/^[0-9a-f]{40}$/.test(String(job.Variables["sourceRevision"])))
           throw new Error("sourceRevision must be an explicit repository commit");
         job.CpuLimitRatio = Number(job.Variables["cpu"]);
@@ -137,13 +98,6 @@ jobs:
             !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
           throw new Error("Invalid CPU quota, memory bytes or server port");
     options:
-      reuseBuild: false
-      reuseSource: false
-      displayBuild: true
-      displayOutput: true
-      downloadOutput: true
-      downloadOutputOutput: application.log
-      collectCounters: false
       requiredOperatingSystem: linux
 
   bombardier:
@@ -178,23 +132,12 @@ jobs:
         const host = String(job.Variables["serverAddress"]);
         if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(host))
           throw new Error("serverAddress must be a host name or IPv4 address without scheme/port");
-        if (job.Variables["offline"] === true)
-          job.Endpoints.Clear();
-        if (job.Variables["offline"] !== true) {
-          for (const role of ["application", "load"]) {
-            const endpoints = configuration.Jobs[role].Endpoints;
-            if (endpoints.Count != 1 || !/^https?:\/\/[^ \t\r\n{}]+$/.test(String(endpoints[0])))
-              throw new Error("Select exactly one agent endpoint for " + role + ", or the explicit offline profile");
-          }
+        for (const role of ["application", "load"]) {
+          const endpoints = configuration.Jobs[role].Endpoints;
+          if (endpoints.Count != 1 || !/^https?:\/\/[^ \t\r\n{}]+$/.test(String(endpoints[0])))
+            throw new Error("Select exactly one agent endpoint for " + role);
         }
     options:
-      reuseBuild: false
-      reuseSource: false
-      displayBuild: true
-      displayOutput: true
-      downloadOutput: true
-      downloadOutputOutput: load.log
-      collectCounters: false
       requiredOperatingSystem: linux
 
 scenarios:
@@ -207,16 +150,6 @@ scenarios:
   rust:
     application: {job: todo-rust}
     load: {job: bombardier}
-
-profiles:
-  offline:
-    variables:
-      offline: true
-      serverAddress: 127.0.0.1
-      sourceRevision: "0000000000000000000000000000000000000000"
-    jobs:
-      application: {endpoints: []}
-      load: {endpoints: []}
 
 results:
   - {name: todo/cpu/raw/mean, measurement: benchmarks/cpu/raw, description: "Full-running-window CPU sample mean (% of one logical CPU)", format: n2, aggregate: avg, reduce: avg}
@@ -342,9 +275,3 @@ onResultsCreating:
 onResultsCreated:
   - |
     todoCalibrationSummary();
-  - |
-    const app = benchmarks.jobs["application"];
-    if (!app)
-      throw new Error("Application result is missing");
-    for (const name of ["language", "framework", "sdkImage", "runtimeImage"])
-      benchmarks.properties["todo/" + name] = String(app.variables[name]);
