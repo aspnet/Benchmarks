@@ -33,37 +33,44 @@ reproducibility between invocations.
 
 [minimal-todo.benchmarks.yml](minimal-todo.benchmarks.yml) defines three
 scenarios (`csharp`, `go`, `rust`), each with two roles: `application` and
-`load`. The application job clones the exact `sourceRevision` commit of
-`aspnet/Benchmarks`, builds that language's `Dockerfile`, and waits for
-`Application started.` (the only readiness gate a regular run performs — the
-full HTTP state/body contract is verified once, separately, by the
-`dotnet-performance-tools` generation/admission flow, not on every run).
-`load` runs the unchanged official Bombardier wrapper from
-`dotnet/crank@25c21e9a86b4e485e6f53850c2d7766505d27211` at a fixed offered
-rate against `/todos`. No per-job architecture gating is applied: images are
-multi-arch, so the scenario runs unmodified on x64 or ARM64 agents.
+`load`. The application job clones `aspnet/Benchmarks` at `sourceRevision`,
+builds that language's `Dockerfile`, and waits for `Application started.`
+(the only readiness gate a regular run performs — the full HTTP state/body
+contract is verified once, separately, by the `dotnet-performance-tools`
+generation/admission flow, not on every run). `load` imports and runs the official, unmodified
+[`dotnet/crank` Bombardier job](https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml)
+(floating on its own `main`, matching this round's floating-image intent)
+against `/todos` at a fixed offered rate, with `transport: http1`,
+`presetHeaders: none`, and explicit `customHeaders` for
+`Accept: application/json`, `Connection: keep-alive`, and
+`Accept-Encoding: identity`. No per-job architecture gating is applied:
+images are multi-arch, so the scenario runs unmodified on x64 or ARM64
+agents.
 
-`sourceRevision` must be an explicit 40-character commit hash (enforced by
-`onConfigure`); a mutable branch name is rejected. Manual connected runs use
-the shared `build/ci.profile.yml` / `build/azure.profile.yml` profiles (or
-explicit `--variable serverAddress=...`/endpoint overrides) the same way
-every other scenario in this repository does; there is no scenario-specific
-profile file.
+`sourceRevision` defaults to `main` (manual-run convenience: `main` resolves
+to a full clone checked out on the branch tip) and otherwise must be an
+explicit 40-character lowercase commit hash (enforced by `onConfigure`); any
+other value, including an arbitrary branch name, is rejected. The scheduled
+pipeline always passes the exact triggering build's commit SHA (see
+`build/minimal-todo-scenarios.yml`), never the `main` default. A SHA is
+checked out via the full-clone `"#" + sha` form Crank requires for an exact
+commit — a bare SHA would instead attempt a shallow branch clone and fail.
+Manual connected runs use the shared `build/ci.profile.yml` /
+`build/azure.profile.yml` profiles (or explicit
+`--variable serverAddress=...`/endpoint overrides) the same way every other
+scenario in this repository does; there is no scenario-specific profile
+file.
 
-### Results and calibration
+### Results
 
 Append the **unchanged** `../steadystate.profile.yml` once as the final
-`--config` (not an import). The scenario's own `onResultsCreating`/
-`onResultsCreated` hooks validate the measured Bombardier result strictly:
-exact request URL/method/client/rate/duration/connections/timeout and request
-headers, response counters all 2xx with zero other status classes, zero
-transport errors, and delivered rate/duration within 5% of the offered
-values. They also compute a `todo/calibration/*` summary (CPU tail mean/P90/
-max over the last 60 measured seconds, half-window drift, sample gaps).
-`todo/cpu/raw/*` and `todo/memory/*` are plain Crank aggregate helpers over
-the full running window. This is standard day-to-day perf validation —
-native HTTP status/error/workload/resource checks, not a full state/body
-contract probe.
+`--config` (not an import). Reporting is otherwise stock Crank: the official
+Bombardier wrapper's own request/bad-response/latency/RPS/throughput
+measurements, the agent's own CPU/memory measurements, and the shared
+steadystate profile's CPU/working-set P90 helpers. `bombardier/raw` (the raw
+per-request JSON payload) is excluded from persistence to avoid storing that
+large aggregate; no other custom result definitions or hooks are shipped —
+calibration-quality analysis belongs to `dotnet-performance-tools`.
 
 The shipped `rate` (25200 req/s, see `build/minimal-todo-scenarios.yml`) was
 calibrated and accepted against the **prior** pinned-digest C#/Go/Rust images
