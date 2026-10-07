@@ -1,0 +1,350 @@
+# Remote Crank scenario: sourceRevision selects an exact aspnet/Benchmarks commit.
+# Append the unchanged ../steadystate.profile.yml once as the FINAL --config.
+variables:
+  sourceRevision: ""
+  serverAddress: ""
+  serverPort: 8080
+  cpu: 1
+  memoryBytes: 536870912
+  rate: 100
+  warmup: 5
+  duration: 15
+  connections: 8
+  requestTimeout: 2
+  offline: false
+
+jobs:
+  todo-csharp:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: "#{{sourceRevision}}"
+        destinationFolder: app
+        cacheOnAgent: false
+    dockerFile: app/src/BenchmarksApps/MinimalTodo/csharp/Dockerfile
+    dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/csharp
+    dockerImageName: "minimal-todo-csharp-{{job.RunId}}"
+    readyStateText: Application started.
+    environmentVariables:
+      PORT: "{{serverPort}}"
+    noClean: false
+    variables:
+      language: csharp
+      framework: net11.0
+      sdkImage: mcr.microsoft.com/dotnet/nightly/sdk:11.0
+      runtimeImage: mcr.microsoft.com/dotnet/nightly/aspnet:11.0
+    onConfigure:
+      - |
+        job.Sources["app"].LocalFolder = null;
+        if (job.Variables["offline"] === true)
+          job.Endpoints.Clear();
+        if (!/^[0-9a-f]{40}$/.test(String(job.Variables["sourceRevision"])))
+          throw new Error("sourceRevision must be an explicit repository commit");
+        job.CpuLimitRatio = Number(job.Variables["cpu"]);
+        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
+        job.Port = Number(job.Variables["serverPort"]);
+        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
+            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
+            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
+          throw new Error("Invalid CPU quota, memory bytes or server port");
+    options:
+      reuseBuild: false
+      reuseSource: false
+      displayBuild: true
+      displayOutput: true
+      downloadOutput: true
+      downloadOutputOutput: application.log
+      collectCounters: false
+      requiredOperatingSystem: linux
+
+  todo-go:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: "#{{sourceRevision}}"
+        destinationFolder: app
+        cacheOnAgent: false
+    dockerFile: app/src/BenchmarksApps/MinimalTodo/go/Dockerfile
+    dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/go
+    dockerImageName: "minimal-todo-go-{{job.RunId}}"
+    readyStateText: Application started.
+    environmentVariables:
+      PORT: "{{serverPort}}"
+    noClean: false
+    variables:
+      language: go
+      framework: net-http
+      sdkImage: golang:1.27-bookworm
+      runtimeImage: ubuntu:26.04
+    onConfigure:
+      - |
+        job.Sources["app"].LocalFolder = null;
+        if (job.Variables["offline"] === true)
+          job.Endpoints.Clear();
+        if (!/^[0-9a-f]{40}$/.test(String(job.Variables["sourceRevision"])))
+          throw new Error("sourceRevision must be an explicit repository commit");
+        job.CpuLimitRatio = Number(job.Variables["cpu"]);
+        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
+        job.Port = Number(job.Variables["serverPort"]);
+        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
+            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
+            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
+          throw new Error("Invalid CPU quota, memory bytes or server port");
+    options:
+      reuseBuild: false
+      reuseSource: false
+      displayBuild: true
+      displayOutput: true
+      downloadOutput: true
+      downloadOutputOutput: application.log
+      collectCounters: false
+      requiredOperatingSystem: linux
+
+  todo-rust:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: "#{{sourceRevision}}"
+        destinationFolder: app
+        cacheOnAgent: false
+    dockerFile: app/src/BenchmarksApps/MinimalTodo/rust/Dockerfile
+    dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/rust
+    dockerImageName: "minimal-todo-rust-{{job.RunId}}"
+    readyStateText: Application started.
+    environmentVariables:
+      PORT: "{{serverPort}}"
+    noClean: false
+    variables:
+      language: rust
+      framework: axum-tokio
+      sdkImage: rust:1.96-bookworm
+      runtimeImage: ubuntu:26.04
+    onConfigure:
+      - |
+        job.Sources["app"].LocalFolder = null;
+        if (job.Variables["offline"] === true)
+          job.Endpoints.Clear();
+        if (!/^[0-9a-f]{40}$/.test(String(job.Variables["sourceRevision"])))
+          throw new Error("sourceRevision must be an explicit repository commit");
+        job.CpuLimitRatio = Number(job.Variables["cpu"]);
+        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
+        job.Port = Number(job.Variables["serverPort"]);
+        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
+            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
+            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
+          throw new Error("Invalid CPU quota, memory bytes or server port");
+    options:
+      reuseBuild: false
+      reuseSource: false
+      displayBuild: true
+      displayOutput: true
+      downloadOutput: true
+      downloadOutputOutput: application.log
+      collectCounters: false
+      requiredOperatingSystem: linux
+
+  bombardier:
+    sources:
+      crank:
+        repository: https://github.com/dotnet/crank.git
+        branchOrCommit: '#25c21e9a86b4e485e6f53850c2d7766505d27211'
+        destinationFolder: crank
+        cacheOnAgent: false
+    project: crank/src/Microsoft.Crank.Jobs.Bombardier/Microsoft.Crank.Jobs.Bombardier.csproj
+    framework: net8.0
+    sdkVersion: 8.0.425
+    runtimeVersion: 8.0.31
+    aspNetCoreVersion: 8.0.31
+    selfContained: true
+    readyStateText: Bombardier Client
+    waitForExit: true
+    isConsoleApp: true
+    arguments: >-
+      -c {{connections}} -w {{warmup}} -d {{duration}} -n 0
+      -t {{requestTimeout}}s --rate {{rate}} --http1 -l
+      --header "Accept: application/json" --header "Connection: keep-alive"
+      --header "Accept-Encoding: identity"
+      http://{{serverAddress}}:{{serverPort}}/todos
+    onConfigure:
+      - |
+        for (const name of ["rate", "duration", "connections", "requestTimeout", "warmup"]) {
+          const value = Number(job.Variables[name]);
+          if (!Number.isSafeInteger(value) || value < (name == "warmup" ? 0 : 1))
+            throw new Error("Invalid workload variable: " + name);
+        }
+        const host = String(job.Variables["serverAddress"]);
+        if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(host))
+          throw new Error("serverAddress must be a host name or IPv4 address without scheme/port");
+        if (job.Variables["offline"] === true)
+          job.Endpoints.Clear();
+        if (job.Variables["offline"] !== true) {
+          for (const role of ["application", "load"]) {
+            const endpoints = configuration.Jobs[role].Endpoints;
+            if (endpoints.Count != 1 || !/^https?:\/\/[^ \t\r\n{}]+$/.test(String(endpoints[0])))
+              throw new Error("Select exactly one agent endpoint for " + role + ", or the explicit offline profile");
+          }
+        }
+    options:
+      reuseBuild: false
+      reuseSource: false
+      displayBuild: true
+      displayOutput: true
+      downloadOutput: true
+      downloadOutputOutput: load.log
+      collectCounters: false
+      requiredOperatingSystem: linux
+
+scenarios:
+  csharp:
+    application: {job: todo-csharp}
+    load: {job: bombardier}
+  go:
+    application: {job: todo-go}
+    load: {job: bombardier}
+  rust:
+    application: {job: todo-rust}
+    load: {job: bombardier}
+
+profiles:
+  offline:
+    variables:
+      offline: true
+      serverAddress: 127.0.0.1
+      sourceRevision: "0000000000000000000000000000000000000000"
+    jobs:
+      application: {endpoints: []}
+      load: {endpoints: []}
+
+results:
+  - {name: todo/cpu/raw/mean, measurement: benchmarks/cpu/raw, description: "Full-running-window CPU sample mean (% of one logical CPU)", format: n2, aggregate: avg, reduce: avg}
+  - {name: todo/cpu/raw/max, measurement: benchmarks/cpu/raw, description: "Full-running-window CPU sample max (% of one logical CPU)", format: n2, aggregate: max, reduce: max}
+  - {name: todo/cpu/raw/p95, measurement: benchmarks/cpu/raw, description: "Full-running-window CPU sample P95 (% of one logical CPU)", format: n2, aggregate: percentile95, reduce: max}
+  - {name: todo/cpu/raw/p99, measurement: benchmarks/cpu/raw, description: "Full-running-window CPU sample P99 (% of one logical CPU)", format: n2, aggregate: percentile99, reduce: max}
+  - {name: todo/cpu/raw/count, measurement: benchmarks/cpu/raw, description: "Full-running-window CPU sample count", format: n0, aggregate: count, reduce: min}
+  - {name: todo/memory/mean, measurement: benchmarks/working-set, description: "Full-running-window cache-adjusted container memory mean (MiB, rounded inputs)", format: n2, aggregate: avg, reduce: avg}
+  - {name: todo/memory/max, measurement: benchmarks/working-set, description: "Full-running-window cache-adjusted container memory max (MiB, rounded inputs)", format: n2, aggregate: max, reduce: max}
+  - {name: todo/memory/p95, measurement: benchmarks/working-set, description: "Full-running-window cache-adjusted container memory P95 (MiB, rounded inputs)", format: n2, aggregate: percentile95, reduce: max}
+  - {name: todo/memory/p99, measurement: benchmarks/working-set, description: "Full-running-window cache-adjusted container memory P99 (MiB, rounded inputs)", format: n2, aggregate: percentile99, reduce: max}
+  - {name: todo/memory/count, measurement: benchmarks/working-set, description: "Full-running-window container memory sample count", format: n0, aggregate: count, reduce: min}
+  - {name: bombardier/raw, excluded: true}
+
+onResultsCreating:
+  - |
+    function todoCalibrationSummary() {
+      const app = benchmarks.jobs.application;
+      const load = benchmarks.jobs.load;
+      const prefix = "todo/calibration/";
+      function ensure(ok, reason) { if (!ok) throw new Error("Minimal Todo metrics: " + reason); }
+      function numeric(value, label, positive) {
+        ensure(value !== undefined && value !== null && typeof value != "boolean" &&
+               String(value).trim() != "", label);
+        const number = Number(value);
+        ensure(Number.isFinite(number) && (positive ? number > 0 : number >= 0), label);
+        return number;
+      }
+      const quota = numeric(app.variables.cpu, "missing allocated CPU", true);
+      const memory = numeric(app.variables.memoryBytes, "missing memory allocation", true);
+      const rate = numeric(load.variables.rate, "missing fixed offered rate", true);
+      ensure(Number(app.variables.rate) == rate && Number(load.variables.cpu) == quota &&
+             Number(load.variables.memoryBytes) == memory, "application/load allocation mismatch");
+      ensure(Number(load.variables.duration) >= 75, "duration is too short for the guarded 60s tail");
+      ensure(app.measurements.length == 1 && load.measurements.length == 1, "expected one endpoint per role");
+      const cpu = app.measurements[0].filter(m => m.name == "benchmarks/cpu/raw");
+      ensure(cpu.length >= 10, "missing native raw CPU samples");
+      const times = cpu.map(m => new Date(m.timestamp).getTime());
+      for (let i = 0; i < times.length; i++) {
+        ensure(Number.isFinite(times[i]) && (i == 0 || times[i] > times[i - 1]), "invalid CPU timestamps");
+        numeric(cpu[i].value, "invalid raw CPU sample", false);
+      }
+      const completions = load.measurements[0].filter(m => m.name == "bombardier/raw" || m.name == "http/requests")
+                              .map(m => new Date(m.timestamp).getTime());
+      ensure(completions.length > 0 && completions.every(value => Number.isFinite(value)),
+             "native load completion timestamp missing");
+      const loadEnd = Math.max.apply(null, completions);
+      const end = Math.min(times[times.length - 1], loadEnd) - 5000;
+      const begin = end - 60000;
+      const chosen = cpu.filter((m, i) => times[i] >= begin && times[i] <= end);
+      const selectedTimes = chosen.map(m => new Date(m.timestamp).getTime());
+      ensure(chosen.length >= 10 && selectedTimes[0] - begin <= 5000 &&
+             end - selectedTimes[selectedTimes.length - 1] <= 5000, "tail sample coverage incomplete");
+      let maxGap = 0;
+      for (let i = 1; i < selectedTimes.length; i++)
+        maxGap = Math.max(maxGap, selectedTimes[i] - selectedTimes[i - 1]);
+      ensure(maxGap <= 5000, "tail sample gaps exceed five seconds");
+      const values = chosen.map(m => Number(m.value) / quota);
+      const first = chosen.filter(m => new Date(m.timestamp).getTime() < (begin + end) / 2)
+                          .map(m => Number(m.value) / quota);
+      const last = chosen.filter(m => new Date(m.timestamp).getTime() >= (begin + end) / 2)
+                         .map(m => Number(m.value) / quota);
+      ensure(first.length > 0 && last.length > 0, "tail missing a half-window");
+      function mean(items) { return items.reduce((a, b) => a + b, 0) / items.length; }
+      const raw = load.measurements[0].filter(m => m.name == "bombardier/raw");
+      ensure(raw.length == 1, "missing canonical measured Bombardier result");
+      const parsed = typeof raw[0].value == "string" ? JSON.parse(raw[0].value) : raw[0].value;
+      const result = parsed.result;
+      const spec = parsed.spec;
+      ensure(spec && result && Number(spec.rate) == rate &&
+             Number(spec.testDurationSeconds) == Number(load.variables.duration) &&
+             Number(spec.numberOfConnections) == Number(load.variables.connections) &&
+             Number(spec.timeoutSeconds) == Number(load.variables.requestTimeout) &&
+             spec.testType == "timed" && spec.method == "GET" && spec.client == "net/http.v1" &&
+             spec.url == "http://" + load.variables.serverAddress + ":" + load.variables.serverPort + "/todos",
+             "native workload differs");
+      ensure(spec.headers && typeof spec.headers == "object" && spec.headers.length == 3,
+             "native request headers missing");
+      const headers = Array.from(spec.headers);
+      const normalized = {};
+      for (const header of headers) {
+        const key = String(header.key).toLowerCase();
+        ensure(normalized[key] === undefined, "duplicate native request header");
+        normalized[key] = String(header.value).toLowerCase();
+      }
+      ensure(normalized.accept == "application/json" && normalized.connection == "keep-alive" &&
+             normalized["accept-encoding"] == "identity", "native request headers differ");
+      let total = 0;
+      for (const name of ["req1xx", "req2xx", "req3xx", "req4xx", "req5xx", "others"]) {
+        ensure(result[name] !== undefined && result[name] !== null, "missing response counter " + name);
+        const value = numeric(result[name], "invalid response counter " + name, false);
+        ensure(Number.isSafeInteger(value), "noninteger response counter");
+        total += value;
+      }
+      const good = numeric(result.req2xx, "no successful responses", true);
+      const elapsed = numeric(result.timeTakenSeconds, "invalid measured elapsed", true);
+      ensure(begin >= loadEnd - elapsed * 1000 && end <= loadEnd,
+             "CPU tail is outside the native measured load bounds");
+      const errors = result.errors === undefined ? [] : result.errors;
+      ensure(errors !== null && typeof errors == "object" && Number.isSafeInteger(errors.length) && errors.length >= 0,
+             "invalid error list");
+      let transport = 0;
+      for (const error of errors) {
+        const count = numeric(error.count, "invalid transport count", false);
+        ensure(Number.isSafeInteger(count), "noninteger transport count");
+        transport += count;
+      }
+      ensure(total == good && transport == 0, "HTTP/transport errors");
+      ensure(Math.abs(good / elapsed / rate - 1) <= .05 &&
+             Math.abs(elapsed / Number(load.variables.duration) - 1) <= .05, "request delivery/duration outside five percent");
+      const summary = {
+        "quota-cores": quota, "memory-bytes": memory, "offered-rps": rate,
+        "good-rps": good / elapsed, "elapsed-seconds": elapsed, "bad-responses": total - good,
+        "transport-errors": transport, "tail-mean": mean(values), "tail-p90": percentile90(values),
+        "tail-max": Math.max.apply(null, values), "tail-count": values.length,
+        "tail-half-delta": Math.abs(mean(first) - mean(last)), "tail-seconds": 60,
+        "tail-end-guard-seconds": 5, "tail-max-gap-seconds": maxGap / 1000, "window-version": 2
+      };
+      for (const key of Object.keys(summary)) app.results[prefix + key] = summary[key];
+      delete load.results["bombardier/raw"];
+    }
+
+onResultsCreated:
+  - |
+    todoCalibrationSummary();
+  - |
+    const app = benchmarks.jobs["application"];
+    if (!app)
+      throw new Error("Application result is missing");
+    for (const name of ["language", "framework", "sdkImage", "runtimeImage"])
+      benchmarks.properties["todo/" + name] = String(app.variables[name]);

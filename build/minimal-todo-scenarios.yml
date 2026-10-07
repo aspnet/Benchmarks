@@ -1,0 +1,48 @@
+# Daily candidate, enabled with the accepted calibrated rate shared by all languages.
+parameters:
+- name: arguments
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: 'true'
+- name: rate
+  type: string
+  default: '25200'
+- name: scenarios
+  type: object
+  default:
+  - displayName: C# nightly
+    arguments: --scenario csharp --property todo/language=csharp --property todo/framework=net11.0
+  - displayName: Go
+    arguments: --scenario go --property todo/language=go --property todo/framework=net-http
+  - displayName: Rust
+    arguments: --scenario rust --property todo/language=rust --property todo/framework=axum-tokio
+
+steps:
+- ${{ each scenario in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@2
+    condition: succeededOrFailed()
+    displayName: Minimal Todo ${{ scenario.displayName }} - 1 CPU - 512 MiB
+    timeoutInMinutes: 10
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+      serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
+      waitForCompletion: true
+      useDataContractSerializer: "false"
+      messageBody: |
+        {
+          "name": "crank",
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "--session $(session) $(minimalTodoJobs) ${{ scenario.arguments }} --variable sourceRevision=$(Build.SourceVersion) --variable cpu=1 --variable memoryBytes=536870912 --variable rate=${{ parameters.rate }} --variable connections=128 --variable warmup=30 --variable duration=120 --variable requestTimeout=2 --variable serverPort=8080 --property todo/scenario=minimal-todo-v1 --property todo/cohort=minimal-todo-v1-20260929-01 --property todo/ratePolicy=csharp-quota-75-fixed-v1 --property cpu=1 --property memoryBytes=536870912 --property rate=${{ parameters.rate }} --property todo/cpu=1 --property todo/memoryBytes=536870912 --property todo/rate=${{ parameters.rate }} ${{ parameters.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --no-metadata --no-measurements --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+        }

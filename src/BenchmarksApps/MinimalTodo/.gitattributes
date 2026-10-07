@@ -1,0 +1,4 @@
+# Preserve the frozen source bytes across checkouts.
+csharp/** -text
+go/** -text
+rust/** -text

@@ -1,0 +1,5 @@
+bin/
+validation/
+*_test.go
+testdata/
+README.md

@@ -1,0 +1,24 @@
+[package]
+name = "minimal-todo"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.96"
+publish = false
+
+[dependencies]
+axum = { version = "=0.8.9", default-features = false, features = ["http1", "json", "tokio", "tracing"] }
+serde = { version = "=1.0.228", features = ["derive", "rc"] }
+tokio = { version = "=1.53.1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tracing = "=0.1.41"
+tracing-subscriber = { version = "=0.3.20", default-features = false, features = ["fmt"] }
+
+[dev-dependencies]
+http-body-util = "=0.1.3"
+hyper = { version = "=1.7.0", default-features = false, features = ["client", "http1"] }
+hyper-util = { version = "=0.1.17", features = ["tokio"] }
+serde_json = "=1.0.145"
+tokio = { version = "=1.53.1", features = ["io-util", "process"] }
+tower = { version = "=0.5.2", features = ["util"] }
+
+[target.'cfg(unix)'.dev-dependencies]
+nix = { version = "=0.30.1", default-features = false, features = ["signal", "process"] }

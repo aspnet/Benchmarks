@@ -240,27 +240,43 @@ jobs:
 
 # GROUP 8
 
-- job: Trends_Database_gold_lin
-  displayName: 8- Trends Database gold-lin
+- job: Minimal_Todo_gold_lin
+  displayName: 8- Minimal Todo gold-lin
   pool: server
-  timeoutInMinutes: 120
+  timeoutInMinutes: 40
   dependsOn: [Frameworks_gold_lin, Crossgen_gold_win]
   condition: succeededOrFailed()
   steps:
-  - template: trend-database-scenarios.yml
+  - template: minimal-todo-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load --profile gold-db-db "
+      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load "
 
 # GROUP 9
 
-- job: WebSockets_gold_lin
-  displayName: 9- WebSockets gold-lin
+- job: Single_File_gold_lin
+  displayName: 9- Single File gold-lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_gold_lin]
+  dependsOn: [Minimal_Todo_gold_lin]
+  condition: succeededOrFailed()
+  steps:
+  - template: singlefile-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load "
+
+# GROUP 10
+
+- job: WebSockets_gold_lin
+  displayName: 10- WebSockets gold-lin
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Single_File_gold_lin]
   condition: succeededOrFailed()
   steps:
   - template: websocket-scenarios.yml
@@ -270,19 +286,19 @@ jobs:
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load "
 
-# GROUP 10
+# GROUP 11
 
-- job: Custom_Proxies_gold_lin
-  displayName: 10- Custom Proxies gold-lin
+- job: Build_gold_lin
+  displayName: 11- Build gold-lin
   pool: server
   timeoutInMinutes: 120
   dependsOn: [WebSockets_gold_lin]
   condition: succeededOrFailed()
   steps:
-  - template: proxies-custom-scenarios.yml
+  - template: build-perf-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load --profile gold-db-db "
+      arguments: "$(ciProfile) --profile gold-lin-app "
 

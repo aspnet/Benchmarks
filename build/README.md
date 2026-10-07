@@ -69,3 +69,14 @@ After any edit, regenerate the YAML and commit both the JSON and the YAML
 together. The snapshot tests in
 `scripts/pod-scheduler/tests/test_snapshots.py` will fail in CI if the
 generated YAML drifts from the configs.
+
+## Minimal Todo
+
+`minimal-todo-scenarios.yml` dispatches `scenarios/minimal-todo/minimal-todo.benchmarks.yml`
+(1 CPU, 536,870,912 bytes / 512 MiB, 25200 req/s, enabled) for the `gold-lin`
+and Azure `azure-arm64`/`cobalt-cloud-lin` pods. The scenario builds each
+language's app directly from its repository `Dockerfile` using floating,
+multi-arch base images (no pinned digests, no custom build/receipt tooling,
+no `requiredArchitecture` gating). Generation, admission, and calibration
+tooling for this cohort live in the separate `dotnet-performance-tools`
+repository; this directory only carries the scheduled dispatch template.
