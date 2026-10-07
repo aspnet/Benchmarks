@@ -33,8 +33,6 @@ jobs:
       dockerImageName: postgres_te
       dockerContextDirectory: toolset/databases/postgres
     readyStateText: ready to accept connections
-    options:
-      reuseBuild: true
 
   mssql:
     source:
@@ -44,8 +42,6 @@ jobs:
       dockerImageName: mssql_te
       dockerContextDirectory: docker/mssql-techempower
     readyStateText: Data imported
-    options:
-      reuseBuild: true
 
 scenarios:
   fortunes:
