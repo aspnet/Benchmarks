@@ -50,6 +50,44 @@ jobs:
     options:
       requiredOperatingSystem: linux
 
+  # Optional side-by-side comparison job: builds src/TodoApi/TodoApi.csproj
+  # directly with Crank (no Docker). Not part of any scheduled lane -- see
+  # README. Same source/sourceRevision/CPU/memory/port validation as
+  # todo-csharp.
+  todo-csharp-project:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: "#{{sourceRevision}}"
+        destinationFolder: app
+        cacheOnAgent: false
+    project: app/src/BenchmarksApps/MinimalTodo/csharp/src/TodoApi/TodoApi.csproj
+    framework: net11.0
+    channel: latest
+    readyStateText: Application started.
+    environmentVariables:
+      PORT: "{{serverPort}}"
+    onConfigure:
+      - |
+        job.Sources["app"].LocalFolder = null;
+        const sourceRevision = String(job.Variables["sourceRevision"]);
+        if (sourceRevision == "main")
+          job.Sources["app"].BranchOrCommit = "main";
+        else if (/^[0-9a-f]{40}$/.test(sourceRevision))
+          job.Sources["app"].BranchOrCommit = "#" + sourceRevision;
+        else
+          throw new Error('sourceRevision must be "main" or an explicit repository commit');
+        job.CpuLimitRatio = Number(job.Variables["cpu"]);
+        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
+        job.Port = Number(job.Variables["serverPort"]);
+        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
+            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
+            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
+          throw new Error("Invalid CPU quota, memory bytes or server port");
+    options:
+      requiredOperatingSystem: linux
+
   todo-go:
     sources:
       app:
@@ -145,6 +183,20 @@ scenarios:
           - "Accept-Encoding: identity"
   rust:
     application: {job: todo-rust}
+    load:
+      job: bombardier
+      variables:
+        path: /todos
+        transport: http1
+        presetHeaders: none
+        customHeaders:
+          - "Accept: application/json"
+          - "Connection: keep-alive"
+          - "Accept-Encoding: identity"
+  # Optional side-by-side comparison scenario (see README): direct Crank
+  # build of the C# app, no Docker. Not part of any scheduled lane.
+  csharp-project:
+    application: {job: todo-csharp-project}
     load:
       job: bombardier
       variables:

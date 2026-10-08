@@ -32,12 +32,15 @@ reproducibility between invocations.
 ## Scenario
 
 [minimal-todo.benchmarks.yml](minimal-todo.benchmarks.yml) defines three
-scenarios (`csharp`, `go`, `rust`), each with two roles: `application` and
-`load`. The application job clones `aspnet/Benchmarks` at `sourceRevision`,
-builds that language's `Dockerfile`, and waits for `Application started.`
+Docker-building scenarios (`csharp`, `go`, `rust`), each with two roles:
+`application` and `load`; plus one optional non-Docker comparison scenario,
+`csharp-project` (see below). In each Docker scenario, the application job
+clones `aspnet/Benchmarks` at `sourceRevision`, builds that language's
+`Dockerfile`, and waits for `Application started.`
 (the only readiness gate a regular run performs — the full HTTP state/body
 contract is verified once, separately, by the `dotnet-performance-tools`
-generation/admission flow, not on every run). `load` imports and runs the official, unmodified
+generation/admission flow, not on every run). `load` imports and runs the
+official, unmodified
 [`dotnet/crank` Bombardier job](https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml)
 (floating on its own `main`, matching this round's floating-image intent)
 against `/todos` at a fixed offered rate, with `transport: http1`,
@@ -60,6 +63,28 @@ Manual connected runs use the shared `build/ci.profile.yml` /
 `--variable serverAddress=...`/endpoint overrides) the same way every other
 scenario in this repository does; there is no scenario-specific profile
 file.
+
+### Optional direct Crank build (C#, not scheduled)
+
+The `csharp-project` scenario is an optional, **not scheduled** side-by-side
+comparison point: it builds the exact same `src/TodoApi/TodoApi.csproj`
+directly with Crank (`project:` + `framework: net11.0` + `channel: latest`),
+with no Docker image at all, using the same `sourceRevision`/CPU/memory/port
+validation and the same imported Bombardier load job as the Docker `csharp`
+scenario. `channel: latest` selects a coherent latest SDK/runtime/ASP.NET
+Core build (the user's goal is comparing against current released/floating
+versions, not an incompatible bleeding-edge combination).
+
+This only changes how the app is **packaged and started** — a native process
+started by Crank on the agent's host OS instead of a container image pulled
+from a registry. Crank's own CPU/memory limits (`CpuLimitRatio`/
+`MemoryLimitInBytes`, via Linux cgroups) are applied identically to both the
+Docker and direct jobs, so a Docker-vs-direct comparison isolates packaging/
+runtime/host-OS effects, not a CPU/memory quota difference. `csharp-project`
+is **not** added to `build/minimal-todo-scenarios.yml` or any pod/CI
+configuration — the scheduled `csharp` scenario remains the Docker baseline
+unchanged; running `csharp-project` is always a manual, explicit
+`--scenario csharp-project` invocation.
 
 ### Results
 
