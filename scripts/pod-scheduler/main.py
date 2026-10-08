@@ -223,7 +223,11 @@ def main(argv: List[str] = None) -> int:
             )
             print("Done!")
         return 0
-    except (ConfigError, SchedulerError, GeneratorError) as exc:
+    except (
+        ConfigError,
+        SchedulerError,
+        GeneratorError,
+    ) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 

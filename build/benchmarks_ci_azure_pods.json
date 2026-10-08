@@ -8,6 +8,10 @@
             "azure",
             "azurearm64"
         ],
+        "trend_lane_registry": "trend-perflab-lanes.json",
+        "pipeline": {
+            "trend_benchmarks_raw_base_url": "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+        },
         "yaml_generation": {
             "target_yaml_count": 1,
             "schedule_offset_hours": 0
@@ -94,6 +98,7 @@
             "template": "trend-scenarios.yml",
             "type": 2,
             "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3-dual", "idna-amd-lin", "idna-amd-win", "idna-intel-lin", "idna-intel-win"],
+            "enable_perf_lab_publication": false,
             "estimated_runtime": 20.0
         },
         {
@@ -101,6 +106,7 @@
             "template": "trend-database-scenarios.yml",
             "type": 3,
             "pods": ["azure-arm64", "azure2-amd64", "cobalt-cloud-lin", "cobalt-cloud-lin-azl3"],
+            "enable_perf_lab_publication": false,
             "estimated_runtime": 15.0
         }
     ]

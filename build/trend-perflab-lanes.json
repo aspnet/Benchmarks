@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "queueNamingConvention": "<OS>.<version>.<architecture>.<hardware>.Perf",
+  "lanes": {
+    "gold-lin": {
+      "name": "aspnet-gold-linux-x64",
+      "queue": "Ubuntu.2204.Amd64.AspNetGold.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 56,
+      "hardware": "AspNetGold"
+    },
+    "gold-win": {
+      "name": "aspnet-gold-windows-x64",
+      "queue": "Windows.Server2022.Amd64.AspNetGold.Perf",
+      "os": "Windows Server 2022",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 56,
+      "hardware": "AspNetGold"
+    },
+    "azure-arm64": {
+      "name": "aspnet-azure-arm64",
+      "queue": "Ubuntu.2204.Arm64.AspNetAzure.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "arm64",
+      "locale": "en-US",
+      "cores": 4,
+      "hardware": "AspNetAzure"
+    },
+    "azure2-amd64": {
+      "name": "aspnet-azure-amd64",
+      "queue": "Ubuntu.2204.Amd64.AspNetAzure2.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 4,
+      "hardware": "AspNetAzure2"
+    },
+    "cobalt-cloud-lin": {
+      "name": "aspnet-cobalt-cloud-linux-x64",
+      "queue": "Ubuntu.2204.Amd64.AspNetCobaltCloud.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 16,
+      "hardware": "AspNetCobaltCloud"
+    },
+    "cobalt-cloud-lin-azl3": {
+      "name": "aspnet-cobalt-cloud-azurelinux3-x64",
+      "queue": "AzureLinux.3.Amd64.AspNetCobaltCloud.Perf",
+      "os": "Azure Linux 3.0",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 16,
+      "hardware": "AspNetCobaltCloud"
+    },
+    "cobalt-cloud-lin-azl3-dual": {
+      "name": "aspnet-cobalt-cloud-azurelinux3-x64",
+      "queue": "AzureLinux.3.Amd64.AspNetCobaltCloud.Perf",
+      "os": "Azure Linux 3.0",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 16,
+      "hardware": "AspNetCobaltCloud"
+    },
+    "idna-amd-lin": {
+      "name": "aspnet-idna-amd-linux-x64",
+      "queue": "Ubuntu.2204.Amd64.AspNetIdnaAmd.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 4,
+      "hardware": "AspNetIdnaAmd"
+    },
+    "idna-amd-win": {
+      "name": "aspnet-idna-amd-windows-x64",
+      "queue": "Windows.Server2022.Amd64.AspNetIdnaAmd.Perf",
+      "os": "Windows Server 2022",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 4,
+      "hardware": "AspNetIdnaAmd"
+    },
+    "idna-intel-lin": {
+      "name": "aspnet-idna-intel-linux-x64",
+      "queue": "Ubuntu.2204.Amd64.AspNetIdnaIntel.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 4,
+      "hardware": "AspNetIdnaIntel"
+    },
+    "idna-intel-win": {
+      "name": "aspnet-idna-intel-windows-x64",
+      "queue": "Windows.Server2022.Amd64.AspNetIdnaIntel.Perf",
+      "os": "Windows Server 2022",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 4,
+      "hardware": "AspNetIdnaIntel"
+    },
+    "cobalt-hosted-lin": {
+      "name": "aspnet-cobalt-hosted-linux-x64",
+      "queue": "Ubuntu.2204.Amd64.AspNetCobaltHosted.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 56,
+      "hardware": "AspNetCobaltHosted"
+    },
+    "cobalt-hosted-lin-azl3": {
+      "name": "aspnet-cobalt-hosted-azurelinux3-x64",
+      "queue": "AzureLinux.3.Amd64.AspNetCobaltHosted.Perf",
+      "os": "Azure Linux 3.0",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 56,
+      "hardware": "AspNetCobaltHosted"
+    },
+    "cobalt-hosted-lin-28": {
+      "name": "aspnet-cobalt-hosted-linux-x64",
+      "queue": "Ubuntu.2204.Amd64.AspNetCobaltHosted.Perf",
+      "os": "Ubuntu 22.04",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 28,
+      "hardware": "AspNetCobaltHosted"
+    },
+    "cobalt-hosted-lin-azl3-28": {
+      "name": "aspnet-cobalt-hosted-azurelinux3-x64",
+      "queue": "AzureLinux.3.Amd64.AspNetCobaltHosted.Perf",
+      "os": "Azure Linux 3.0",
+      "architecture": "x64",
+      "locale": "en-US",
+      "cores": 28,
+      "hardware": "AspNetCobaltHosted"
+    }
+  }
+}

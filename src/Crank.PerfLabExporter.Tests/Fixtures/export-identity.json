@@ -1,0 +1,92 @@
+{
+  "build": {
+    "repo": "dotnet/runtime",
+    "branch": "main",
+    "gitHash": "1111111111111111111111111111111111111111",
+    "buildName": "runtime-10.0.0-preview.7.25380.103",
+    "timeStamp": "2026-08-18T11:59:00Z",
+    "version": "10.0.0-preview.7.25380.103",
+    "artifactId": "runtime-build-98765",
+    "additionalData": {
+      "runtimeChannel": "10.0"
+    }
+  },
+  "lane": {
+    "name": "aspnet-gold-linux-x64",
+    "queue": "Ubuntu.2204.Amd64.AspNetGold.Perf",
+    "os": {
+      "locale": "en-US",
+      "architecture": "x64",
+      "name": "Ubuntu 22.04",
+      "machineName": "aspnet-perf-01"
+    },
+    "configurations": {
+      "Runtime": "CoreCLR",
+      "Framework": "net10.0",
+      "Cores": "28",
+      "Configuration": "Release"
+    },
+    "hidden": false,
+    "additionalData": {
+      "hardware": "AspNetGold"
+    }
+  },
+  "scenario": {
+    "name": "Plaintext",
+    "family": "aspnet-plaintext",
+    "categories": [
+      "aspnet",
+      "plaintext"
+    ],
+    "additionalData": {
+      "protocol": "http",
+      "server": "kestrel"
+    }
+  },
+  "dependencies": [
+    {
+      "name": "aspnetcore",
+      "aliases": [
+        "Microsoft.AspNetCore.App"
+      ],
+      "repository": "https://github.com/dotnet/aspnetcore",
+      "branch": "main",
+      "version": "10.0.0-preview.7.25380.108",
+      "commitHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "commitTimeStamp": "2026-08-18T11:58:00Z",
+      "additionalData": {
+        "channel": "10.0"
+      }
+    },
+    {
+      "name": "example",
+      "aliases": [
+        "Example.Dependency"
+      ],
+      "repository": "https://github.com/example/dependency",
+      "branch": "main",
+      "version": "2.3.4",
+      "commitHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "commitTimeStamp": "2026-08-17T10:00:00Z",
+      "additionalData": {}
+    }
+  ],
+  "perfRepoHash": "2222222222222222222222222222222222222222",
+  "crankVersion": "0.2.0-alpha.25380.1",
+  "helixCorrelationId": null,
+  "azureDevOps": {
+    "project": "internal",
+    "pipeline": "aspnet-benchmarks",
+    "buildId": "12345",
+    "buildNumber": "20260818.1",
+    "buildUrl": "https://dev.azure.com/example/internal/_build/results?buildId=12345"
+  },
+  "sql": {
+    "session": "trend-20260818-plaintext",
+    "table": "TrendBenchmarks",
+    "recordId": "987654"
+  },
+  "additionalData": {
+    "producer": "TrendBenchmarks"
+  }
+}

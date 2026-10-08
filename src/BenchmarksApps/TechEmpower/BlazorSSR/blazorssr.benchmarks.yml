@@ -9,7 +9,7 @@ jobs:
   blazorssr:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: "{{benchmarksCommit}}"
       project: src/BenchmarksApps/TechEmpower/BlazorSSR/BlazorSSR.csproj
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"

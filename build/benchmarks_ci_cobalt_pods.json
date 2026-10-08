@@ -8,6 +8,10 @@
             "cobalthosted",
             "cobalthosted_azurelinux3"
         ],
+        "trend_lane_registry": "trend-perflab-lanes.json",
+        "pipeline": {
+            "trend_benchmarks_raw_base_url": "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+        },
         "yaml_generation": {
             "target_yaml_count": 1,
             "schedule_offset_hours": 0
@@ -90,6 +94,7 @@
             "template": "trend-scenarios.yml",
             "type": 2,
             "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "enable_perf_lab_publication": false,
             "estimated_runtime": 20.0
         },
         {
@@ -97,6 +102,7 @@
             "template": "trend-database-scenarios.yml",
             "type": 3,
             "pods": ["cobalt-hosted-lin", "cobalt-hosted-lin-azl3", "cobalt-hosted-lin-28", "cobalt-hosted-lin-azl3-28"],
+            "enable_perf_lab_publication": false,
             "estimated_runtime": 15.0
         },
         {

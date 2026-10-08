@@ -236,7 +236,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-azure-arm64
+      perfLabQueue: Ubuntu.2204.Arm64.AspNetAzure.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: arm64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetAzure
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile azure-server-arm64-app --profile azure-client-load "
 
 # GROUP 8
 
@@ -266,7 +276,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-azure-amd64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetAzure2.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetAzure2
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile azure2-server-amd64-app --profile azure2-client-load "
 
 # GROUP 9
 
@@ -282,7 +302,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-cobalt-cloud-linux-x64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetCobaltCloud.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "16"
+      perfLabHardware: AspNetCobaltCloud
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
 
 - job: Trends_cobalt_cloud_lin_azl3_dual
   displayName: 9- Trends cobalt-cloud-lin-azl3-dual
@@ -296,7 +326,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-db-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-cobalt-cloud-azurelinux3-x64
+      perfLabQueue: AzureLinux.3.Amd64.AspNetCobaltCloud.Perf
+      perfLabOs: "Azure Linux 3.0"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "16"
+      perfLabHardware: AspNetCobaltCloud
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-db-load "
 
 # GROUP 10
 
@@ -312,7 +352,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-lin-app --profile idna-intel-lin-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-idna-amd-linux-x64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetIdnaAmd.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetIdnaAmd
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile idna-amd-lin-app --profile idna-intel-lin-load "
 
 - job: Trends_idna_amd_win
   displayName: 10- Trends idna-amd-win
@@ -326,7 +376,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-amd-win-app --profile azure2-db-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-idna-amd-windows-x64
+      perfLabQueue: Windows.Server2022.Amd64.AspNetIdnaAmd.Perf
+      perfLabOs: "Windows Server 2022"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetIdnaAmd
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile idna-amd-win-app --profile azure2-db-load "
 
 # GROUP 11
 
@@ -342,7 +402,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-lin-app --profile idna-amd-lin-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-idna-intel-linux-x64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetIdnaIntel.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetIdnaIntel
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile idna-intel-lin-app --profile idna-amd-lin-load "
 
 - job: Trends_idna_intel_win
   displayName: 11- Trends idna-intel-win
@@ -356,7 +426,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile idna-intel-win-app --profile azure2-db-load "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-idna-intel-windows-x64
+      perfLabQueue: Windows.Server2022.Amd64.AspNetIdnaIntel.Perf
+      perfLabOs: "Windows Server 2022"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetIdnaIntel
+      perfLabTopology: "SUT+Load"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile idna-intel-win-app --profile azure2-db-load "
 
 # GROUP 12
 
@@ -372,7 +452,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-azure-arm64
+      perfLabQueue: Ubuntu.2204.Arm64.AspNetAzure.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: arm64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetAzure
+      perfLabTopology: "SUT+Load+DB"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
 
 - job: Trends_Database_azure2_amd64
   displayName: 12- Trends Database azure2-amd64
@@ -386,7 +476,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azurearm64
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-azure-amd64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetAzure2.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "4"
+      perfLabHardware: AspNetAzure2
+      perfLabTopology: "SUT+Load+DB"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
 
 # GROUP 13
 
@@ -402,7 +502,17 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-cobalt-cloud-linux-x64
+      perfLabQueue: Ubuntu.2204.Amd64.AspNetCobaltCloud.Perf
+      perfLabOs: "Ubuntu 22.04"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "16"
+      perfLabHardware: AspNetCobaltCloud
+      perfLabTopology: "SUT+Load+DB"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
 
 # GROUP 14
 
@@ -418,5 +528,15 @@ jobs:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: azure
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
+      benchmarksRawBaseUrl: "https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)"
+      enablePerfLabPublication: false
+      perfLabLaneName: aspnet-cobalt-cloud-azurelinux3-x64
+      perfLabQueue: AzureLinux.3.Amd64.AspNetCobaltCloud.Perf
+      perfLabOs: "Azure Linux 3.0"
+      perfLabArchitecture: x64
+      perfLabLocale: en-US
+      perfLabCores: "16"
+      perfLabHardware: AspNetCobaltCloud
+      perfLabTopology: "SUT+Load+DB"
+      arguments: "--config https://raw.githubusercontent.com/aspnet/Benchmarks/$(Build.SourceVersion)/build/ci.profile.yml --variable benchmarksCommit=$(Build.SourceVersion) --profile cobalt-cloud-lin-server-azure-linux3-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
 
