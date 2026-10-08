@@ -1,0 +1,347 @@
+# HttpArena (https://www.http-arena.com/, https://github.com/MDA2AV/HttpArena) framework
+# comparison benchmarks. HttpArena is the community benchmark platform that effectively
+# replaced TechEmpower (archived) for cross-framework HTTP throughput comparisons.
+#
+# Only the two entries we actively track are wired up here:
+#   - frameworks/aspnet-minimal-11 (ASP.NET Core Minimal APIs on .NET 11)
+#   - frameworks/genhttp-ioxide    (GenHTTP on the Ioxide/io_uring engine, .NET 11)
+#
+# Both apps are built directly from HttpArena's own repository/commit (no vendored app
+# source in this repo) using Crank's normal "project + framework" build, the same way
+# scenarios/platform.benchmarks.yml builds PlatformBenchmarks - Docker is not required.
+#
+# Both apps target net11.0 and deliberately have no "channel"/SDK version pinned here:
+# Crank's agent (Microsoft.Crank.Agent/Startup.cs) already maps framework net11.0 to
+# channel "latest", so every run always builds against the most recently published
+# .NET 11 preview SDK/runtime, rather than a hardcoded preview build number like
+# HttpArena's own Dockerfiles use (e.g. 11.0.100-preview.7).
+#
+# Both apps hardcode their plaintext HTTP/1.1 listener to port 8080 in code (no --urls
+# support), and both intentionally disable all console logging for throughput, so no
+# readyStateText is set here - Crank falls back to its normal startup-delay based
+# readiness detection for apps that don't print a ready signal.
+#
+# This file currently covers HttpArena's "Stage A" (plain HTTP/1.1 and TLS,
+# no custom load tooling) and "Stage B" (Postgres-backed) profiles that both
+# apps' meta.json "tests" arrays subscribe to:
+#   pipeline   -> HttpArena's "pipelined" profile  (already supported)
+#   json       -> HttpArena's "json-comp"-adjacent plain JSON read
+#   baseline   -> HttpArena's "baseline" profile (GET /baseline11?a=13&b=42)
+#   async      -> HttpArena's "async" profile (GET /delay/{ms})
+#   json_tls   -> HttpArena's "json-tls" profile (GET /json/{count} over TLS)
+#   async_db   -> HttpArena's "async-db" profile (Postgres-backed read)
+#   fortunes   -> HttpArena's "fortunes" profile (aspnet-minimal-11 only -
+#                 genhttp-ioxide's meta.json does not subscribe to it, and its
+#                 Project.cs has no /fortunes route)
+#
+# Not yet covered (need custom tooling/infra beyond this repo's current Crank
+# setup, or a vendored multi-file static asset corpus):
+#   limited-conn      - needs a connection-churn-every-N-requests client (gcannon)
+#   static-tls        - needs the ~20-file static asset corpus under /data/static
+#   8gbit, latency-*  - need HttpArena's own paced "zrk" tool + cgroup CPU read
+#   baseline-h2/h2c, json-h2c, baseline-h3, static-h3 - need an HTTP/2 or
+#     HTTP/3 capable load client (h2load / h2load-h3), not a Crank job today
+#   echo-ws*          - need a WebSocket load client (genhttp-ioxide only)
+#
+# Examples:
+# --config scenarios/httparena.benchmarks.yml --scenario json_aspnet_minimal_11 --profile aspnet-gold-lin
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  serverScheme: http
+  serverPort: 8080
+  urls: "{{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+  # Number of dataset items returned by GET /json/{count}.
+  jsonCount: 50
+  # Postgres credentials for the async_db/fortunes scenarios - matches the
+  # postgresql job below (scripts/lib/postgres.sh's own bench/bench/benchmark,
+  # kept here instead for the reasons noted on the postgresql job).
+  dbUser: bench
+  dbPassword: bench
+  dbName: benchmark
+
+jobs:
+  httparena_aspnet_minimal_11:
+    source:
+      repository: https://github.com/MDA2AV/HttpArena.git
+      # Pinned for reproducibility; bump deliberately. This is independent from the
+      # .NET SDK/runtime version, which always floats to "latest" (see note above).
+      # Crank only shallow-clones with `-b <branch>` when branchOrCommit has no '#';
+      # pinning an exact commit requires the `branch#commit` form (full clone of
+      # branch, then `git checkout commit`) - see Microsoft.Crank.Agent/Startup.cs.
+      branchOrCommit: main#5b111b8889fee61076f1d7dd14fdb3dfd12c8492
+      project: frameworks/aspnet-minimal-11/aspnet-minimal-11.csproj
+    framework: net11.0
+    # /json/{count} reads its dataset from DATASET_PATH (default /data/dataset.json),
+    # which HttpArena's own harness bind-mounts at run time. We vendor just that one
+    # small static fixture and stage it next to the published app via outputFiles.
+    # outputFiles only accepts local paths (no URL download, despite --help's claim),
+    # so this is resolved relative to the working directory crank itself is invoked
+    # from - run crank from a checkout of this repo's root:
+    #   crank --config scenarios/httparena.benchmarks.yml ...
+    #
+    # TLS_CERT/TLS_KEY point at a self-signed dev cert generated on the agent by
+    # beforeScript (CN=localhost + loopback SANs, 20-year validity) rather than a
+    # committed .crt/.key pair - avoids tripping secret-scanning false positives on
+    # a "BEGIN PRIVATE KEY" blob that isn't actually sensitive (it's a throwaway,
+    # regenerated-every-run dev cert, not a real credential). beforeScript runs
+    # with the *project source* directory as its cwd (confirmed via Crank's own
+    # source, Microsoft.Crank.Agent/Startup.cs), one level above where the
+    # self-contained app actually runs from (<project>/published/, reassigned
+    # after beforeScript executes) - so the cert/key must be written straight
+    # into published/ for the app's relative TLS_CERT/TLS_KEY to find them.
+    # `test -f` skips regeneration on options.reuseBuild re-runs.
+    beforeScript: "bash -c \"mkdir -p published && (test -f published/server.crt || openssl req -x509 -nodes -newkey rsa:2048 -keyout published/server.key -out published/server.crt -days 7300 -subj /CN=localhost -addext subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1)\""
+    options:
+      outputFiles:
+        - scenarios/assets/httparena-dataset.json
+    environmentVariables:
+      DATASET_PATH: httparena-dataset.json
+      TLS_CERT: server.crt
+      TLS_KEY: server.key
+
+  httparena_genhttp_ioxide:
+    source:
+      repository: https://github.com/MDA2AV/HttpArena.git
+      branchOrCommit: main#5b111b8889fee61076f1d7dd14fdb3dfd12c8492
+      project: frameworks/genhttp-ioxide/genhttp.csproj
+    framework: net11.0
+    # Same DATASET_PATH/TLS_CERT/TLS_KEY contract as aspnet-minimal-11, including
+    # the beforeScript-generated dev cert written into published/ (see that
+    # job's comment for why it's generated rather than committed, and why
+    # published/ specifically).
+    beforeScript: "bash -c \"mkdir -p published && (test -f published/server.crt || openssl req -x509 -nodes -newkey rsa:2048 -keyout published/server.key -out published/server.crt -days 7300 -subj /CN=localhost -addext subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1)\""
+    options:
+      outputFiles:
+        - scenarios/assets/httparena-dataset.json
+    environmentVariables:
+      DATASET_PATH: httparena-dataset.json
+      TLS_CERT: server.crt
+      TLS_KEY: server.key
+
+  # Postgres sidecar for async_db/fortunes. HttpArena's own harness runs a
+  # stock postgres:18 container with data/pgdb-seed.sql bind-mounted in (see
+  # scripts/lib/postgres.sh) rather than building a custom image, so there is
+  # no Dockerfile upstream for Crank's dockerFile/dockerContextDirectory to
+  # point at. We vendor a small Dockerfile that fetches pgdb-seed.sql at
+  # build time straight from the same pinned HttpArena commit as the app
+  # source (see scenarios/assets/httparena/postgres/Dockerfile) rather than
+  # committing that ~7MB file (100K literal rows) into this repo, and build
+  # from that local folder instead - the same pattern as this repo's other
+  # postgresql jobs (e.g. scenarios/platform.benchmarks.yml), just with a
+  # local build context rather than a remote repository/dockerContextDirectory.
+  httparena_postgresql:
+    source:
+      # Resolved relative to this config file's own directory (scenarios/),
+      # unlike options.outputFiles above which resolves relative to the
+      # working directory crank is invoked from - confirmed by trial run.
+      localFolder: assets/httparena/postgres
+    dockerFile: Dockerfile
+    dockerImageName: httparena_postgres
+    environmentVariables:
+      POSTGRES_USER: "{{dbUser}}"
+      POSTGRES_PASSWORD: "{{dbPassword}}"
+      POSTGRES_DB: "{{dbName}}"
+    readyStateText: database system is ready to accept connections
+    noClean: true
+
+scenarios:
+  pipeline_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /pipeline
+        pipeline: 16
+        connections: 4096
+
+  json_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: "/json/{{jsonCount}}"
+        connections: 512
+
+  pipeline_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /pipeline
+        pipeline: 16
+        connections: 4096
+
+  json_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: "/json/{{jsonCount}}"
+        connections: 512
+
+  # HttpArena's "baseline" profile: GET /baseline11?a=13&b=42 -> "55", a
+  # trivial computed response with no serialization/dataset dependency.
+  # Matches HttpArena's own connection count (4096); cpuset pinning and the
+  # dedicated bench-rig system tuning it also applies are not replicated here.
+  baseline_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /baseline11?a=13&b=42
+        connections: 4096
+
+  baseline_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /baseline11?a=13&b=42
+        connections: 4096
+
+  # HttpArena's "async" profile: GET /delay/10, a flat 10ms wait, held open
+  # across many connections to measure how cheaply a server can park pending
+  # requests. HttpArena itself uses 32000 connections (req_per_conn=0) on a
+  # host it has specifically port-range-tuned for that (system_tune() widens
+  # ip_local_port_range to 1024-65535, leaving ~64505 usable ephemeral ports
+  # after ip_local_reserved_ports). We match both the connection count and
+  # that tuning here via beforeScript on the load job (runs as root on the
+  # load generator host, widening its outbound ephemeral port range before
+  # wrk opens its 32000 connections) - without it, 32000 connections from a
+  # single load-generator host would exhaust the default ~28K-port ephemeral
+  # range (32768-60999) and fail with connect() errors.
+  async_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      beforeScript: "bash -c \"sysctl -w net.ipv4.ip_local_port_range='1024 65535'\""
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /delay/10
+        connections: 32000
+
+  async_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+    load:
+      job: wrk
+      beforeScript: "bash -c \"sysctl -w net.ipv4.ip_local_port_range='1024 65535'\""
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /delay/10
+        connections: 32000
+
+  # HttpArena's "json-tls" profile: the same /json/{count} reads as the plain
+  # json scenario, rotated across 7 (count, m) pairs, but over the app's
+  # HTTP/1.1-over-TLS listener (port 8081, TLS_CERT/TLS_KEY wired on the app
+  # jobs above). Reuses HttpArena's own wrk Lua script directly from its
+  # pinned commit - no vendoring needed since wrk's `script` variable accepts
+  # a raw URL. wrk does not validate server certificates, so our self-signed
+  # dev cert needs no special client-side trust configuration.
+  json_tls_aspnet_minimal_11:
+    application:
+      job: httparena_aspnet_minimal_11
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        serverPort: 8081
+        script: https://raw.githubusercontent.com/MDA2AV/HttpArena/5b111b8889fee61076f1d7dd14fdb3dfd12c8492/requests/json-tls-rotate.lua
+        connections: 4096
+
+  json_tls_genhttp_ioxide:
+    application:
+      job: httparena_genhttp_ioxide
+      environmentVariables:
+        # Kernel TLS (kTLS) on the TX path needs the kernel's "tls" ULP module
+        # (see /proc/sys/net/ipv4/tcp_available_ulp); without it every TLS
+        # handshake on the :8081/:8443 listeners fails, which manifests as
+        # wrk reporting "Cannot assign requested address" (confirmed on
+        # aspnet-gold-lin - not every benchmarking host has this module).
+        IOXIDE_KTLS: "0"
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        serverPort: 8081
+        script: https://raw.githubusercontent.com/MDA2AV/HttpArena/5b111b8889fee61076f1d7dd14fdb3dfd12c8492/requests/json-tls-rotate.lua
+        connections: 4096
+
+  # HttpArena's "async-db" profile: GET /async-db?min=&max=&limit=, a
+  # Postgres range query over the `items` table (100K rows, no index on
+  # price - forces a sequential scan). Uses the limit=50 request variant
+  # (requests/async-db-50.raw); HttpArena itself runs limit in {5,10,20,35,50}
+  # as separate requests rotated by gcannon, which we don't replicate here.
+  async_db_aspnet_minimal_11:
+    db:
+      job: httparena_postgresql
+    application:
+      job: httparena_aspnet_minimal_11
+      environmentVariables:
+        DATABASE_URL: "postgres://{{dbUser}}:{{dbPassword}}@{{databaseServer}}:5432/{{dbName}}"
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /async-db?min=10&max=50&limit=50
+        connections: 1024
+
+  async_db_genhttp_ioxide:
+    db:
+      job: httparena_postgresql
+    application:
+      job: httparena_genhttp_ioxide
+      environmentVariables:
+        DATABASE_URL: "postgres://{{dbUser}}:{{dbPassword}}@{{databaseServer}}:5432/{{dbName}}"
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /async-db?min=10&max=50&limit=50
+        connections: 1024
+
+  # HttpArena's "fortunes" profile: GET /fortunes, a Postgres-backed
+  # template-render test (TechEmpower Fortunes-style). aspnet-minimal-11 only
+  # - genhttp-ioxide's meta.json doesn't subscribe to this profile and its
+  # Project.cs has no /fortunes route.
+  fortunes_aspnet_minimal_11:
+    db:
+      job: httparena_postgresql
+    application:
+      job: httparena_aspnet_minimal_11
+      environmentVariables:
+        DATABASE_URL: "postgres://{{dbUser}}:{{dbPassword}}@{{databaseServer}}:5432/{{dbName}}"
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: html
+        path: /fortunes
+        connections: 1024
