@@ -29,6 +29,7 @@ namespace Crank.PerfLabExporter.CommandLine
 
             Upload:
               --storage-account <name-or-uri>
+              --storage-connection-string-environment-variable <name> (instead of --storage-account)
               --container <name>
               --queue <name>
               --storage-authentication <default|managed-identity|certificate>
@@ -80,6 +81,7 @@ namespace Crank.PerfLabExporter.CommandLine
                 ? ParseStorage(values)
                 : (
                     Account: (string?)null,
+                    ConnectionStringEnvironmentVariable: (string?)null,
                     Container: (string?)null,
                     Queue: (string?)null,
                     Authentication: new StorageAuthenticationOptions(),
@@ -107,6 +109,8 @@ namespace Crank.PerfLabExporter.CommandLine
                         "--github-token-environment-variable") ??
                     "GITHUB_TOKEN",
                 StorageAccount = storage.Account,
+                StorageConnectionStringEnvironmentVariable =
+                    storage.ConnectionStringEnvironmentVariable,
                 Container = storage.Container,
                 Queue = storage.Queue,
                 Authentication = storage.Authentication,
@@ -123,13 +127,48 @@ namespace Crank.PerfLabExporter.CommandLine
         }
 
         private static (
-            string Account,
+            string? Account,
+            string? ConnectionStringEnvironmentVariable,
             string Container,
             string Queue,
             StorageAuthenticationOptions Authentication,
             PublicationRetryOptions Retry) ParseStorage(
                 IDictionary<string, string?> values)
         {
+            var account = Take(values, "--storage-account");
+            var connectionStringEnvironmentVariable = Take(
+                values, "--storage-connection-string-environment-variable");
+            if (account is not null && connectionStringEnvironmentVariable is not null)
+            {
+                throw new ArgumentException(
+                    "--storage-account and --storage-connection-string-environment-variable are mutually exclusive.");
+            }
+
+            if (connectionStringEnvironmentVariable is not null)
+            {
+                if (string.IsNullOrWhiteSpace(connectionStringEnvironmentVariable))
+                {
+                    throw new ArgumentException(
+                        "--storage-connection-string-environment-variable requires an environment-variable name.");
+                }
+
+                if (values.Keys.Any(option =>
+                    option == "--storage-authentication" ||
+                    option.StartsWith("--managed-identity-", StringComparison.Ordinal) ||
+                    option.StartsWith("--tenant-id", StringComparison.Ordinal) ||
+                    option.StartsWith("--client-id", StringComparison.Ordinal) ||
+                    option.StartsWith("--certificate-", StringComparison.Ordinal)))
+                {
+                    throw new ArgumentException(
+                        "Credential options cannot be combined with --storage-connection-string-environment-variable.");
+                }
+            }
+            else if (string.IsNullOrEmpty(account))
+            {
+                throw new ArgumentException(
+                    "Required option '--storage-account' or '--storage-connection-string-environment-variable' was not supplied.");
+            }
+
             var authentication = new StorageAuthenticationOptions
             {
                 Mode = Take(values, "--storage-authentication")
@@ -175,7 +214,8 @@ namespace Crank.PerfLabExporter.CommandLine
                 2,
                 "--retry-delay-seconds");
             return (
-                Required(values, "--storage-account"),
+                account,
+                connectionStringEnvironmentVariable,
                 Required(values, "--container"),
                 Required(values, "--queue"),
                 authentication,

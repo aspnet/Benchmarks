@@ -2,6 +2,7 @@ variables:
   perfLabPublication: "false"
   perfLabCounterPolicy: crank-perflab-counter-policy.json
   perfLabStorageAccount: pvscmdupload
+  perfLabStorageConnectionStringEnvironmentVariable: ""
   perfLabContainer: results
   perfLabResultsQueue: resultsqueue
   crankVersionEnvironmentVariable: CRANK_VERSION
@@ -39,16 +40,27 @@ commands:
           '--counter-policy', '{{ perfLabCounterPolicy | replace: "'", "''" }}',
           '--identity-source', 'crank',
           '--identity-property-prefix', 'perflab.',
-          '--crank-version-environment-variable', '{{ crankVersionEnvironmentVariable | replace: "'", "''" }}',
-          '--storage-account', '{{ perfLabStorageAccount | replace: "'", "''" }}',
-          '--container', '{{ perfLabContainer | replace: "'", "''" }}',
-          '--queue', '{{ perfLabResultsQueue | replace: "'", "''" }}',
-          '--storage-authentication', 'certificate',
-          '--tenant-id-environment-variable', '{{ perfLabTenantIdEnvironmentVariable | replace: "'", "''" }}',
-          '--client-id-environment-variable', '{{ perfLabClientIdEnvironmentVariable | replace: "'", "''" }}',
-          '--certificate-base64-environment-variable', '{{ perfLabCertificateBase64EnvironmentVariable | replace: "'", "''" }}',
-          '--certificate-password-environment-variable', '{{ perfLabCertificatePasswordEnvironmentVariable | replace: "'", "''" }}'
+          '--crank-version-environment-variable', '{{ crankVersionEnvironmentVariable | replace: "'", "''" }}'
         )
+        $connectionStringVariable = '{{ perfLabStorageConnectionStringEnvironmentVariable | replace: "'", "''" }}'
+        if ($connectionStringVariable) {
+          $exportArguments += @('--storage-connection-string-environment-variable', $connectionStringVariable)
+        } else {
+          $exportArguments += @('--storage-account', '{{ perfLabStorageAccount | replace: "'", "''" }}')
+        }
+        $exportArguments += @(
+          '--container', '{{ perfLabContainer | replace: "'", "''" }}',
+          '--queue', '{{ perfLabResultsQueue | replace: "'", "''" }}'
+        )
+        if (-not $connectionStringVariable) {
+          $exportArguments += @(
+            '--storage-authentication', 'certificate',
+            '--tenant-id-environment-variable', '{{ perfLabTenantIdEnvironmentVariable | replace: "'", "''" }}',
+            '--client-id-environment-variable', '{{ perfLabClientIdEnvironmentVariable | replace: "'", "''" }}',
+            '--certificate-base64-environment-variable', '{{ perfLabCertificateBase64EnvironmentVariable | replace: "'", "''" }}',
+            '--certificate-password-environment-variable', '{{ perfLabCertificatePasswordEnvironmentVariable | replace: "'", "''" }}'
+          )
+        }
         & $env:CRANK_AZDO_POST_PROCESS_EXECUTABLE @exportArguments
         exit $LASTEXITCODE
     - condition: "(job.environment.platform == 'linux' || job.environment.platform == 'osx') && '{{ perfLabPublication }}' == 'true' && result.returnCode == 0 && result.jobResults.jobs.Count > 0"
@@ -57,17 +69,27 @@ commands:
       script: |
         set -eu
         : "${CRANK_AZDO_POST_PROCESS_EXECUTABLE:?CRANK_AZDO_POST_PROCESS_EXECUTABLE must identify the deployed PerfLab exporter.}"
-        exec "$CRANK_AZDO_POST_PROCESS_EXECUTABLE" upload \
+        set -- upload \
           --crank-json crank-results.json \
           --counter-policy '{{ perfLabCounterPolicy | replace: "'", "'\\''" }}' \
           --identity-source crank \
           --identity-property-prefix perflab. \
-          --crank-version-environment-variable '{{ crankVersionEnvironmentVariable | replace: "'", "'\\''" }}' \
-          --storage-account '{{ perfLabStorageAccount | replace: "'", "'\\''" }}' \
+          --crank-version-environment-variable '{{ crankVersionEnvironmentVariable | replace: "'", "'\\''" }}'
+        connection_string_variable='{{ perfLabStorageConnectionStringEnvironmentVariable | replace: "'", "'\\''" }}'
+        if [ -n "$connection_string_variable" ]; then
+          set -- "$@" --storage-connection-string-environment-variable "$connection_string_variable"
+        else
+          set -- "$@" --storage-account '{{ perfLabStorageAccount | replace: "'", "'\\''" }}'
+        fi
+        set -- "$@" \
           --container '{{ perfLabContainer | replace: "'", "'\\''" }}' \
-          --queue '{{ perfLabResultsQueue | replace: "'", "'\\''" }}' \
-          --storage-authentication certificate \
-          --tenant-id-environment-variable '{{ perfLabTenantIdEnvironmentVariable | replace: "'", "'\\''" }}' \
-          --client-id-environment-variable '{{ perfLabClientIdEnvironmentVariable | replace: "'", "'\\''" }}' \
-          --certificate-base64-environment-variable '{{ perfLabCertificateBase64EnvironmentVariable | replace: "'", "'\\''" }}' \
-          --certificate-password-environment-variable '{{ perfLabCertificatePasswordEnvironmentVariable | replace: "'", "'\\''" }}'
+          --queue '{{ perfLabResultsQueue | replace: "'", "'\\''" }}'
+        if [ -z "$connection_string_variable" ]; then
+          set -- "$@" \
+            --storage-authentication certificate \
+            --tenant-id-environment-variable '{{ perfLabTenantIdEnvironmentVariable | replace: "'", "'\\''" }}' \
+            --client-id-environment-variable '{{ perfLabClientIdEnvironmentVariable | replace: "'", "'\\''" }}' \
+            --certificate-base64-environment-variable '{{ perfLabCertificateBase64EnvironmentVariable | replace: "'", "'\\''" }}' \
+            --certificate-password-environment-variable '{{ perfLabCertificatePasswordEnvironmentVariable | replace: "'", "'\\''" }}'
+        fi
+        exec "$CRANK_AZDO_POST_PROCESS_EXECUTABLE" "$@"

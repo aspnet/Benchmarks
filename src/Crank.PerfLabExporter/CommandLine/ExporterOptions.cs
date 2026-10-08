@@ -30,6 +30,7 @@ namespace Crank.PerfLabExporter.CommandLine
         public string GitHubTokenEnvironmentVariable { get; init; } =
             "GITHUB_TOKEN";
         public string? StorageAccount { get; init; }
+        public string? StorageConnectionStringEnvironmentVariable { get; init; }
         public string? Container { get; init; }
         public string? Queue { get; init; }
         public StorageAuthenticationOptions Authentication { get; init; } =

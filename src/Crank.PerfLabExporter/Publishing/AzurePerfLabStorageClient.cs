@@ -14,6 +14,26 @@ namespace Crank.PerfLabExporter.Publishing
         private readonly BlobServiceClient _blobServiceClient;
         private readonly QueueServiceClient _queueServiceClient;
 
+        public AzurePerfLabStorageClient(string connectionString)
+        {
+            try
+            {
+                _blobServiceClient = new BlobServiceClient(connectionString);
+                _queueServiceClient = new QueueServiceClient(
+                    connectionString,
+                    new QueueClientOptions
+                    {
+                        MessageEncoding = QueueMessageEncoding.Base64
+                    });
+            }
+            catch (Exception exception) when (
+                exception is ArgumentException or FormatException)
+            {
+                // SDK parsing errors can contain connection-string values.
+                throw new ArgumentException("The storage connection string is invalid.");
+            }
+        }
+
         public AzurePerfLabStorageClient(
             StorageAccountEndpoints endpoints,
             TokenCredential credential)

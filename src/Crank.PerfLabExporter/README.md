@@ -65,6 +65,17 @@ blob name is deterministic, and the queue message matches
 {"container_name": "results", "blob_name": "crank/.../report.perflab.json"}
 ```
 
+For local Azurite, instead of `--storage-account` and authentication options,
+use `--storage-connection-string-environment-variable LOCAL_PERFLAB_STORAGE`.
+Set that environment variable on the Controller host to a connection string
+with explicit local Blob and Queue endpoints (including ports and the
+`/devstoreaccount1` account path). Only the variable name goes on the command
+line; never pass or log the connection string itself. The variable must be
+nonempty, and invalid configuration fails without falling back to Azure
+credentials or the production account. The SDK retains connection-string
+endpoints and Base64 queue encoding. Provision the container and queue locally
+before uploading; the exporter does not create them or write tables.
+
 ## Controller afterJob
 
 Trend loads the canonical
@@ -107,6 +118,33 @@ the four certificate-authentication environment-variable names. Defaults remain
 Shell arguments are single-quoted with embedded apostrophes escaped for each
 shell; only environment-variable **names**, never credential values, enter the
 profile scripts. Credentials are read by the external exporter.
+
+For the same local upload through the canonical `afterJob` profile, set
+`--variable perfLabPublication=true` and
+`--variable perfLabStorageConnectionStringEnvironmentVariable=LOCAL_PERFLAB_STORAGE`.
+The latter defaults to empty, preserving existing account/certificate arguments.
+When nonempty, the profile passes only connection-string environment-variable
+authentication, not account or certificate options. Keep its value to a variable
+name, with the actual local-only connection string in the host environment.
+
+### Verified local integration
+
+On Windows, the canonical profile was exercised end to end with the updated
+Controller, a real agent, and a .NET 8 HTTP JSON application: normal and
+`JSONSIZE=1024` variants, eight connections, one-second warmup, and three-second
+runs against `/json`. Agent-collected dependencies identified .NET 8.0.28
+runtime `46295af` and ASP.NET Core `bb9ecc`. Each `afterJob` converted once and
+uploaded one blob plus a Base64 queue message to local Azurite Blob/Queue/Table
+ports 11000/11001/11002. The actual .NET 10 Function1 uploader ingested 62 summary
+and 62 full rows sharing one run. Requests/sec threshold 0.02, mean-latency
+threshold 0.05, KB-to-byte size conversion, and all 62 row-key formulas were
+verified. Duplicate and malformed local queue messages added no rows and left
+the queue empty. No SQL or production writes occurred.
+
+Validation passed 52 exporter tests and all 69 scheduler/profile tests,
+including the actual Controller checks. This verifies Windows local-only
+operation; the HTTP client did not emit P99. Linux, certificate authentication,
+RBAC, ADX, and Service Bus were not covered.
 
 Local `convert` and optional `upload` remain independent exporter commands;
 neither conversion nor upload logic is built into the Controller.

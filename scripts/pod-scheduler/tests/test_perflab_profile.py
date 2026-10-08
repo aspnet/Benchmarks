@@ -84,6 +84,7 @@ class TestPerfLabProfile(unittest.TestCase):
             self.text,
         )
         self.assertEqual("false", self.variables["perfLabPublication"])
+        self.assertEqual("", self.variables["perfLabStorageConnectionStringEnvironmentVariable"])
         self.assertEqual(1, self.text.count("afterJob:"))
         self.assertEqual(4, len(self.commands))
         self.assertEqual(2, self.text.count("continueOnError: false"))
@@ -105,9 +106,13 @@ class TestPerfLabProfile(unittest.TestCase):
                 command["condition"],
             )
 
-    def _run_shell_cases(self, script_type, executable):
+    def _run_shell_cases(self, script_type, executable, connection_string=False):
         if not executable:
             self.skipTest(f"{script_type} unavailable")
+        if connection_string:
+            self.variables["perfLabStorageConnectionStringEnvironmentVariable"] = (
+                "LOCAL_STORAGE ' $(echo injected) `echo injected`; & name"
+            )
         environment = os.environ.copy()
         environment.update({
             "PERFLAB_TEST_PYTHON": sys.executable,
@@ -175,24 +180,55 @@ class TestPerfLabProfile(unittest.TestCase):
                 self.assertEqual(self.fixture, invocation["fixture"])
                 arguments = invocation["arguments"]
                 self.assertEqual("upload", arguments[0])
-                self.assertEqual(27, len(arguments))
+                self.assertEqual(17 if connection_string else 27, len(arguments))
                 options = dict(zip(arguments[1::2], arguments[2::2]))
                 self.assertEqual("crank-results.json", options["--crank-json"])
                 self.assertEqual("crank", options["--identity-source"])
-                self.assertEqual("certificate", options["--storage-authentication"])
-                for option, variable in [
+                expected_order = [
+                    "--crank-json", "--counter-policy", "--identity-source",
+                    "--identity-property-prefix", "--crank-version-environment-variable",
+                    "--storage-connection-string-environment-variable"
+                    if connection_string else "--storage-account",
+                    "--container", "--queue",
+                ]
+                if not connection_string:
+                    expected_order.extend([
+                        "--storage-authentication", "--tenant-id-environment-variable",
+                        "--client-id-environment-variable",
+                        "--certificate-base64-environment-variable",
+                        "--certificate-password-environment-variable",
+                    ])
+                self.assertEqual(expected_order, arguments[1::2])
+                expected_options = [
                     ("counter-policy", "perfLabCounterPolicy"),
-                    ("storage-account", "perfLabStorageAccount"),
                     ("container", "perfLabContainer"),
                     ("queue", "perfLabResultsQueue"),
                     ("crank-version-environment-variable", "crankVersionEnvironmentVariable"),
-                    ("tenant-id-environment-variable", "perfLabTenantIdEnvironmentVariable"),
-                    ("client-id-environment-variable", "perfLabClientIdEnvironmentVariable"),
-                    ("certificate-base64-environment-variable",
-                     "perfLabCertificateBase64EnvironmentVariable"),
-                    ("certificate-password-environment-variable",
-                     "perfLabCertificatePasswordEnvironmentVariable"),
-                ]:
+                ]
+                if connection_string:
+                    expected_options.append((
+                        "storage-connection-string-environment-variable",
+                        "perfLabStorageConnectionStringEnvironmentVariable",
+                    ))
+                    self.assertNotIn("--storage-account", options)
+                    self.assertNotIn("--storage-authentication", options)
+                    self.assertFalse(any(
+                        option.startswith(("--tenant-", "--client-", "--certificate-"))
+                        for option in options
+                    ))
+                else:
+                    self.assertEqual("certificate", options["--storage-authentication"])
+                    self.assertNotIn("--storage-connection-string-environment-variable", options)
+                    expected_options.extend([
+                        ("storage-account", "perfLabStorageAccount"),
+                        ("tenant-id-environment-variable", "perfLabTenantIdEnvironmentVariable"),
+                        ("client-id-environment-variable", "perfLabClientIdEnvironmentVariable"),
+                        ("certificate-base64-environment-variable",
+                         "perfLabCertificateBase64EnvironmentVariable"),
+                        ("certificate-password-environment-variable",
+                         "perfLabCertificatePasswordEnvironmentVariable"),
+                    ])
+                for option, variable in expected_options:
                     self.assertEqual(self.variables[variable], options["--" + option])
         (self.attempt / "invocation.json").unlink()
         environment.pop("CRANK_AZDO_POST_PROCESS_EXECUTABLE")
@@ -219,12 +255,21 @@ class TestPerfLabProfile(unittest.TestCase):
     def test_powershell_export_success_failure_skip_and_quoting(self):
         self._run_shell_cases("powershell", shutil.which("powershell"))
 
+    def test_powershell_connection_string_upload_arguments(self):
+        self._run_shell_cases("powershell", shutil.which("powershell"), connection_string=True)
+
     def test_bash_export_success_failure_skip_and_quoting(self):
+        self._run_shell_cases("bash", self._bash())
+
+    def test_bash_connection_string_upload_arguments(self):
+        self._run_shell_cases("bash", self._bash(), connection_string=True)
+
+    def _bash(self):
         bash = shutil.which("bash")
         if os.name == "nt":
             git_bash = Path(os.environ.get("ProgramFiles", "")) / "Git" / "bin" / "bash.exe"
             bash = str(git_bash) if git_bash.exists() else None
-        self._run_shell_cases("bash", bash)
+        return bash
 
     @unittest.skipUnless(
         os.environ.get("CRANK_CONTROLLER_DLL") and shutil.which("pwsh"),

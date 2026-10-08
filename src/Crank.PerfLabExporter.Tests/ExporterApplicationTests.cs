@@ -10,6 +10,43 @@ namespace Crank.PerfLabExporter.Tests
 {
     public class ExporterApplicationTests
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData(" ")]
+        [InlineData("invalid-secret-connection-string")]
+        public async Task ConnectionStringUploadFailsBeforeReadingInputWithoutFallback(string? value)
+        {
+            var variable = "PERFLAB_TEST_STORAGE_" + Guid.NewGuid().ToString("N");
+            Environment.SetEnvironmentVariable(variable, value);
+            try
+            {
+                using var output = new StringWriter();
+                using var error = new StringWriter();
+                var application = new ExporterApplication(output, error);
+                var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+                    application.RunAsync(
+                    [
+                        "upload",
+                        "--crank-json", "nonexistent-crank.json",
+                        "--counter-policy", "nonexistent-policy.json",
+                        "--storage-connection-string-environment-variable", variable,
+                        "--container", "results",
+                        "--queue", "resultsqueue"
+                    ]));
+
+                Assert.Contains(
+                    string.IsNullOrWhiteSpace(value) ? variable : "connection string is invalid",
+                    exception.Message);
+                Assert.DoesNotContain("invalid-secret-connection-string", exception.ToString());
+                Assert.Equal("", output.ToString());
+                Assert.Equal("", error.ToString());
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(variable, null);
+            }
+        }
+
         [Fact]
         public async Task ConvertCommandWritesDeterministicReportWithoutNetwork()
         {

@@ -37,6 +37,20 @@ namespace Crank.PerfLabExporter
                 return 0;
             }
 
+            AzurePerfLabStorageClient? connectionStringStorage = null;
+            if (options.Mode == ExportMode.Upload &&
+                options.StorageConnectionStringEnvironmentVariable is { } variable)
+            {
+                var connectionString = Environment.GetEnvironmentVariable(variable);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    throw new ArgumentException(
+                        $"Required environment variable '{variable}' is not set or is empty.");
+                }
+
+                connectionStringStorage = new AzurePerfLabStorageClient(connectionString);
+            }
+
             var crankPath = ResolveInputPath(options.CrankJsonPath);
             var policyPath = ResolveInputPath(options.CounterPolicyPath);
             var serializerOptions = ContractJson.CreateSerializerOptions();
@@ -85,9 +99,9 @@ namespace Crank.PerfLabExporter
 
             if (options.Mode == ExportMode.Upload)
             {
-                var endpoints = StorageAccountEndpoints.Parse(options.StorageAccount!);
-                var credential = AzureCredentialFactory.Create(options.Authentication);
-                var storage = new AzurePerfLabStorageClient(endpoints, credential);
+                var storage = connectionStringStorage ?? new AzurePerfLabStorageClient(
+                    StorageAccountEndpoints.Parse(options.StorageAccount!),
+                    AzureCredentialFactory.Create(options.Authentication));
                 var publisher = new PerfLabPublisher(
                     storage,
                     options.Retry,

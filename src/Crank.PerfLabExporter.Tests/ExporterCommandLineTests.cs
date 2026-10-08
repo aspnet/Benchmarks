@@ -39,6 +39,116 @@ namespace Crank.PerfLabExporter.Tests
             Assert.Equal(
                 StorageAuthenticationMode.Certificate,
                 options.Authentication.Mode);
+            Assert.Null(options.StorageConnectionStringEnvironmentVariable);
+        }
+
+        [Fact]
+        public void ParsesConnectionStringUploadWithoutAccount()
+        {
+            var options = ExporterCommandLine.Parse(
+            [
+                "upload",
+                "--crank-json", "crank.json",
+                "--counter-policy", "policy.json",
+                "--storage-connection-string-environment-variable", "LOCAL_STORAGE",
+                "--container", "results",
+                "--queue", "resultsqueue"
+            ]);
+
+            Assert.Null(options.StorageAccount);
+            Assert.Equal("LOCAL_STORAGE", options.StorageConnectionStringEnvironmentVariable);
+        }
+
+        [Theory]
+        [InlineData("--storage-account", "account", "mutually exclusive")]
+        [InlineData("--storage-authentication", "default", "Credential options")]
+        [InlineData("--tenant-id-environment-variable", "TENANT", "Credential options")]
+        [InlineData("--certificate-password-environment-variable", "PASSWORD", "Credential options")]
+        public void RejectsConnectionStringWithAccountOrCredentials(
+            string option, string value, string message)
+        {
+            var exception = Assert.Throws<ArgumentException>(() =>
+                ExporterCommandLine.Parse(
+                [
+                    "upload",
+                    "--crank-json", "crank.json",
+                    "--counter-policy", "policy.json",
+                    "--storage-connection-string-environment-variable", "LOCAL_STORAGE",
+                    "--container", "results",
+                    "--queue", "resultsqueue",
+                    option, value
+                ]));
+
+            Assert.Contains(message, exception.Message);
+        }
+
+        [Theory]
+        [InlineData("--container")]
+        [InlineData("--queue")]
+        public void ConnectionStringUploadStillRequiresContainerAndQueue(string missing)
+        {
+            var args = new List<string>
+            {
+                "upload",
+                "--crank-json", "crank.json",
+                "--counter-policy", "policy.json",
+                "--storage-connection-string-environment-variable", "LOCAL_STORAGE"
+            };
+            foreach (var option in new[] { "--container", "--queue" })
+            {
+                if (option != missing)
+                {
+                    args.AddRange([option, "results"]);
+                }
+            }
+
+            var exception = Assert.Throws<ArgumentException>(() =>
+                ExporterCommandLine.Parse(args.ToArray()));
+            Assert.Contains(missing, exception.Message);
+        }
+
+        [Fact]
+        public void UploadRequiresAccountOrConnectionStringVariable()
+        {
+            var exception = Assert.Throws<ArgumentException>(() =>
+                ExporterCommandLine.Parse(
+                [
+                    "upload",
+                    "--crank-json", "crank.json",
+                    "--counter-policy", "policy.json",
+                    "--container", "results",
+                    "--queue", "resultsqueue"
+                ]));
+            Assert.Contains("--storage-account", exception.Message);
+            Assert.Contains("--storage-connection-string-environment-variable", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void RejectsEmptyConnectionStringVariableName(string name)
+        {
+            Assert.Throws<ArgumentException>(() => ExporterCommandLine.Parse(
+            [
+                "upload",
+                "--crank-json", "crank.json",
+                "--counter-policy", "policy.json",
+                "--storage-connection-string-environment-variable", name,
+                "--container", "results",
+                "--queue", "resultsqueue"
+            ]));
+        }
+
+        [Fact]
+        public void ConnectionStringOptionRequiresAValue()
+        {
+            var exception = Assert.Throws<ArgumentException>(() =>
+                ExporterCommandLine.Parse(
+                [
+                    "upload",
+                    "--storage-connection-string-environment-variable"
+                ]));
+            Assert.Contains("requires a value", exception.Message);
         }
 
         [Fact]
