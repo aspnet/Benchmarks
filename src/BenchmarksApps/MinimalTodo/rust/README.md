@@ -86,8 +86,8 @@ the explicit drain deadline is the only lifecycle customization.
 
 ## Linux containers
 
-The multi-stage build produces a release executable and a minimal Debian
-runtime with UID/GID 10001. Exec-form entrypoint preserves signal delivery;
+The multi-stage build produces a release executable and a minimal
+`ubuntu:26.04` runtime with UID/GID 10001. Exec-form entrypoint preserves signal delivery;
 one application process runs per container. The image has no application
 credentials and does not need a writable filesystem.
 
@@ -109,9 +109,15 @@ and test commands on each architecture. Both base images are floating
 multi-architecture tags supporting x64 and ARM64; the locked Cargo graph still
 pins the complete dependency graph exactly.
 
-## Validation in the supplied environment
+## Validation in the supplied environment (historical: original Debian runtime image)
 
-Executed September 30, 2026:
+Executed September 30, 2026, against this app's **original** multi-stage build,
+which at that time finished on a `debian:bookworm-slim` runtime image (before
+this round's switch to a floating, common `ubuntu:26.04` runtime -- see
+"Linux containers" above for the current image). Preserved unedited below for
+its original counts and evidence; the "Runtime image" row in particular
+reflects that original Debian image, **not** a test of the current Ubuntu
+runtime, which was not re-verified in this checkout.
 
 | Check | Result |
 | --- | --- |
@@ -122,7 +128,7 @@ Executed September 30, 2026:
 | Native Windows checks | Release build, formatting, Clippy with warnings denied, and all 13 applicable tests passed |
 | Native Linux x64 checks | Docker test-stage release build and all 15 tests passed, including SIGTERM/SIGINT |
 | Offline/non-root tests | All 15 compiled Linux tests passed again with network disabled, read-only filesystem, UID/GID 10001, and all capabilities dropped |
-| Runtime image | Linux/amd64 on Docker Engine 29.8.1 / Docker Desktop 4.93.0 (WSL2 x64); Debian glibc `2.36-9+deb12u14` |
+| Runtime image (historical, original Debian build) | Linux/amd64 on Docker Engine 29.8.1 / Docker Desktop 4.93.0 (WSL2 x64); Debian glibc `2.36-9+deb12u14` |
 | Runtime HTTP smoke | Exact golden list/all five items, readiness, errors, all mutations, no compression/redirect/caching, persistent HTTP/1.1 connection, and 32 concurrent reads passed |
 | Runtime shutdown | `docker stop --time 10` exited 0 in 436 ms; shutdown log present, no timeout or forced termination |
 | Fixture integrity | Supplied and copied fixture SHA-256 matched: `43f7b08fc8a117d3d1b5b1c863141bf080bbce0d56f7606b95b6c73582bf73ad` |

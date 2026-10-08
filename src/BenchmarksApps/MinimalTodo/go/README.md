@@ -2,8 +2,9 @@
 
 A standalone, read-only service using **Go 1.27** and the standard-library
 `net/http` router and `encoding/json` serializer. There are no third-party
-dependencies, so no `go.sum` is needed. The module declares the requested Go
-version; the Docker builder pins that version and its image digest.
+dependencies, so no `go.sum` is needed. `go.mod` declares `go 1.27` as a
+minimum toolchain version (not an exact pin); the Docker builder floats on
+the `golang:1.27-bookworm` tag, with no image digest pin.
 
 ## Contract
 
@@ -102,8 +103,14 @@ native ARM64 validation.
 
 ## Container
 
-The multi-stage Dockerfile builds without network dependency access, using the
-native builder to cross-compile for the selected target. The final ubuntu:26.04 image
+The multi-stage Dockerfile builds without network dependency access (no
+third-party Go modules to resolve). `docker build --platform ...` selects a
+single target platform for the whole build: BuildKit pulls that platform's
+`golang:1.27-bookworm` manifest and runs the build stage natively for it (via
+emulation when the host architecture differs) rather than cross-compiling
+from one native builder architecture to another -- this is different from
+the standalone `GOARCH=...` cross-compilation commands above, which do
+cross-compile from a single host. The final ubuntu:26.04 image
 contains only the static release executable, runs as non-root UID/GID 65532,
 and uses exec-form entrypoint for signal delivery. It needs neither a writable
 filesystem nor runtime dependencies.
@@ -187,10 +194,11 @@ requires a C compiler on that ARM64 host.
 
 ## Files
 
-- `go.mod`, `main.go`, `server.go`: pinned module and application.
+- `go.mod`, `main.go`, `server.go`: module (minimum Go version, no third-party
+  dependencies) and application.
 - `server_test.go`, `lifecycle_test.go`: HTTP, concurrency, error, and process tests.
 - `testdata/minimal-todo-v1.expected.json`: exact supplied golden bytes.
-- `Dockerfile`, `.dockerignore`: pinned multi-stage Linux container build.
+- `Dockerfile`, `.dockerignore`: floating multi-stage Linux container build.
 - `README.md`: local operation, build/test/container instructions and limitations.
 - `bin/`: both static release binaries and the x64 contract-test executable.
 - `validation/`: Go checks, native WSL checks, both image-build logs, and container

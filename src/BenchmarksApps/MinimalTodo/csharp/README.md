@@ -11,9 +11,10 @@ Install .NET SDK **11.0** (development/nightly channel), floating to whatever
 patch build is currently published; no `global.json` SDK pin and no runtime
 version pin in `Directory.Build.props`. Release is the normal optimized build.
 NuGet dependencies (tests only) have exact direct versions and a generated
-`packages.lock.json` file. The application has no package dependencies: its
-target framework is set in `Directory.Build.props`, without a platform-dependent
-package lock.
+`packages.lock.json` file. The application itself has no package dependencies,
+but it still has its own `src/TodoApi/packages.lock.json`, used for the
+Dockerfile's `--locked-mode` restore; with zero dependencies, that file's
+recorded dependency set for `net11.0` is empty.
 
 From this directory (PowerShell commands):
 
@@ -60,7 +61,7 @@ Startup/readiness, shutdown, and unexpected failures are logged; routine
 ASP.NET Core access logs are disabled. Unexpected request errors are logged by
 the exception-handler middleware and return 500, not a success response.
 Non-default settings are HTTP/1.1-only listening, the specified JSON formatting,
-the log filter, strict runtime selection, and an **8-second graceful host
+the log filter, and an **8-second graceful host
 shutdown timeout** to leave margin for the 10-second exit target.
 Use Ctrl+C locally or SIGTERM on Linux; accepted requests are drained where
 practical and new work stops. Do not use forced termination for a normal stop.
@@ -81,7 +82,7 @@ On the native Linux host, run `PORT=8080 dotnet artifacts/managed/TodoApi.dll`.
 This uses that host's native .NET runtime; it does not use emulation.
 
 Framework-dependent native-target publishes (runnable only with the matching
-Linux architecture and the pinned runtimes):
+Linux architecture and an installed, compatible runtime):
 
 ```powershell
 dotnet publish src\TodoApi\TodoApi.csproj --configuration Release --runtime linux-x64 --self-contained false --output artifacts\linux-x64
@@ -115,12 +116,21 @@ against `tests/TodoApi.Tests/minimal-todo-v1.expected.json` and exit code zero
 within 10 seconds; report any timeout or forced exit (including code 137).
 Remove only the container you created.
 
-## Verification in the supplied environment
+## Verification in the supplied environment (historical: original .NET 10 configuration)
+
+This section is the historical record from this app's original generation,
+when it targeted .NET 10 with a pinned runtime version (before this round's
+floating .NET 11 nightly SDK/runtime images and the removal of the
+`RuntimeFrameworkVersion`/roll-forward pin from `Directory.Build.props`). It
+is preserved unedited below for its original counts, dates, and evidence.
+**None of it was re-run or re-verified against the current .NET 11
+floating-image configuration in this checkout** -- see the top of this
+README for the current prerequisite.
 
 Local host: **Windows x64**, SDK **10.0.401**, .NET and ASP.NET Core runtimes
-**10.0.12**. The generated runtime configuration requires both framework versions
-exactly. No SDK installation, Git operation, deployment, or daemon change was
-performed.
+**10.0.12** (the project's pinned versions at the time). The generated runtime
+configuration required both framework versions exactly. No SDK installation,
+Git operation, deployment, or daemon change was performed.
 
 - Release solution build passed with zero warnings/errors.
 - HTTP/lifecycle tests: **68 passed, 1 Linux-only theory skipped** (69 reported
