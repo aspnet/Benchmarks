@@ -74,9 +74,15 @@ generated YAML drifts from the configs.
 
 `minimal-todo-scenarios.yml` dispatches `scenarios/minimal-todo/minimal-todo.benchmarks.yml`
 (1 CPU, 536,870,912 bytes / 512 MiB, 25200 req/s, enabled) for the `gold-lin`
-and Azure `azure-arm64`/`cobalt-cloud-lin` pods. The scenario builds each
-language's app directly from its repository `Dockerfile` using floating,
-multi-arch base images (no pinned digests, no custom build/receipt tooling,
-no `requiredArchitecture` gating). Generation, admission, and calibration
-tooling for this cohort live in the separate `dotnet-performance-tools`
+and Azure `azure-arm64`/`cobalt-cloud-lin` pods. C# runs on every regular
+scheduled slot using the direct (non-Docker) `csharp-project` build; Go and
+Rust run the Docker `go`/`rust` builds but only on a shared weekly slot
+(`condition: Math.round(Date.now() / 43200000) % 14 == 0`, combined with the
+pod's own condition, matching the `containers-scenarios.yml` idiom). The
+Docker `csharp`/`go`/`rust` builds (floating, multi-arch base images, no
+pinned digests, no `requiredArchitecture` gating) remain the canonical
+generation/update/admission/pre-promotion comparison path and are unaffected
+-- see `scenarios/minimal-todo/README.md` for the full execution-path
+mapping. Generation, admission, and calibration tooling for this cohort live
+in the separate `dotnet-performance-tools`
 repository; this directory only carries the scheduled dispatch template.
