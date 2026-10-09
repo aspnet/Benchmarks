@@ -1,0 +1,166 @@
+# Remote Crank scenario. App jobs use normal Crank job/source/profile/CLI
+# semantics: typed cpuLimitRatio/memoryLimitInBytes/port defaults below are
+# overridable via --application.cpuLimitRatio/--application.memoryLimitInBytes/
+# --application.port, and the "app" source's branchOrCommit (default "main")
+# via --application.sources.app.branchOrCommit, exactly like
+# build/containers-scenarios.yml does. Append the unchanged
+# ../steadystate.profile.yml once as the FINAL --config.
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+
+variables:
+  serverAddress: ""
+  serverPort: 8080
+  rate: 100
+  warmup: 5
+  duration: 15
+  connections: 8
+  timeout: 2
+
+jobs:
+  todo-csharp:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: main
+        destinationFolder: app
+        cacheOnAgent: false
+    dockerFile: app/src/BenchmarksApps/MinimalTodo/csharp/Dockerfile
+    dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/csharp
+    dockerImageName: "minimal-todo-csharp-{{job.RunId}}"
+    readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
+    environmentVariables:
+      PORT: "{{job.Port}}"
+    options:
+      requiredOperatingSystem: linux
+
+  # Day-to-day scheduled C# comparison job: builds src/TodoApi/TodoApi.csproj
+  # directly with Crank (no Docker) -- see README "Execution paths". Same
+  # source/CPU/memory/port defaults as todo-csharp.
+  todo-csharp-project:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: main
+        destinationFolder: app
+        cacheOnAgent: false
+    project: app/src/BenchmarksApps/MinimalTodo/csharp/src/TodoApi/TodoApi.csproj
+    framework: net11.0
+    channel: latest
+    readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
+    environmentVariables:
+      PORT: "{{job.Port}}"
+    options:
+      requiredOperatingSystem: linux
+
+  todo-go:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: main
+        destinationFolder: app
+        cacheOnAgent: false
+    dockerFile: app/src/BenchmarksApps/MinimalTodo/go/Dockerfile
+    dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/go
+    dockerImageName: "minimal-todo-go-{{job.RunId}}"
+    readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
+    environmentVariables:
+      PORT: "{{job.Port}}"
+    options:
+      requiredOperatingSystem: linux
+
+  todo-rust:
+    sources:
+      app:
+        localFolder: null
+        repository: https://github.com/aspnet/Benchmarks.git
+        branchOrCommit: main
+        destinationFolder: app
+        cacheOnAgent: false
+    dockerFile: app/src/BenchmarksApps/MinimalTodo/rust/Dockerfile
+    dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/rust
+    dockerImageName: "minimal-todo-rust-{{job.RunId}}"
+    readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
+    environmentVariables:
+      PORT: "{{job.Port}}"
+    options:
+      requiredOperatingSystem: linux
+
+scenarios:
+  csharp:
+    application: {job: todo-csharp}
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+        path: /todos
+        transport: http1
+        presetHeaders: none
+        customHeaders:
+          - "Accept: application/json"
+          - "Connection: keep-alive"
+          - "Accept-Encoding: identity"
+  go:
+    application: {job: todo-go}
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+        path: /todos
+        transport: http1
+        presetHeaders: none
+        customHeaders:
+          - "Accept: application/json"
+          - "Connection: keep-alive"
+          - "Accept-Encoding: identity"
+  rust:
+    application: {job: todo-rust}
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+        path: /todos
+        transport: http1
+        presetHeaders: none
+        customHeaders:
+          - "Accept: application/json"
+          - "Connection: keep-alive"
+          - "Accept-Encoding: identity"
+  # Day-to-day scheduled C# comparison scenario (see README "Execution
+  # paths"): direct Crank build of the C# app, no Docker.
+  csharp-project:
+    application: {job: todo-csharp-project}
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+        path: /todos
+        transport: http1
+        presetHeaders: none
+        customHeaders:
+          - "Accept: application/json"
+          - "Connection: keep-alive"
+          - "Accept-Encoding: identity"
+
+results:
+  # bombardier/raw is the raw per-request Bombardier JSON payload; excluded
+  # here only to avoid persisting that large aggregate -- standard Bombardier
+  # scalars (requests, bad responses, latencies, RPS, throughput) and the
+  # shared steadystate.profile.yml CPU/working-set P90 helpers already cover
+  # day-to-day reporting.
+  - {name: bombardier/raw, excluded: true}

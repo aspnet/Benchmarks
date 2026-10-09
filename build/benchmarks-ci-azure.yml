@@ -360,11 +360,41 @@ jobs:
 
 # GROUP 12
 
+- job: Minimal_Todo_azure_arm64
+  displayName: 12- Minimal Todo azure-arm64
+  pool: server
+  timeoutInMinutes: 40
+  dependsOn: [Trends_idna_intel_lin, Trends_idna_intel_win]
+  condition: succeededOrFailed()
+  steps:
+  - template: minimal-todo-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azure
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load "
+
+- job: Minimal_Todo_cobalt_cloud_lin
+  displayName: 12- Minimal Todo cobalt-cloud-lin
+  pool: server
+  timeoutInMinutes: 40
+  dependsOn: [Trends_idna_intel_lin, Trends_idna_intel_win]
+  condition: succeededOrFailed()
+  steps:
+  - template: minimal-todo-scenarios.yml
+    parameters:
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: azurearm64
+      serviceBusNamespace: aspnetbenchmarks
+      arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load "
+
+# GROUP 13
+
 - job: Trends_Database_azure_arm64
-  displayName: 12- Trends Database azure-arm64
+  displayName: 13- Trends Database azure-arm64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_idna_intel_lin, Trends_idna_intel_win]
+  dependsOn: [Minimal_Todo_azure_arm64, Minimal_Todo_cobalt_cloud_lin]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -375,10 +405,10 @@ jobs:
       arguments: "$(ciProfile) --profile azure-server-arm64-app --profile azure-client-load --profile azure-db-db "
 
 - job: Trends_Database_azure2_amd64
-  displayName: 12- Trends Database azure2-amd64
+  displayName: 13- Trends Database azure2-amd64
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_idna_intel_lin, Trends_idna_intel_win]
+  dependsOn: [Minimal_Todo_azure_arm64, Minimal_Todo_cobalt_cloud_lin]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -388,10 +418,10 @@ jobs:
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile azure2-server-amd64-app --profile azure2-client-load --profile azure2-db-db "
 
-# GROUP 13
+# GROUP 14
 
 - job: Trends_Database_cobalt_cloud_lin
-  displayName: 13- Trends Database cobalt-cloud-lin
+  displayName: 14- Trends Database cobalt-cloud-lin
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Trends_Database_azure_arm64, Trends_Database_azure2_amd64]
@@ -404,10 +434,10 @@ jobs:
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile cobalt-cloud-lin-server-app --profile cobalt-cloud-lin-client-load --profile cobalt-cloud-lin-db-db "
 
-# GROUP 14
+# GROUP 15
 
 - job: Trends_Database_cobalt_cloud_lin_azl3
-  displayName: 14- Trends Database cobalt-cloud-lin-azl3
+  displayName: 15- Trends Database cobalt-cloud-lin-azl3
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Trends_Database_cobalt_cloud_lin]
