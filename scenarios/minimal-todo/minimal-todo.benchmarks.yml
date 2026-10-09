@@ -1,14 +1,16 @@
-# Remote Crank scenario: sourceRevision selects an aspnet/Benchmarks source.
-# Append the unchanged ../steadystate.profile.yml once as the FINAL --config.
+# Remote Crank scenario. App jobs use normal Crank job/source/profile/CLI
+# semantics: typed cpuLimitRatio/memoryLimitInBytes/port defaults below are
+# overridable via --application.cpuLimitRatio/--application.memoryLimitInBytes/
+# --application.port, and the "app" source's branchOrCommit (default "main")
+# via --application.sources.app.branchOrCommit, exactly like
+# build/containers-scenarios.yml does. Append the unchanged
+# ../steadystate.profile.yml once as the FINAL --config.
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
 
 variables:
-  sourceRevision: "main"
   serverAddress: ""
   serverPort: 8080
-  cpu: 1
-  memoryBytes: 536870912
   rate: 100
   warmup: 5
   duration: 15
@@ -21,70 +23,41 @@ jobs:
       app:
         localFolder: null
         repository: https://github.com/aspnet/Benchmarks.git
-        branchOrCommit: "#{{sourceRevision}}"
+        branchOrCommit: main
         destinationFolder: app
         cacheOnAgent: false
     dockerFile: app/src/BenchmarksApps/MinimalTodo/csharp/Dockerfile
     dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/csharp
     dockerImageName: "minimal-todo-csharp-{{job.RunId}}"
     readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
     environmentVariables:
-      PORT: "{{serverPort}}"
-    onConfigure:
-      - |
-        job.Sources["app"].LocalFolder = null;
-        const sourceRevision = String(job.Variables["sourceRevision"]);
-        if (sourceRevision == "main")
-          job.Sources["app"].BranchOrCommit = "main";
-        else if (/^[0-9a-f]{40}$/.test(sourceRevision))
-          job.Sources["app"].BranchOrCommit = "#" + sourceRevision;
-        else
-          throw new Error('sourceRevision must be "main" or an explicit repository commit');
-        job.CpuLimitRatio = Number(job.Variables["cpu"]);
-        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
-        job.Port = Number(job.Variables["serverPort"]);
-        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
-            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
-            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
-          throw new Error("Invalid CPU quota, memory bytes or server port");
+      PORT: "{{job.Port}}"
     options:
       requiredOperatingSystem: linux
 
-  # Optional side-by-side comparison job: builds src/TodoApi/TodoApi.csproj
-  # directly with Crank (no Docker). Not part of any scheduled lane -- see
-  # README. Same source/sourceRevision/CPU/memory/port validation as
-  # todo-csharp.
+  # Day-to-day scheduled C# comparison job: builds src/TodoApi/TodoApi.csproj
+  # directly with Crank (no Docker) -- see README "Execution paths". Same
+  # source/CPU/memory/port defaults as todo-csharp.
   todo-csharp-project:
     sources:
       app:
         localFolder: null
         repository: https://github.com/aspnet/Benchmarks.git
-        branchOrCommit: "#{{sourceRevision}}"
+        branchOrCommit: main
         destinationFolder: app
         cacheOnAgent: false
     project: app/src/BenchmarksApps/MinimalTodo/csharp/src/TodoApi/TodoApi.csproj
     framework: net11.0
     channel: latest
     readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
     environmentVariables:
-      PORT: "{{serverPort}}"
-    onConfigure:
-      - |
-        job.Sources["app"].LocalFolder = null;
-        const sourceRevision = String(job.Variables["sourceRevision"]);
-        if (sourceRevision == "main")
-          job.Sources["app"].BranchOrCommit = "main";
-        else if (/^[0-9a-f]{40}$/.test(sourceRevision))
-          job.Sources["app"].BranchOrCommit = "#" + sourceRevision;
-        else
-          throw new Error('sourceRevision must be "main" or an explicit repository commit');
-        job.CpuLimitRatio = Number(job.Variables["cpu"]);
-        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
-        job.Port = Number(job.Variables["serverPort"]);
-        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
-            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
-            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
-          throw new Error("Invalid CPU quota, memory bytes or server port");
+      PORT: "{{job.Port}}"
     options:
       requiredOperatingSystem: linux
 
@@ -93,32 +66,18 @@ jobs:
       app:
         localFolder: null
         repository: https://github.com/aspnet/Benchmarks.git
-        branchOrCommit: "#{{sourceRevision}}"
+        branchOrCommit: main
         destinationFolder: app
         cacheOnAgent: false
     dockerFile: app/src/BenchmarksApps/MinimalTodo/go/Dockerfile
     dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/go
     dockerImageName: "minimal-todo-go-{{job.RunId}}"
     readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
     environmentVariables:
-      PORT: "{{serverPort}}"
-    onConfigure:
-      - |
-        job.Sources["app"].LocalFolder = null;
-        const sourceRevision = String(job.Variables["sourceRevision"]);
-        if (sourceRevision == "main")
-          job.Sources["app"].BranchOrCommit = "main";
-        else if (/^[0-9a-f]{40}$/.test(sourceRevision))
-          job.Sources["app"].BranchOrCommit = "#" + sourceRevision;
-        else
-          throw new Error('sourceRevision must be "main" or an explicit repository commit');
-        job.CpuLimitRatio = Number(job.Variables["cpu"]);
-        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
-        job.Port = Number(job.Variables["serverPort"]);
-        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
-            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
-            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
-          throw new Error("Invalid CPU quota, memory bytes or server port");
+      PORT: "{{job.Port}}"
     options:
       requiredOperatingSystem: linux
 
@@ -127,32 +86,18 @@ jobs:
       app:
         localFolder: null
         repository: https://github.com/aspnet/Benchmarks.git
-        branchOrCommit: "#{{sourceRevision}}"
+        branchOrCommit: main
         destinationFolder: app
         cacheOnAgent: false
     dockerFile: app/src/BenchmarksApps/MinimalTodo/rust/Dockerfile
     dockerContextDirectory: app/src/BenchmarksApps/MinimalTodo/rust
     dockerImageName: "minimal-todo-rust-{{job.RunId}}"
     readyStateText: Application started.
+    cpuLimitRatio: 1
+    memoryLimitInBytes: 536870912
+    port: 8080
     environmentVariables:
-      PORT: "{{serverPort}}"
-    onConfigure:
-      - |
-        job.Sources["app"].LocalFolder = null;
-        const sourceRevision = String(job.Variables["sourceRevision"]);
-        if (sourceRevision == "main")
-          job.Sources["app"].BranchOrCommit = "main";
-        else if (/^[0-9a-f]{40}$/.test(sourceRevision))
-          job.Sources["app"].BranchOrCommit = "#" + sourceRevision;
-        else
-          throw new Error('sourceRevision must be "main" or an explicit repository commit');
-        job.CpuLimitRatio = Number(job.Variables["cpu"]);
-        job.MemoryLimitInBytes = Number(job.Variables["memoryBytes"]);
-        job.Port = Number(job.Variables["serverPort"]);
-        if (!Number.isFinite(job.CpuLimitRatio) || job.CpuLimitRatio <= 0 ||
-            !Number.isSafeInteger(Number(job.Variables["memoryBytes"])) || job.MemoryLimitInBytes <= 0 ||
-            !Number.isInteger(Number(job.Variables["serverPort"])) || job.Port < 1 || job.Port > 65535)
-          throw new Error("Invalid CPU quota, memory bytes or server port");
+      PORT: "{{job.Port}}"
     options:
       requiredOperatingSystem: linux
 
@@ -162,6 +107,7 @@ scenarios:
     load:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /todos
         transport: http1
         presetHeaders: none
@@ -174,6 +120,7 @@ scenarios:
     load:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /todos
         transport: http1
         presetHeaders: none
@@ -186,6 +133,7 @@ scenarios:
     load:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /todos
         transport: http1
         presetHeaders: none
@@ -193,13 +141,14 @@ scenarios:
           - "Accept: application/json"
           - "Connection: keep-alive"
           - "Accept-Encoding: identity"
-  # Optional side-by-side comparison scenario (see README): direct Crank
-  # build of the C# app, no Docker. Not part of any scheduled lane.
+  # Day-to-day scheduled C# comparison scenario (see README "Execution
+  # paths"): direct Crank build of the C# app, no Docker.
   csharp-project:
     application: {job: todo-csharp-project}
     load:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /todos
         transport: http1
         presetHeaders: none

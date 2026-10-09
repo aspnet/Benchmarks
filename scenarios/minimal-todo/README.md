@@ -36,7 +36,8 @@ Docker-building scenarios (`csharp`, `go`, `rust`), each with two roles:
 `application` and `load`; plus one direct, non-Docker scenario,
 `csharp-project` (see "Execution paths" below for which one is scheduled
 day-to-day). In each Docker scenario, the application job
-clones `aspnet/Benchmarks` at `sourceRevision`, builds that language's
+clones `aspnet/Benchmarks` (the `app` source, `branchOrCommit` defaulting to
+`main`), builds that language's
 `Dockerfile`, and waits for `Application started.`
 (the only readiness gate a regular run performs — the full HTTP state/body
 contract is verified once, separately, by the `dotnet-performance-tools`
@@ -51,15 +52,22 @@ against `/todos` at a fixed offered rate, with `transport: http1`,
 images are multi-arch, so the scenario runs unmodified on x64 or ARM64
 agents.
 
-`sourceRevision` defaults to `main` (manual-run convenience: `main` resolves
-to a full clone checked out on the branch tip) and otherwise must be an
-explicit 40-character lowercase commit hash (enforced by `onConfigure`); any
-other value, including an arbitrary branch name, is rejected. The scheduled
-pipeline always passes the exact triggering build's commit SHA (see
-`build/minimal-todo-scenarios.yml`), never the `main` default. A SHA is
-checked out via the full-clone `"#" + sha` form Crank requires for an exact
-commit — a bare SHA would instead attempt a shallow branch clone and fail.
-Manual connected runs use the shared `build/ci.profile.yml` /
+Each app job uses normal, typed Crank job properties -- `cpuLimitRatio: 1`,
+`memoryLimitInBytes: 536870912`, `port: 8080` -- with no custom `onConfigure`
+hook. These are overridable the same way `build/containers-scenarios.yml`
+overrides its own jobs: `--application.cpuLimitRatio`,
+`--application.memoryLimitInBytes`, `--application.port`. The scheduled
+pipeline pins the exact triggering build's commit via
+`--application.sources.app.branchOrCommit "#<sha>"` (see
+`build/minimal-todo-scenarios.yml`); a manual run defaults to the `app`
+source's `main` branch, or can pass any normal Crank source override
+(`--application.sources.app.branchOrCommit`, `.localFolder`, etc.) the same
+way as any other scenario. A SHA must use the full-clone `"#" + sha` form
+Crank requires for an exact commit — a bare SHA would instead attempt a
+shallow branch clone and fail; this is enforced by normal Crank source
+semantics, not a scenario-specific guard. Exact-commit generation provenance
+is enforced by the separate `dotnet-performance-tools` admission flow, not by
+this YAML. Manual connected runs use the shared `build/ci.profile.yml` /
 `build/azure.profile.yml` profiles (or explicit
 `--variable serverAddress=...`/endpoint overrides) the same way every other
 scenario in this repository does; there is no scenario-specific profile
@@ -86,15 +94,15 @@ language:
   existing pod-level condition (`(pod condition) && (scenario condition)`,
   matching the idiom already used in `build/containers-scenarios.yml`). This
   is evaluated independently per pipeline/pod (the `gold-lin` pod via the
-  `ci01`/`ci02` pipeline's cron, `azure-arm64`/`cobalt-cloud-lin` via the
+  `ci01` pipeline's cron, `azure-arm64`/`cobalt-cloud-lin` via the
   Azure pipeline's own cron) -- it is **not** one single global weekly
   schedule shared across every pod, and an ad hoc or duplicate pipeline run
   is not deduplicated by this condition alone.
 
 The `csharp-project` scenario builds the exact same `src/TodoApi/TodoApi.csproj`
 directly with Crank (`project:` + `framework: net11.0` + `channel: latest`),
-with no Docker image at all, using the same `sourceRevision`/CPU/memory/port
-validation and the same imported Bombardier load job as the Docker `csharp`
+with no Docker image at all, using the same source/CPU/memory/port
+defaults and the same imported Bombardier load job as the Docker `csharp`
 scenario. `channel: latest` selects a coherent latest SDK/runtime/ASP.NET
 Core build (the goal is comparing against current released/floating
 versions, not an incompatible bleeding-edge combination). This only changes
