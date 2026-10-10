@@ -1,22 +1,39 @@
 """
 Data models for pod-based crank scheduling.
 
-A "pod" is a fixed group of machines (SUT + optional load + optional DB) that
-always run together. Pods sharing physical machines cannot run simultaneously,
-which the scheduler enforces automatically.
+A "pod" is a fixed group of machines that always run together. Pods sharing
+physical machines cannot run simultaneously, which the scheduler enforces
+automatically. Each pod has parallel ``machines`` and ``profiles`` lists:
+``machines[i]`` runs ``profiles[i]``, and the position is the role -- slot 0
+is the SUT, slot 1 is the load generator, slot 2 is the database.
 """
 
 import re
 from dataclasses import dataclass, field
-from enum import IntEnum
 from typing import Dict, List, Optional, Set
 
 
-# Default per-type runtime estimates (minutes) used when a scenario provides
-# none of its own. Lives here so models, scheduler, and tests share one source.
-DEFAULT_RUNTIMES: Dict["ScenarioType", float] = {}  # populated below
+# Scenario type is just the count of machine roles required (1 = SUT only,
+# 2 = SUT + load, 3 = SUT + load + db). Stored as a plain int so that adding
+# a fourth role later is a one-line change.
+SCENARIO_TYPE_SINGLE = 1
+SCENARIO_TYPE_DUAL = 2
+SCENARIO_TYPE_TRIPLE = 3
 
-# Pipeline plumbing defaults. Override in JSON metadata.pipeline.* if needed.
+# Default per-type runtime estimates (minutes) used when a scenario provides
+# none of its own. Keyed by the integer role count.
+DEFAULT_RUNTIMES: Dict[int, float] = {
+    SCENARIO_TYPE_SINGLE: 30.0,
+    SCENARIO_TYPE_DUAL:   45.0,
+    SCENARIO_TYPE_TRIPLE: 60.0,
+}
+
+# Canonical role label per slot index. Used only for the human-readable
+# ``--show-conflicts`` diagnostic output. The scheduler itself doesn't care
+# about the names.
+ROLE_NAMES: List[str] = ["sut", "load", "db"]
+
+# Pipeline plumbing defaults. Override in metadata.pipeline.* in the config.
 DEFAULT_PIPELINE_POOL = "server"
 DEFAULT_PIPELINE_CONNECTION = "ASPNET Benchmarks Service Bus"
 DEFAULT_PIPELINE_NAMESPACE = "aspnetbenchmarks"
@@ -24,20 +41,6 @@ DEFAULT_PIPELINE_NAMESPACE = "aspnetbenchmarks"
 # AzDO job identifier rule. Letters/digits/underscore, must not start with a
 # digit, no longer than 100 characters.
 JOB_ID_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,99}$")
-
-
-class ScenarioType(IntEnum):
-    """Number of machine roles required for a scenario."""
-    SINGLE = 1   # SUT only
-    DUAL = 2     # SUT + Load
-    TRIPLE = 3   # SUT + Load + DB
-
-
-DEFAULT_RUNTIMES.update({
-    ScenarioType.SINGLE: 30.0,
-    ScenarioType.DUAL: 45.0,
-    ScenarioType.TRIPLE: 60.0,
-})
 
 
 def sanitize_job_id(raw: str) -> str:
@@ -60,41 +63,41 @@ def sanitize_job_id(raw: str) -> str:
 
 @dataclass
 class Pod:
-    """A fixed group of machines that run scenarios together."""
+    """A fixed group of machines that run scenarios together.
+
+    ``machines`` and ``profiles`` are parallel arrays: ``machines[i]`` runs
+    ``profiles[i]``. The role of slot ``i`` is the i-th of ``ROLE_NAMES``;
+    a pod with two entries can run single and dual scenarios, three entries
+    adds triple.
+    """
     name: str
-    # Physical machine names for each role
-    sut: str
-    load: Optional[str] = None
-    db: Optional[str] = None
-    # Crank profile names for each role
-    sut_profile: str = ""
-    load_profile: Optional[str] = None
-    db_profile: Optional[str] = None
+    machines: List[str]
+    profiles: List[str]
 
-    def machines_for_type(self, scenario_type: ScenarioType) -> Set[str]:
+    def __post_init__(self) -> None:
+        if not self.machines:
+            raise ValueError(f"Pod '{self.name}' has no machines")
+        if len(self.machines) != len(self.profiles):
+            raise ValueError(
+                f"Pod '{self.name}': machines has {len(self.machines)} "
+                f"entries but profiles has {len(self.profiles)}"
+            )
+
+    def machines_for_type(self, scenario_type: int) -> Set[str]:
         """Return the set of physical machines used for a given scenario type."""
-        machines = {self.sut}
-        if scenario_type >= ScenarioType.DUAL and self.load:
-            machines.add(self.load)
-        if scenario_type >= ScenarioType.TRIPLE and self.db:
-            machines.add(self.db)
-        return machines
+        return set(self.machines[:scenario_type])
 
-    def profiles_for_type(self, scenario_type: ScenarioType) -> List[str]:
+    def profiles_for_type(self, scenario_type: int) -> List[str]:
         """Return the ordered list of profiles for a given scenario type."""
-        profiles = [self.sut_profile]
-        if scenario_type >= ScenarioType.DUAL and self.load_profile:
-            profiles.append(self.load_profile)
-        if scenario_type >= ScenarioType.TRIPLE and self.db_profile:
-            profiles.append(self.db_profile)
-        return profiles
+        return list(self.profiles[:scenario_type])
 
-    def validate(self, scenario_type: ScenarioType) -> Optional[str]:
+    def validate(self, scenario_type: int) -> Optional[str]:
         """Check if this pod can run the given scenario type. Returns error or None."""
-        if scenario_type >= ScenarioType.DUAL and not self.load:
-            return f"Pod '{self.name}' has no load machine for DUAL/TRIPLE scenario"
-        if scenario_type >= ScenarioType.TRIPLE and not self.db:
-            return f"Pod '{self.name}' has no db machine for TRIPLE scenario"
+        if scenario_type > len(self.machines):
+            return (
+                f"Pod '{self.name}' has only {len(self.machines)} machine(s) "
+                f"but scenario needs {scenario_type}"
+            )
         return None
 
 
@@ -103,7 +106,10 @@ class Scenario:
     """A benchmark scenario that runs on one or more pods."""
     name: str
     template: str
-    type: ScenarioType
+    # Number of machine roles required. 1 = single (SUT only), 2 = dual
+    # (SUT + load), 3 = triple (SUT + load + db). Stored as plain int so the
+    # set can grow later without touching this type.
+    type: int
     pods: List[str]
     estimated_runtime: float = 45.0
     # Optional explicit timeout (minutes) for the generated AzDO job. When
@@ -183,7 +189,7 @@ class PipelineSettings:
 
 @dataclass
 class ScheduleConfig:
-    """Top-level configuration loaded from JSON."""
+    """Top-level configuration loaded from a YAML or JSON file."""
     name: str
     schedule: str
     queues: List[str]

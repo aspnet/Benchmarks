@@ -22,11 +22,11 @@ _BUILD = os.path.join(_REPO, "build")
 
 
 CASES = [
-    ("benchmarks_ci_pods.json", "benchmarks-ci",
+    ("benchmarks_ci_pods.yml", "benchmarks-ci",
      ["benchmarks-ci-01.yml", "benchmarks-ci-02.yml"]),
-    ("benchmarks_ci_azure_pods.json", "benchmarks-ci-azure",
+    ("benchmarks_ci_azure_pods.yml", "benchmarks-ci-azure",
      ["benchmarks-ci-azure.yml"]),
-    ("benchmarks_ci_cobalt_pods.json", "benchmarks-ci-cobalt",
+    ("benchmarks_ci_cobalt_pods.yml", "benchmarks-ci-cobalt",
      ["benchmarks-ci-cobalt.yml"]),
 ]
 

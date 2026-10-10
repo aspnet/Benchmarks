@@ -1,25 +1,112 @@
 """
-JSON configuration loader for pod-based scheduling.
+Configuration loader for pod-based scheduling.
+
+Reads YAML (or JSON, since YAML is a strict superset of JSON). Always uses
+``yaml.safe_load``; the file extension is not inspected.
 """
 
-import json
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 from models import (
     PipelineSettings,
     Pod,
     Scenario,
-    ScenarioType,
+    SCENARIO_TYPE_DUAL,
+    SCENARIO_TYPE_SINGLE,
+    SCENARIO_TYPE_TRIPLE,
     ScheduleConfig,
 )
 
 
 class ConfigError(ValueError):
-    """Raised when a JSON config is malformed or self-inconsistent."""
+    """Raised when a config is malformed or self-inconsistent."""
 
 
 _CRON_HOUR_RE = re.compile(r"^\d+(/\d+)?$")
+
+# Accepted spellings for ``scenario.type``. Strings (case-insensitive) are
+# the preferred form; integers stay supported so legacy configs keep loading.
+# Values are the integer role count (1/2/3).
+_SCENARIO_TYPE_ALIASES: Dict[Any, int] = {
+    "single": SCENARIO_TYPE_SINGLE,
+    "dual":   SCENARIO_TYPE_DUAL,
+    "triple": SCENARIO_TYPE_TRIPLE,
+    1:        SCENARIO_TYPE_SINGLE,
+    2:        SCENARIO_TYPE_DUAL,
+    3:        SCENARIO_TYPE_TRIPLE,
+}
+
+
+def _reject_bool(raw: Any, context: str) -> None:
+    """Reject Python bools in numeric fields.
+
+    PyYAML's ``safe_load`` happily turns ``yes``/``no``/``true``/``false``/
+    ``on``/``off`` into Python bools, and because ``bool`` is a subclass of
+    ``int`` those values would otherwise sail through ``int(...)`` /
+    ``float(...)`` coercions and silently resolve to ``1`` or ``0``.
+    """
+    if isinstance(raw, bool):
+        raise ConfigError(
+            f"{context} must not be a boolean (YAML coerces "
+            f"yes/no/true/false into bools); got {raw!r}"
+        )
+
+
+def _coerce_int(raw: Any, *, context: str, minimum: Optional[int] = None) -> int:
+    """Parse a value as an integer with bool/range checking."""
+    _reject_bool(raw, context)
+    if isinstance(raw, int):
+        value = raw
+    else:
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            raise ConfigError(f"{context} must be an integer, got {raw!r}")
+    if minimum is not None and value < minimum:
+        raise ConfigError(f"{context} must be >= {minimum}, got {value}")
+    return value
+
+
+def _coerce_float(raw: Any, *, context: str, minimum: Optional[float] = None) -> float:
+    """Parse a value as a float with bool/range checking."""
+    _reject_bool(raw, context)
+    if not isinstance(raw, (int, float)):
+        raise ConfigError(f"{context} must be a number, got {raw!r}")
+    value = float(raw)
+    if minimum is not None and value < minimum:
+        raise ConfigError(f"{context} must be >= {minimum}, got {value}")
+    return value
+
+
+def _coerce_role_list(raw: Any, *, context: str) -> List[str]:
+    """Validate a 1-3 entry list of unique non-empty strings.
+
+    Used for both ``machines`` and ``profiles``. The Nth entry maps to the
+    Nth role (see ``models.ROLE_NAMES``). Bools and other non-string values
+    are rejected so a YAML coercion can't silently slip through.
+    """
+    if not isinstance(raw, list):
+        raise ConfigError(
+            f"{context} must be a list, got {type(raw).__name__}"
+        )
+    if not 1 <= len(raw) <= 3:
+        raise ConfigError(
+            f"{context} must have 1, 2, or 3 entries, got {len(raw)}"
+        )
+    cleaned: List[str] = []
+    for i, value in enumerate(raw):
+        if isinstance(value, bool) or not isinstance(value, str) or not value:
+            raise ConfigError(
+                f"{context}[{i}] must be a non-empty string, got {value!r}"
+            )
+        cleaned.append(value)
+    if len(set(cleaned)) != len(cleaned):
+        dupes = sorted({v for v in cleaned if cleaned.count(v) > 1})
+        raise ConfigError(f"{context} contains duplicates: {dupes}")
+    return cleaned
 
 
 def _require(node: Dict[str, Any], key: str, context: str) -> Any:
@@ -43,10 +130,49 @@ def _validate_cron(schedule: str) -> None:
         )
 
 
-def load_config(path: str) -> ScheduleConfig:
-    """Load and validate a pod-scheduler JSON configuration file."""
+def _parse_scenario_type(raw: Any, scenario_name: str) -> int:
+    """Resolve a scenario type to its integer role count.
+
+    Accepts ``single``/``dual``/``triple`` (case-insensitive) or ``1``/``2``/``3``.
+    Bools are rejected explicitly because YAML happily turns ``yes``/``no``
+    into bools, which would otherwise quietly resolve to ``1``/``0``.
+    """
+    if isinstance(raw, bool):
+        raise ConfigError(
+            f"scenario '{scenario_name}' has invalid type {raw!r}; "
+            f"use 'single', 'dual', or 'triple' (or 1/2/3)"
+        )
+    key: Any = raw
+    if isinstance(raw, str):
+        key = raw.strip().lower()
+    if key not in _SCENARIO_TYPE_ALIASES:
+        raise ConfigError(
+            f"scenario '{scenario_name}' has invalid type {raw!r}; "
+            f"use 'single', 'dual', or 'triple' (or 1/2/3)"
+        )
+    return _SCENARIO_TYPE_ALIASES[key]
+
+
+def _load_raw(path: str) -> Any:
+    """Read and parse the config file as YAML.
+
+    YAML is a strict superset of JSON so this also handles ``.json`` files
+    transparently. The extension is not inspected.
+    """
     with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+        try:
+            return yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            raise ConfigError(f"Failed to parse config {path}: {exc}")
+
+
+def load_config(path: str) -> ScheduleConfig:
+    """Load and validate a pod-scheduler configuration file."""
+    data = _load_raw(path)
+    if not isinstance(data, dict):
+        raise ConfigError(
+            f"Config root must be a mapping, got {type(data).__name__}"
+        )
 
     metadata = _require(data, "metadata", "config root")
     schedule = _require(metadata, "schedule", "metadata")
@@ -58,7 +184,19 @@ def load_config(path: str) -> ScheduleConfig:
     if len(queues) != len(set(queues)):
         raise ConfigError(f"metadata.queues contains duplicates: {queues}")
 
-    yaml_gen = metadata.get("yaml_generation", {})
+    yaml_gen = metadata.get("yaml_generation", {}) or {}
+    target_yaml_raw = yaml_gen.get("target_yaml_count", 1)
+    target_yaml_count = _coerce_int(
+        target_yaml_raw,
+        context="metadata.yaml_generation.target_yaml_count",
+        minimum=1,
+    )
+    offset_raw = yaml_gen.get("schedule_offset_hours", 6)
+    schedule_offset_hours = _coerce_int(
+        offset_raw,
+        context="metadata.yaml_generation.schedule_offset_hours",
+        minimum=0,
+    )
 
     pipeline_meta = metadata.get("pipeline", {})
     pipeline = PipelineSettings(
@@ -79,16 +217,22 @@ def load_config(path: str) -> ScheduleConfig:
         pod_name = _require(pod_data, "name", "pod entry")
         if pod_name in pods:
             raise ConfigError(f"Duplicate pod name: {pod_name!r}")
-        machines = _require(pod_data, "machines", f"pod '{pod_name}'")
-        profiles = _require(pod_data, "profiles", f"pod '{pod_name}'")
+        machines = _coerce_role_list(
+            _require(pod_data, "machines", f"pod '{pod_name}'"),
+            context=f"pod '{pod_name}'.machines",
+        )
+        profiles = _coerce_role_list(
+            _require(pod_data, "profiles", f"pod '{pod_name}'"),
+            context=f"pod '{pod_name}'.profiles",
+        )
+        if len(machines) != len(profiles):
+            raise ConfigError(
+                f"pod '{pod_name}': machines has {len(machines)} entries but "
+                f"profiles has {len(profiles)}; the lists must be the same "
+                f"length so each machine pairs with exactly one profile"
+            )
         pods[pod_name] = Pod(
-            name=pod_name,
-            sut=_require(machines, "sut", f"pod '{pod_name}'.machines"),
-            load=machines.get("load"),
-            db=machines.get("db"),
-            sut_profile=_require(profiles, "sut", f"pod '{pod_name}'.profiles"),
-            load_profile=profiles.get("load"),
-            db_profile=profiles.get("db"),
+            name=pod_name, machines=machines, profiles=profiles
         )
 
     scenarios = []
@@ -105,20 +249,31 @@ def load_config(path: str) -> ScheduleConfig:
             raise ConfigError(
                 f"scenario '{name}' lists duplicate pods: {dupes}"
             )
-        runtime_raw = sc_data.get("estimated_runtime") or 0
-        timeout = sc_data.get("timeout")
-        if timeout is not None:
-            timeout = int(timeout)
-            if timeout <= 0:
-                raise ConfigError(
-                    f"scenario '{name}' has non-positive timeout {timeout}"
-                )
+        runtime_raw = sc_data.get("estimated_runtime")
+        if runtime_raw is None or runtime_raw == 0:
+            estimated_runtime = 0.0
+        else:
+            estimated_runtime = _coerce_float(
+                runtime_raw,
+                context=f"scenario '{name}'.estimated_runtime",
+                minimum=0.0,
+            )
+        timeout_raw = sc_data.get("timeout")
+        if timeout_raw is None:
+            timeout = None
+        else:
+            timeout = _coerce_int(
+                timeout_raw,
+                context=f"scenario '{name}'.timeout",
+                minimum=1,
+            )
+        raw_type = _require(sc_data, "type", f"scenario '{name}'")
         scenarios.append(Scenario(
             name=name,
             template=_require(sc_data, "template", f"scenario '{name}'"),
-            type=ScenarioType(_require(sc_data, "type", f"scenario '{name}'")),
+            type=_parse_scenario_type(raw_type, name),
             pods=list(scenario_pods),
-            estimated_runtime=float(runtime_raw) if runtime_raw else 0.0,
+            estimated_runtime=estimated_runtime,
             timeout=timeout,
         ))
 
@@ -126,8 +281,8 @@ def load_config(path: str) -> ScheduleConfig:
         name=metadata.get("name", ""),
         schedule=schedule,
         queues=list(queues),
-        target_yaml_count=yaml_gen.get("target_yaml_count", 1),
-        schedule_offset_hours=yaml_gen.get("schedule_offset_hours", 6),
+        target_yaml_count=target_yaml_count,
+        schedule_offset_hours=schedule_offset_hours,
         pods=pods,
         scenarios=scenarios,
         pipeline=pipeline,

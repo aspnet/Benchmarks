@@ -5,7 +5,7 @@ Uses a greedy longest-job-first approach with machine-collision avoidance.
 Since pods define fixed machine groupings, the scheduler only needs to
 ensure no physical machine is used twice in the same stage.
 
-Output is deterministic: identical input JSON always produces identical
+Output is deterministic: identical input config always produces identical
 schedules, so generated YAML files diff cleanly across regenerations.
 """
 
