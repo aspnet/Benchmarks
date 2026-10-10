@@ -30,12 +30,8 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 | Profile        | Arch         | OS           | Proc |
 | :------------- | :----------: | :----------- | :----------- |
 |  `local` | (local machine) | (local machine) | (local machine) |
-|  `aspnet-perf-lin` | INTEL, 12 logical cores, 1 socket, 32GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
-|  `aspnet-perf-win` | INTEL, 12 logical cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
-|  `aspnet-citrine-lin` | INTEL, logical 28 cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
-|  `aspnet-citrine-win` | INTEL, logical 28 cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
-|  `aspnet-citrine-amd2` | AMD, logical 48 cores, 1 socket, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
 |  `aspnet-citrine-arm-lin` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
+|  `aspnet-citrine-arm-win` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Windows Server 2022 | Neoverse-N1 |
 |  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 6.8.0-45-generic | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
 |  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
 
@@ -55,7 +51,7 @@ These scenarios return a "Hello World" string and the client uses HTTP pipelinin
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -78,7 +74,7 @@ The serialization is done with `System.Text.Json`.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --scenario json --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --scenario json --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -98,7 +94,7 @@ The database server is PostgresQL.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/database.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/database.benchmarks.yml --scenario fortunes --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -138,7 +134,7 @@ The database server is PostgresQL.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -162,7 +158,7 @@ The downstream service returns a variable size content. By default the result is
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-httpclient --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-httpclient --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -237,7 +233,7 @@ These scenarios measure the performance of different other frameworks
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --scenario plaintext_nodejs --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --scenario plaintext_nodejs --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -266,7 +262,7 @@ These scenarios measure the performance of different Grpc  server and clients im
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin --variable streams=70 --variable connections=1
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-gold-lin --variable streams=70 --variable connections=1
 ```
 
 ### Available scenarios
@@ -308,7 +304,7 @@ Middleware based application that serve static files of any size.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/staticfiles.benchmarks.yml --scenario static --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/staticfiles.benchmarks.yml --scenario static --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -335,7 +331,7 @@ These scenarios are running various SignalR benchmarks. The transport and serial
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-perf-lin --variable scenario=echo --variable transport=websockets --variable protocol=messagepack
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-gold-lin --variable scenario=echo --variable transport=websockets --variable protocol=messagepack
 ```
 
 ### Available scenarios
@@ -365,7 +361,7 @@ These scenarios are running various WebSockets benchmarks.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/websocket.benchmarks.yml --scenario websocket --profile aspnet-perf-lin --variable scenario=echo
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/websocket.benchmarks.yml --scenario websocket --profile aspnet-gold-lin --variable scenario=echo
 ```
 
 ### Available scenarios
@@ -384,7 +380,7 @@ These scenarios are running various Orchard Core CMS benchmarks with either Sqli
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml --scenario about-sqlite --profile aspnet-perf-win
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml --scenario about-sqlite --profile aspnet-gold-win
 ```
 
 ### Available scenarios
@@ -402,7 +398,7 @@ argument choosing a key randomly. The HTTP response won't contain the cache entr
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/redis.benchmarks.yml --scenario redis --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/redis.benchmarks.yml --scenario redis --profile aspnet-gold-lin
 ```
 
 ### Available scenarios
@@ -430,7 +426,7 @@ These scenarios provide benchmarks to help improve the Native AOT performance.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml --scenario basicminimalapipublishaot --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml --scenario basicminimalapipublishaot --profile aspnet-gold-lin
 ```
 ### Available scenarios
 
@@ -446,7 +442,7 @@ These scenarios are running various HTTP client benchmarks.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-gold-lin --variable concurrencyPerHttpClient=200
 ```
 
 ### Available scenarios
@@ -531,7 +527,7 @@ These scenarios provide benchmarks for Blazor.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario ssr --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario ssr --profile aspnet-gold-lin
 ```
 
 ## GC benchmarks
@@ -540,7 +536,7 @@ These scenarios provide benchmarks to help improve the performance of the .NET G
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net10.0
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-gold-win --application.framework net10.0
 ```
 ### Available scenarios
 
@@ -560,7 +556,7 @@ These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario linq --profile aspnet-perf-win
+crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario linq --profile aspnet-gold-win
 ```
 
 ### Available scenarios
@@ -571,7 +567,7 @@ crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenario
 The scenario named `custom` can be used to pass any custom filter variable like so:
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
+crank --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom --profile aspnet-gold-win --variable filter=*LinqBenchmarks*
 ```
 
 ## FAQ
@@ -640,7 +636,7 @@ Most pages in the Power BI dashboard list the crank command lines that were used
 
 Here is how to do it with crank and download the crash dump automatically.
 ```console
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin --application.environmentVariables DOTNET_DbgEnableMiniDump=1 --application.environmentVariables DOTNET_DbgMiniDumpType=4 --application.environmentVariables DOTNET_DbgMiniDumpName=mydump --application.environmentVariables DOTNET_CreateDumpVerboseDiagnostics=1 --application.options.downloadfiles mydump
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-gold-lin --application.environmentVariables DOTNET_DbgEnableMiniDump=1 --application.environmentVariables DOTNET_DbgMiniDumpType=4 --application.environmentVariables DOTNET_DbgMiniDumpName=mydump --application.environmentVariables DOTNET_CreateDumpVerboseDiagnostics=1 --application.options.downloadfiles mydump
 ```
 
 Note that these ENVs could be set for all runs and crank will run just fine if it can't download the file because no crash happened.
