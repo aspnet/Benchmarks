@@ -24,6 +24,8 @@ parameters:
 
   - displayName: Fortunes Platform
     arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform --property protocol=http
+  - displayName: Fortunes Platform Apex
+    arguments: --scenario apex-fortunes --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/ApexFortunes/apex-fortunes.benchmarks.yml --load.connections 1024 --property scenario=FortunesPlatformApex --property protocol=http
   - displayName: Fortunes Platform EF
     arguments: --scenario fortunes_ef $(platformJobs) --property scenario=FortunesPlatformEF --property protocol=http
   - displayName: Fortunes Platform Dapper
@@ -50,6 +52,8 @@ parameters:
 
   - displayName: Fortunes Minimal APIs
     arguments: --scenario fortunes $(minimalJobs) --property scenario=FortunesMinimalApis --property protocol=http
+  - displayName: Fortunes Minimal APIs Apex
+    arguments: --scenario minimal-apex-fortunes --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/Minimal/minimal-apex-fortunes.benchmarks.yml --load.connections 1024 --property scenario=FortunesMinimalApisApex --property protocol=http
   - displayName: Single Query Minimal APIs
     arguments: --scenario single_query $(minimalJobs) --property scenario=SingleQueryMinimalApis --property protocol=http
   - displayName: Multiple Queries Minimal APIs

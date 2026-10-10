@@ -19,6 +19,18 @@ builder.Configuration.Bind(appSettings);
 builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddSingleton(CreateHtmlEncoder());
 
+var apexEnabled = false;
+if (builder.Configuration["APEX_CONNECTION_STRING"] is { Length: > 0 } apexConnectionString)
+{
+    var apexConnectionCount = builder.Configuration.GetValue("APEX_CONNECTIONS", 56);
+    var apexPipeliningLimit = builder.Configuration.GetValue("APEX_PIPELINING", 16);
+    builder.Services.AddSingleton(await ApexFortuneDb.CreateAsync(
+        apexConnectionString,
+        apexConnectionCount,
+        apexPipeliningLimit));
+    apexEnabled = true;
+}
+
 var app = builder.Build();
 
 app.MapGet("/plaintext", () => "Hello, World!");
@@ -40,6 +52,16 @@ app.MapGet("/fortunes", async (HttpContext context, Db db, HtmlEncoder htmlEncod
     template.HtmlEncoder = htmlEncoder;
     return template;
 });
+
+if (apexEnabled)
+{
+    app.MapGet("/fortunes/apex", async (ApexFortuneDb db, HtmlEncoder htmlEncoder) => {
+        var fortunes = await db.LoadAsync();
+        var template = ApexFortunes.Create(fortunes);
+        template.HtmlEncoder = htmlEncoder;
+        return template;
+    });
+}
 
 app.MapGet("/queries/{count}", async (Db db, int count) => await db.LoadMultipleQueriesRows(count));
 
