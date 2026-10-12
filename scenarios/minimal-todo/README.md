@@ -2,17 +2,19 @@
 
 A small HTTP CRUD workload (`/todos`, `/healthz`) implemented three times —
 C#, Go, and Rust — to compare minimal API frameworks under an identical
-fixed-rate load. Source generation, admission review, and quota-calibration
-tooling for this cohort — including the HTTP contract fixture and the
-one-time state/body verification that uses it — live in the separate
-`dotnet-performance-tools` repository. This package is the shipped,
-day-to-day Crank runtime surface only: the applications and one scenario
-file. There is no Python tooling and no fixture here.
+fixed-rate load. Source generation, admission review, quota-calibration, and
+the full generated test suite/fixture/validation history for this cohort are
+owned by the separate `dotnet-performance-tools` repository, which holds the
+canonical candidate archive. This package is the shipped, day-to-day Crank
+runtime surface only: the applications (production code only, no test
+projects/fixtures) and one scenario file.
 
 ## Applications
 
 Applications live in `src/BenchmarksApps/MinimalTodo/{csharp,go,rust}`, each
-with its own `Dockerfile` and README covering its local build/test lifecycle.
+with its own `Dockerfile` and README covering its local build/run lifecycle.
+Production code only; no test projects, fixtures, or validation evidence are
+shipped here (see "Results" below for where that history lives).
 
 Base images are floating (no pinned digests), multi-arch, and share one final
 runtime OS across all three languages:
@@ -53,10 +55,16 @@ images are multi-arch, so the scenario runs unmodified on x64 or ARM64
 agents.
 
 Each app job uses normal, typed Crank job properties -- `cpuLimitRatio: 1`,
-`memoryLimitInBytes: 536870912`, `port: 8080` -- with no custom `onConfigure`
-hook. These are overridable the same way `build/containers-scenarios.yml`
+`memoryLimitInBytes: 536870912` (512 MiB), `port: 8080` -- with no custom
+`onConfigure` hook. These are overridable the same way `build/containers-scenarios.yml`
 overrides its own jobs: `--application.cpuLimitRatio`,
-`--application.memoryLimitInBytes`, `--application.port`. The scheduled
+`--application.memoryLimitInBytes`, `--application.port`. Each scenario's
+`load` role sets its own `rate: 100` (a safe, low manual-smoke default; the
+imported Bombardier job's own default is `0`, meaning uncapped) and
+`serverPort: 8080` (matching the application's default port, since the
+imported job's own default is `5000`); both are overridable via
+`--variable rate=...`/`--variable serverPort=...`, exactly like the
+scheduled pipeline does for its accepted rate. The scheduled
 pipeline pins the exact triggering build's commit via
 `--application.sources.app.branchOrCommit "#<sha>"` (see
 `build/minimal-todo-scenarios.yml`); a manual run defaults to the `app`
@@ -143,4 +151,11 @@ calibrated and accepted against the **prior** pinned-digest C#/Go/Rust images
 and project settings. This round floated the Docker base images and moved the
 C# project to `net11.0`; that calibration has not been re-run against the new
 images, so a post-merge scheduled run is the first operational confirmation
-under the new images, not a re-validation.
+under the new images, not a re-validation. 25200 req/s is the current
+**operational policy value** applied uniformly to all three languages and
+both the Docker and direct C# builds — it is not a per-language or
+per-resource-point capacity guarantee, and resource headroom is not
+independently verified for every combination. Full generated test
+suites, fixture/contract checkers, review, and campaign/validation history
+for this cohort are owned by the separate `dotnet-performance-tools`
+repository's canonical candidate archive.

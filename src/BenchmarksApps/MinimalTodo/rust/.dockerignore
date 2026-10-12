@@ -4,6 +4,4 @@
 !rust-toolchain.toml
 !src/
 !src/**
-!tests/
-!tests/**
 !Dockerfile
