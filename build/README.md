@@ -38,11 +38,6 @@ file.
 
 ## Hand-maintained scenario templates
 
-`azure.profile.yml` defines the Azure VM profiles. All `cobalt-cloud-lin*`
-machines (server, Azure Linux 3 server, client, and database) have 4 cores.
-The combined, relay, and individual application profiles use `cores: 4`.
-These are separate from the `cobalt-hosted-lin*` machines in `ci.profile.yml`.
-
 Everything else in this directory is hand-maintained. The most important
 groups:
 
