@@ -305,7 +305,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.17
-      cores: 16
+      cores: 4
     jobs:
       db:
         endpoints:
@@ -330,7 +330,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.17
-      cores: 16
+      cores: 4
     jobs:
       db:
         endpoints:
@@ -355,7 +355,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.20
-      cores: 16
+      cores: 4
     jobs:
       db:
         endpoints:
@@ -380,7 +380,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.20
-      cores: 16
+      cores: 4
     jobs:
       db:
         endpoints:
@@ -766,7 +766,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.18
-      cores: 16
+      cores: 4
     agents:
       application:
         endpoints:
@@ -802,7 +802,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.19
-      cores: 16
+      cores: 4
     agents:
       application:
         endpoints:
@@ -838,7 +838,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.17
-      cores: 16
+      cores: 4
     agents:
       application:
         endpoints:
@@ -874,7 +874,7 @@ profiles:
     variables:
       serverPort: 5000
       serverAddress: 10.0.4.20
-      cores: 16
+      cores: 4
     agents:
       application:
         endpoints:
