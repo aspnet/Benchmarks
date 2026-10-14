@@ -153,6 +153,79 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `updates`
 - `caching`
 
+## HttpArena benchmarks
+
+[HttpArena](https://www.http-arena.com/) ([MDA2AV/HttpArena](https://github.com/MDA2AV/HttpArena)) is a community
+cross-framework HTTP benchmark suite that has effectively replaced the now-archived TechEmpower benchmarks. These
+scenarios build and run two HttpArena framework entries directly from HttpArena's own repository (no vendored app
+source in this repo):
+
+- `aspnet-minimal-11` - ASP.NET Core Minimal APIs on .NET 11
+- `genhttp-ioxide` - [GenHTTP](https://genhttp.org/) on the Ioxide/io_uring engine, .NET 11 (requires a Linux kernel
+  with io_uring support; it will not run on Windows)
+
+Both apps target the latest available .NET 11 SDK/runtime (no version is pinned), and the HttpArena commit they're
+built from is pinned in `scenarios/httparena.benchmarks.yml` for reproducibility.
+
+`async_db_*` and `fortunes_aspnet_minimal_11` additionally spin up a Postgres sidecar (`httparena_postgresql` job,
+built from `scenarios/assets/httparena/postgres/`) seeded with HttpArena's own `data/pgdb-seed.sql`, fetched at
+Docker build time from the same pinned HttpArena commit as the app source rather than vendored in this repo (100K
+`items` rows - about 7MB of literal data - would otherwise be the largest tracked file in the whole repo; 200
+`fortune` rows). Its `max_connections` is raised to 256 (matching HttpArena's own harness) since the stock
+default of 100 is too low for genhttp-ioxide's per-reactor connection pooling on many-core machines - confirmed on
+`aspnet-gold-lin`, where the default caused both bad responses on genhttp and silently throttled throughput on
+aspnet-minimal-11 too (async_db went from ~24K req/s to ~133K req/s once fixed).
+
+`async_*` uses 32000 connections, matching HttpArena's own profile spec (`scripts/lib/profiles.sh`:
+`[async]="1|0|0-31,64-95|32000|async"`) rather than a smaller, more broadly-safe count - a default Linux host only
+has ~28K ephemeral ports (32768-60999) to spare for outbound connections, too few for 32000 concurrent ones from a
+single load-generator process. `async_*`'s `load` job runs a `beforeScript` that widens the load generator host's
+ephemeral port range (`sysctl -w net.ipv4.ip_local_port_range='1024 65535'`, matching HttpArena's own
+`system_tune()`) before wrk opens its connections. Confirmed on `aspnet-gold-lin`/`aspnet-gold-load`: 0 socket
+errors at 32000 connections, and throughput is far higher than at a smaller connection count (genhttp-ioxide went
+from ~391K req/s at 4096 connections to ~1.62M req/s at 32000 - this profile's ceiling is connections/delay, so
+under-provisioning connections caps throughput well below what the server can actually do).
+
+`json_tls_genhttp_ioxide` sets `IOXIDE_KTLS=0`: genhttp-ioxide's TLS listeners use kernel TLS (kTLS) by default,
+which needs the kernel's `tls` ULP module (`/proc/sys/net/ipv4/tcp_available_ulp`); without it every TLS handshake
+fails and the listener effectively never comes up (observed as wrk reporting `Cannot assign requested address` on
+`aspnet-gold-lin`). `json_tls_aspnet_minimal_11` is unaffected - Kestrel terminates TLS in managed code, not kTLS.
+
+`json_tls_*` also needs a `TLS_CERT`/`TLS_KEY` dev cert. Rather than committing a `.crt`/`.key` pair (a classic
+secret-scanner false-positive trigger even for a throwaway self-signed cert), both jobs generate one fresh on the
+agent via `beforeScript` (`openssl req -x509 ...`, CN=localhost + loopback SANs, skipped on `options.reuseBuild`
+re-runs via `test -f`). The cert/key must be written into the `published/` subdirectory specifically, not the
+project source directory `beforeScript` runs from - Crank reassigns the app's actual working directory to
+`published/` for self-contained builds *after* `beforeScript` runs (confirmed by reading
+`Microsoft.Crank.Agent/Startup.cs`), so a cert written at the top level is invisible to the running app.
+
+### Sample
+
+```
+crank --config scenarios/httparena.benchmarks.yml --scenario pipeline_aspnet_minimal_11 --profile aspnet-gold-lin
+crank --config scenarios/httparena.benchmarks.yml --scenario json_genhttp_ioxide --profile aspnet-gold-lin
+crank --config scenarios/httparena.benchmarks.yml --scenario async_db_aspnet_minimal_11 --profile aspnet-gold-lin
+```
+
+Must be run from a checkout of this repo (not via a raw GitHub URL) so the dataset fixture and NuGet.config
+under `scenarios/assets/` can be found.
+
+### Available scenarios
+
+- `pipeline_aspnet_minimal_11` / `pipeline_genhttp_ioxide` - HttpArena's "pipelined" profile (`GET /pipeline`,
+  16x request pipelining over 4096 connections)
+- `json_aspnet_minimal_11` / `json_genhttp_ioxide` - plain JSON reads from a preloaded dataset (`GET /json/{count}`)
+- `baseline_aspnet_minimal_11` / `baseline_genhttp_ioxide` - HttpArena's "baseline" profile, a trivial computed
+  response with no serialization (`GET /baseline11?a=13&b=42`)
+- `async_aspnet_minimal_11` / `async_genhttp_ioxide` - HttpArena's "async" profile, a flat 10ms wait held open across
+  32000 connections (`GET /delay/10`, matching HttpArena's own connection count - see note below)
+- `json_tls_aspnet_minimal_11` / `json_tls_genhttp_ioxide` - the `json` reads over HTTP/1.1-over-TLS (port 8081),
+  rotated across several `(count, m)` pairs via HttpArena's own wrk Lua script
+- `async_db_aspnet_minimal_11` / `async_db_genhttp_ioxide` - HttpArena's "async-db" profile, a Postgres range query
+  over the `items` table (`GET /async-db?min=&max=&limit=`)
+- `fortunes_aspnet_minimal_11` - HttpArena's "fortunes" profile, a Postgres-backed template-render test
+  (`GET /fortunes`); genhttp-ioxide has no `/fortunes` route so there is no genhttp equivalent
+
 ## Proxy benchmarks
 
 These scenarios are running several web proxies, including [YARP](https://github.com/microsoft/reverse-proxy).
