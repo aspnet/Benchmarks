@@ -1,0 +1,66 @@
+# Opt in with --script rps-per-cpu. Loading this config alone does not change results.
+scripts:
+  rps-per-cpu: |
+    require("rps-per-cpu-helper");
+    addRpsPerCpu("application", "load");
+
+  rps-per-cpu-helper: |
+    function addRpsPerCpu(applicationName, loadName) {
+      function fail(message) {
+        throw new Error("rps-per-cpu: " + message);
+      }
+
+      function getJob(name) {
+        const job = benchmarks.jobs[name];
+        if (!job) {
+          fail("Job '" + name + "' is missing. Use addRpsPerCpu(applicationName, loadName) for custom job names.");
+        }
+        return job;
+      }
+
+      const application = getJob(applicationName);
+      const load = getJob(loadName);
+      if (application.measurements.length !== 1) {
+        fail("Application job '" + applicationName + "' must have exactly one endpoint's measurements; a shared RPS value cannot be attributed to multiple application endpoints.");
+      }
+
+      const rps = load.results["http/rps/mean"];
+      if (typeof rps !== "number" || !isFinite(rps) || rps < 0) {
+        fail("Load job '" + loadName + "' needs a finite, non-negative 'http/rps/mean' result.");
+      }
+
+      function meanCpu(measurement) {
+        const values = application.measurements[0]
+          .filter(m => m.name === measurement)
+          .map(m => m.value);
+        if (values.length === 0) {
+          fail("Application job '" + applicationName + "' has no '" + measurement + "' samples.");
+        }
+        if (values.some(value => typeof value !== "number" || !isFinite(value) || value < 0)) {
+          fail("Application job '" + applicationName + "' needs finite, non-negative '" + measurement + "' samples.");
+        }
+        const mean = avg(values);
+        if (!isFinite(mean) || mean <= 0) {
+          fail("Application job '" + applicationName + "' needs a positive, finite mean for '" + measurement + "'.");
+        }
+        return mean;
+      }
+
+      const processRatio = rps / meanCpu("benchmarks/cpu");
+      const machineRatio = rps / meanCpu("benchmarks/cpu/global");
+      if (!isFinite(processRatio) || !isFinite(machineRatio)) {
+        fail("RPS / CPU overflowed; both ratios must be finite.");
+      }
+
+      const processName = "http/rps/per-process-cpu";
+      const machineName = "http/rps/per-machine-cpu";
+      // Replace metadata on repeated calls, rather than duplicating console rows.
+      application.metadata = application.metadata
+        .filter(m => m.name !== processName && m.name !== machineName)
+        .concat([
+          { name: processName, description: "RPS / mean process CPU (RPS/percentage point)", format: "n2" },
+          { name: machineName, description: "RPS / mean machine CPU (RPS/percentage point)", format: "n2" }
+        ]);
+      application.results[processName] = processRatio;
+      application.results[machineName] = machineRatio;
+    }
