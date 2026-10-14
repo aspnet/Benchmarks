@@ -1,0 +1,6 @@
+**/bin
+**/obj
+artifacts
+TestResults
+.git
+README.md

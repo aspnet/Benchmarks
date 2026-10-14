@@ -62,6 +62,14 @@
     ],
     "scenarios": [
         {
+            "name": "Minimal Todo",
+            "template": "minimal-todo-scenarios.yml",
+            "type": 2,
+            "pods": ["azure-arm64", "cobalt-cloud-lin"],
+            "estimated_runtime": 15.0,
+            "timeout": 40
+        },
+        {
             "name": "Containers",
             "template": "containers-scenarios.yml",
             "type": 3,

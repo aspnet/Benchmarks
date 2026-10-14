@@ -300,19 +300,19 @@ jobs:
 
 # GROUP 10
 
-- job: Single_File_gold_lin
-  displayName: 10- Single File gold-lin
+- job: Trends_Database_gold_lin
+  displayName: 10- Trends Database gold-lin
   pool: server
   timeoutInMinutes: 120
   dependsOn: [GC_gold_lin, Build_gold_win]
   condition: succeededOrFailed()
   steps:
-  - template: singlefile-scenarios.yml
+  - template: trend-database-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load "
+      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load --profile gold-db-db "
 
 # GROUP 11
 
@@ -320,7 +320,7 @@ jobs:
   displayName: 11- Crossgen gold-lin
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Single_File_gold_lin]
+  dependsOn: [Trends_Database_gold_lin]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -332,17 +332,17 @@ jobs:
 
 # GROUP 12
 
-- job: Build_gold_lin
-  displayName: 12- Build gold-lin
+- job: Custom_Proxies_gold_lin
+  displayName: 12- Custom Proxies gold-lin
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Crossgen_gold_lin]
   condition: succeededOrFailed()
   steps:
-  - template: build-perf-scenarios.yml
+  - template: proxies-custom-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
-      arguments: "$(ciProfile) --profile gold-lin-app "
+      arguments: "$(ciProfile) --profile gold-lin-app --profile gold-load-load --profile gold-db-db "
 

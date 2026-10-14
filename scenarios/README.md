@@ -47,6 +47,12 @@ dotnet tool install Microsoft.Crank.Agent --version "0.2.0-*" --global
 crank-agent
 ```
 
+## Minimal Todo
+
+The [Minimal Todo package](minimal-todo/README.md) contains frozen standalone
+C#, Go and Rust applications, a versioned HTTP contract, and native Crank
+Dockerfile scenarios with separate operator topology profiles.
+
 ## Plaintext benchmarks
 
 The source code for these benchmarks is located [here](https://github.com/aspnet/benchmarks/tree/main/src/Benchmarks).

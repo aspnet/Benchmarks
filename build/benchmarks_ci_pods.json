@@ -120,6 +120,14 @@
             "estimated_runtime": 45.0
         },
         {
+            "name": "Minimal Todo",
+            "template": "minimal-todo-scenarios.yml",
+            "type": 2,
+            "pods": ["gold-lin"],
+            "estimated_runtime": 15.0,
+            "timeout": 40
+        },
+        {
             "name": "MVC",
             "template": "mvc-scenarios.yml",
             "type": 3,
