@@ -25,13 +25,9 @@ variables:
 # the first value is the default if none is specified
 profiles:
 
-    aspnet-citrine-lin:
-        description: Intel/Linux 28 Cores
-        arguments: --profile aspnet-citrine-lin-relay
-
-    aspnet-perf-lin:
-        description: Intel/Linux 12 Cores
-        arguments: --profile aspnet-perf-lin-relay
+    aspnet-gold-lin:
+        description: Gold/Linux x64 56 Cores
+        arguments: --profile aspnet-gold-lin-relay
 
 
 benchmarks:

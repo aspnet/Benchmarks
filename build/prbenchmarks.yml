@@ -98,7 +98,7 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-          displayName: ASP.NET Core
+          displayName: ASP.NET Core Gold X64
           continueOnError: true
           env:
               APP_KEY: $(github.privatekey)
@@ -118,7 +118,7 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-          displayName: EF Core
+          displayName: EF Core Gold Windows X64
           continueOnError: true
           env:
               APP_KEY: $(github.privatekey)
@@ -138,32 +138,10 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-          displayName: Runtime Windows X64
+          displayName: Runtime Gold Windows X64
           continueOnError: true
           env:
               APP_KEY: $(github.privatekey)
-
-
-        - task: AzureCLI@2
-          inputs:
-            azureSubscription: ASPNET Benchmarks Service Bus
-            scriptType: ps
-            scriptLocation: inlineScript
-            inlineScript: |
-              $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
-                  --repository https://github.com/dotnet/runtime `
-                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.windows_arm64.config.yml `
-                  --app-id $(github.appid) `
-                  --install-id $(github.installid) `
-                  --app-key "env:APP_KEY" `
-                  --publish-results true `
-                  --external-log-uri $buildUrl
-          displayName: Runtime Windows X64
-          continueOnError: true
-          env:
-              APP_KEY: $(github.privatekey)
-
       - job: BenchmarkLinux
         displayName: Benchmarks Linux Image
         pool:
@@ -199,28 +177,7 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-          displayName: Runtime Linux X64
+          displayName: Runtime Gold Linux X64
           continueOnError: true
           env:
               APP_KEY: $(github.privatekey)
-
-        - task: AzureCLI@2
-          inputs:
-            azureSubscription: ASPNET Benchmarks Service Bus
-            scriptType: pscore
-            scriptLocation: inlineScript
-            inlineScript: |
-              $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
-                  --repository https://github.com/dotnet/runtime `
-                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.linux_arm64.config.yml `
-                  --app-id $(github.appid) `
-                  --install-id $(github.installid) `
-                  --app-key "env:APP_KEY" `
-                  --publish-results true `
-                  --external-log-uri $buildUrl
-          displayName: Runtime Linux ARM64
-          continueOnError: true
-          env:
-              APP_KEY: $(github.privatekey)
-

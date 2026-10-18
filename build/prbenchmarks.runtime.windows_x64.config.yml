@@ -24,13 +24,9 @@ variables:
 # the first value is the default if none is specified
 profiles:
 
-    aspnet-perf-win:
-        description: Intel/Windows 12 Cores
-        arguments: --profile aspnet-perf-win-relay
-
-    aspnet-citrine-win:
-        description: Intel/Windows 28 Cores
-        arguments: --profile aspnet-citrine-win-relay
+    aspnet-gold-win:
+        description: Gold/Windows x64 56 Cores
+        arguments: --profile aspnet-gold-win-relay
 
 benchmarks:
     micro:
