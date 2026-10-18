@@ -32,12 +32,10 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `local` | (local machine) | (local machine) | (local machine) |
 |  `aspnet-perf-lin` | INTEL, 12 logical cores, 1 socket, 32GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-perf-win` | INTEL, 12 logical cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
-|  `aspnet-citrine-lin` | INTEL, logical 28 cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
-|  `aspnet-citrine-win` | INTEL, logical 28 cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
-|  `aspnet-citrine-amd2` | AMD, logical 48 cores, 1 socket, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
-|  `aspnet-citrine-arm-lin` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
 |  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 6.8.0-45-generic | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
 |  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+
+The retired Citrine and Siryn machine profiles are no longer available.
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
@@ -328,7 +326,7 @@ The filename and size can be changed by adapting these variables:
 --variable filename=file.txt
 ```
 
-This scenario can easily reach the max network bandwidth. To verify that use `--load.options.displayOutput true` which will display the __wrk__ output, including the transfer rate. Example of saturated network for a 40Gb/s NIC (Citrine).
+This scenario can easily reach the max network bandwidth. To verify that use `--load.options.displayOutput true` which will display the __wrk__ output, including the transfer rate. Historical example of saturated network for a 40Gb/s NIC:
 
 ```
 [load] Transfer/sec:      4.37GB
@@ -546,7 +544,7 @@ These scenarios provide benchmarks to help improve the performance of the .NET G
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net10.0
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-gold-win --application.framework net10.0
 ```
 ### Available scenarios
 

@@ -1,5 +1,5 @@
 # Examples:
-# --config mono.benchmarks.yml --scenario plaintext-mono-jit --profile aspnet-citrine-lin
+# --config mono.benchmarks.yml --scenario plaintext-mono-jit --profile aspnet-gold-lin
 
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
