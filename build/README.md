@@ -82,14 +82,6 @@ The ASP.NET Core, EF Core, and runtime scenario/component definitions are
 unchanged. This migration does not change the polling schedule, controller
 images, or Crank SDK/build configuration.
 
-Validate the bot configs, pipeline references, scenarios, and imported Gold
-profiles without starting benchmarks (requires the existing pod-scheduler's
-PyYAML dependency):
-
-```bash
-python -m unittest discover -s scripts/tests -p test_prbenchmarks.py
-```
-
 ## Editing the schedule
 
 Common edits, all done in JSON:
