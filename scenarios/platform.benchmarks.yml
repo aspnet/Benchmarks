@@ -1,5 +1,5 @@
 # Examples:
-# --config platform.benchmarks.yml --scenario json --profile aspnet-citrine-lin
+# --config platform.benchmarks.yml --scenario json --profile aspnet-gold-lin
 
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml

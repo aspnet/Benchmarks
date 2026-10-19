@@ -1,9 +1,9 @@
 ﻿# Examples:
-# --config plaintext.benchmarks.yml --scenario plaintext --profile aspnet-physical
-# --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
+# --config json.benchmarks.yml --scenario json --profile aspnet-gold-lin
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
 
 jobs:
   aspnetbenchmarks:
@@ -57,22 +57,3 @@ scenarios:
       job: wrk
       variables:
         path: /mvc/json
-
-profiles:
-  aspnet-citrine-arm:
-    variables:
-      serverPort: 5000
-      serverAddress: 10.0.0.107
-      cores: 32
-    jobs: 
-      db:
-        endpoints: 
-          - http://asp-citrine-db:5001
-      application:
-        endpoints: 
-          - http://asp-citrine-arm:5001
-        variables:
-          databaseServer: 10.0.0.103
-      load:
-        endpoints: 
-          - http://asp-citrine-load:5001
