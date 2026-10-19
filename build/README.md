@@ -11,7 +11,7 @@ JSON config that lists the available pods (machine groups) and scenarios.
 
 | Generated YAML | Source config | Notes |
 |---|---|---|
-| `benchmarks-ci-01.yml`, `benchmarks-ci-02.yml` | `benchmarks_ci_pods.json` | On-prem fleet (citrine + mono); split across two YAMLs to spread load |
+| `benchmarks-ci-01.yml`, `benchmarks-ci-02.yml` | `benchmarks_ci_pods.json` | On-prem fleet (Gold); split across two YAMLs to spread load |
 | `benchmarks-ci-azure.yml` | `benchmarks_ci_azure_pods.json` | Azure cloud pods (includes the merged eastus2 cobalt cloud pods) |
 | `benchmarks-ci-cobalt.yml` | `benchmarks_ci_cobalt_pods.json` | Cobalt-hosted pods |
 
@@ -36,6 +36,9 @@ python ./scripts/pod-scheduler/main.py \
 The header of each generated YAML embeds the exact regen command for that
 file.
 
+The `citrine1`, `citrine2`, and `citrine3` names in the on-prem config are
+controller queues, not retired benchmark machines or relay targets.
+
 ## Hand-maintained scenario templates
 
 Everything else in this directory is hand-maintained. The most important
@@ -45,12 +48,39 @@ groups:
   (e.g. `proxies-scenarios.yml`, `grpc-scenarios.yml`). One per benchmark
   family. The pod-scheduler picks which template to run via the
   `template` field on each scenario in the JSON config.
-- `prbenchmarks.*.config.yml` — PR-trigger pipelines for individual PR runs.
+- `prbenchmarks.yml` — scheduled PR-benchmark bot pipeline.
+- `prbenchmarks.*.config.yml` — components, scenarios, and machine choices for
+  individual PR-benchmark requests.
 - `job-variables.yml` — shared variable definitions consumed by the scenario
   templates.
 
 When adding a new benchmark family, drop a `*-scenarios.yml` template in this
 directory and reference it from the relevant `benchmarks_ci_*_pods.json`.
+
+## PR benchmarks
+
+`prbenchmarks.yml` polls benchmark requests on `dotnet/aspnetcore`,
+`dotnet/efcore`, and `dotnet/runtime` every 30 minutes. The controller image
+determines where PR components are built, not which machine runs the benchmark.
+The first profile in each bot config is the default machine selection.
+
+| Config | Controller | Supported benchmark machines (default first) |
+|---|---|---|
+| `prbenchmarks.aspnetcore.config.yml` | Windows | `aspnet-gold-lin`, `aspnet-gold-win` (x64, 56 cores) |
+| `prbenchmarks.efcore.config.yml` | Windows | `aspnet-gold-win` (x64, 56 cores) |
+| `prbenchmarks.runtime.windows_x64.config.yml` | Windows | `aspnet-gold-win` (x64, 56 cores) |
+| `prbenchmarks.runtime.linux_x64.config.yml` | Linux | `aspnet-gold-lin` (x64, 56 cores) |
+
+These selections use the existing `aspnet-gold-*-relay` profiles imported by
+the benchmark scenarios. Gold Linux uses `goldlin`, `goldload`, and `golddb`;
+Gold Windows uses `goldwin`, `goldload2`, and `golddb`. The disconnected Perf
+and Citrine choices are no longer offered. Runtime ARM64 jobs/configs have
+been retired because their relay machines are unavailable; Gold is x64 and
+does not replace ARM64 coverage.
+
+The ASP.NET Core, EF Core, and runtime scenario/component definitions are
+unchanged. This migration does not change the polling schedule, controller
+images, or Crank SDK/build configuration.
 
 ## Editing the schedule
 

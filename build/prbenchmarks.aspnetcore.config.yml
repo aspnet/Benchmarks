@@ -25,25 +25,13 @@ defaults: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/buil
 
 # the first value is the default if none is specified
 profiles:
-    aspnet-perf-lin:
-        description: INTEL/Linux 12 Cores
-        arguments: --profile aspnet-perf-lin-relay
+    aspnet-gold-lin:
+        description: Gold/Linux x64 56 Cores
+        arguments: --profile aspnet-gold-lin-relay
 
-    aspnet-perf-win:
-        description: INTEL/Windows 12 Cores
-        arguments: --profile aspnet-perf-win-relay
-
-    aspnet-citrine-lin:
-        description: INTEL/Linux 28 Cores
-        arguments: --profile aspnet-citrine-lin-relay
-
-    aspnet-citrine-win:
-        description: INTEL/Windows 28 Cores
-        arguments: --profile aspnet-citrine-win-relay
-
-    aspnet-citrine-ampere:
-        description: Ampere/Linux 80 Cores
-        arguments: --profile aspnet-citrine-arm-lin-relay
+    aspnet-gold-win:
+        description: Gold/Windows x64 56 Cores
+        arguments: --profile aspnet-gold-win-relay
         
 
 benchmarks:
