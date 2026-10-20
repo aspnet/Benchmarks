@@ -3,6 +3,9 @@ imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
 
+variables:
+  nettyVersion: 4.2.18.Final
+
 jobs:
 
   aspnetcore:
@@ -105,8 +108,21 @@ jobs:
       dockerFile: frameworks/Java/netty/netty.dockerfile
       dockerImageName: netty
       dockerContextDirectory: frameworks/Java/netty/
+    initScript: >-
+      /bin/bash -c "sed -i -E 's#<netty.version>[^<]+</netty.version>#<netty.version>{{nettyVersion}}</netty.version>#' pom.xml &&
+      grep -Fq '<netty.version>{{nettyVersion}}</netty.version>' pom.xml"
     readyStateText: Httpd started
     arguments: --add-host="tfb-database:{{databaseServer}}"
+
+  libreactor:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/C/libreactor/libreactor.dockerfile
+      dockerImageName: libreactor
+      dockerContextDirectory: frameworks/C/libreactor/
+    port: 8080
+    noClean: true
 
   vertx:
     source:
@@ -553,6 +569,17 @@ scenarios:
         path: /json
         serverPort: 8080
 
+  # Libreactor (C)
+  json_libreactor:
+    application:
+      job: libreactor
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+
   # Wizzardo (Java)
   plaintext_wizzardo:
     db:
@@ -720,4 +747,3 @@ scenarios:
         presetHeaders: json
         path: /updates?queries=20
         serverPort: 8080
-
