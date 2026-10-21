@@ -37,7 +37,7 @@ jobs:
     options:
       requiredOperatingSystem: linux
 
-  # Day-to-day scheduled C# comparison job: builds src/TodoApi/TodoApi.csproj
+  # Manual-only C# comparison job: builds src/TodoApi/TodoApi.csproj
   # directly with Crank (no Docker) -- see README "Execution paths". Same
   # source/CPU/memory/port defaults as todo-csharp.
   todo-csharp-project:
@@ -143,8 +143,8 @@ scenarios:
           - "Accept: application/json"
           - "Connection: keep-alive"
           - "Accept-Encoding: identity"
-  # Day-to-day scheduled C# comparison scenario (see README "Execution
-  # paths"): direct Crank build of the C# app, no Docker.
+  # Manual-only C# comparison scenario (see README "Execution paths"):
+  # direct Crank build of the C# app, no Docker; never scheduled.
   csharp-project:
     application: {job: todo-csharp-project}
     load:

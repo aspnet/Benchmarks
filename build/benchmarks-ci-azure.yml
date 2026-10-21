@@ -363,7 +363,7 @@ jobs:
 - job: Minimal_Todo_azure_arm64
   displayName: 12- Minimal Todo azure-arm64
   pool: server
-  timeoutInMinutes: 180
+  timeoutInMinutes: 150
   dependsOn: [Trends_idna_intel_lin, Trends_idna_intel_win]
   condition: succeededOrFailed()
   steps:
@@ -377,7 +377,7 @@ jobs:
 - job: Minimal_Todo_cobalt_cloud_lin
   displayName: 12- Minimal Todo cobalt-cloud-lin
   pool: server
-  timeoutInMinutes: 180
+  timeoutInMinutes: 150
   dependsOn: [Trends_idna_intel_lin, Trends_idna_intel_win]
   condition: succeededOrFailed()
   steps:

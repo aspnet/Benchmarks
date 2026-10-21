@@ -243,7 +243,7 @@ jobs:
 - job: Minimal_Todo_gold_lin
   displayName: 8- Minimal Todo gold-lin
   pool: server
-  timeoutInMinutes: 180
+  timeoutInMinutes: 150
   dependsOn: [Frameworks_gold_lin, Crossgen_gold_win]
   condition: succeededOrFailed()
   steps:
