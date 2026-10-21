@@ -1,0 +1,97 @@
+# Opt-in CI caches: rebuild on each pipeline run, reuse only compatible variants.
+# Source and build keys need separate namespaces because they share cache metadata.
+profiles:
+  containers-build-reuse:
+    agents:
+      application:
+        buildKey: 'containers-build-{{ job.Source.DockerImageName }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'containers-source-{{ job.Source.DockerImageName }}-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+        onConfigure:
+          - 'if (!/^[0-9]+$/.test(String(job.Variables.buildCacheId))) { throw "buildCacheId must be set to the pipeline build ID."; }'
+      db:
+        buildKey: 'containers-build-{{ job.Source.DockerImageName }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'containers-source-{{ job.Source.DockerImageName }}-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+      load: {}
+
+  grpc-build-reuse:
+    agents:
+      application:
+        buildKey: 'grpc-server-build-{{ serverBuildKey }}-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'grpc-server-source-{{ serverBuildKey }}-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+        onConfigure:
+          - 'if (!/^[0-9]+$/.test(String(job.Variables.buildCacheId))) { throw "buildCacheId must be set to the pipeline build ID."; }'
+          - 'if (!job.Variables.serverBuildKey || !job.Variables.clientBuildKey || !/^[a-z0-9-]+$/.test(String(job.Variables.serverBuildKey)) || !/^[a-z0-9-]+$/.test(String(job.Variables.clientBuildKey))) { throw "serverBuildKey and clientBuildKey must identify the gRPC variants using lowercase letters, digits, or hyphens."; }'
+      load:
+        buildKey: 'grpc-client-build-{{ clientBuildKey }}-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'grpc-client-source-{{ clientBuildKey }}-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+
+  httpclient-build-reuse:
+    agents:
+      load:
+        aliases:
+          - secondary
+        buildKey: 'httpclient-server-build-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'httpclient-source-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+        onConfigure:
+          - 'if (!/^[0-9]+$/.test(String(job.Variables.buildCacheId))) { throw "buildCacheId must be set to the pipeline build ID."; }'
+      application:
+        aliases:
+          - main
+        buildKey: 'httpclient-client-build-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'httpclient-source-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+
+  signalr-build-reuse:
+    agents:
+      application:
+        buildKey: 'signalr-server-build-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'signalr-source-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+        onConfigure:
+          - 'if (!/^[0-9]+$/.test(String(job.Variables.buildCacheId))) { throw "buildCacheId must be set to the pipeline build ID."; }'
+      load:
+        aliases:
+          - warmup
+          - secondary
+        buildKey: 'signalr-client-build-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'signalr-source-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+
+  websocket-build-reuse:
+    agents:
+      application:
+        buildKey: 'websocket-server-build-{{ job.Framework }}-{{ compress }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'websocket-source-{{ buildCacheId }}'
+        options:
+          reuseBuild: true
+        onConfigure:
+          - 'if (!/^[0-9]+$/.test(String(job.Variables.buildCacheId))) { throw "buildCacheId must be set to the pipeline build ID."; }'
+          - 'if (!/^(true|false)$/.test(String(job.Variables.compress))) { throw "compress must be true or false for WebSocket build reuse."; }'
+      load:
+        buildKey: 'websocket-client-build-{{ job.Framework }}-{{ buildCacheId }}'
+        source:
+          sourceKey: 'websocket-source-{{ buildCacheId }}'
+        options:
+          reuseBuild: true

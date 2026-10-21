@@ -77,6 +77,8 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/azure.profile.yml
 - name: ciProfile
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/ci.profile.yml
+- name: buildReuseProfile
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/build-reuse.profile.yml
 - name: grpcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/grpc.benchmarks.yml
 - name: efcoreJobs

@@ -100,6 +100,57 @@ together. The snapshot tests in
 `scripts/pod-scheduler/tests/test_snapshots.py` will fail in CI if the
 generated YAML drifts from the configs.
 
+## Build reuse within a pipeline run
+
+`build-reuse.profile.yml` supplies opt-in Crank profiles for the high-repeat
+container, gRPC, HttpClient, SignalR, and WebSocket matrices. Their scenario
+templates load `$(buildReuseProfile)` and pass
+`--variable buildCacheId=$(Build.BuildId)`. The first use of each build on an
+agent checks out sources and builds; later compatible entries reuse it. A new
+pipeline build ID changes both the source key and the build key, so floating
+branches, .NET versions, and Docker base images are refreshed on the next run.
+`--session` alone does not invalidate Crank caches. Source and build keys have
+different prefixes because their metadata lives in the same cache directory.
+
+| Suite | Builds reused across entries |
+|---|---|
+| Containers | Application and database images across 9 sizes and 3 request rates |
+| gRPC | Separate ASP.NET Core/Go servers and .NET/Go/h2load clients across calls, protocols, and connection/stream counts |
+| HttpClient | Client and Kestrel server across GET/POST, HTTP versions, concurrency, and payload sizes |
+| SignalR | Server and client across scenarios, transports, and protocols; warmup and load share the client build |
+| WebSockets | Client across payload sizes; separate compressed/uncompressed server builds |
+
+These profiles reuse builds, not running processes or database contents.
+Containers and applications are still started and stopped for each benchmark;
+warmup and measurement durations are unchanged. Caches are local to each agent,
+not shared between machines or architectures, and remain subject to the agent's
+normal cache cleanup/lifetime. These profiles do not add a cache TTL; retained
+builds need the same agent cleanup/restart policy as other Crank caches.
+
+Container cache keys include the image name. Different Dockerfiles must have
+different image names; the ASP.NET default, Alpine, Composite, and current
+variants therefore have separate tags. gRPC scenario entries specify
+`serverBuildKey` and `clientBuildKey` to separate implementations, and WebSocket
+server keys include the compile-time compression mode. When adding a new
+compile-time variant to these matrices, give it a distinct build identity
+rather than reusing an existing key.
+
+Other potential follow-ups are the proxy payload/protocol matrix and the
+baseline/trend suites. They are not opted in here: proxies vary configuration
+files copied into Docker images, while baseline/trend suites vary projects,
+frameworks, and publishing settings that need their own cache identities.
+The SslStream/QUIC matrix is currently disabled. Build-performance benchmarks
+must continue building because build time is what they measure.
+
+To check cache isolation without contacting agents or running benchmarks:
+
+```bash
+python -m unittest discover -s build/tests
+```
+
+The profile tests use the existing `crank --debug` configuration-only mode and
+skip when the Crank CLI is not installed. Template wiring checks run without it.
+
 ## Minimal Todo
 
 `minimal-todo-scenarios.yml` dispatches `scenarios/minimal-todo/minimal-todo.benchmarks.yml`
