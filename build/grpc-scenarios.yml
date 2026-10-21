@@ -26,14 +26,22 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
-    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true --variable serverBuildKey=aspnetcore --variable clientBuildKey=dotnet
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
+    serverBuildKey: aspnetcore
+    clientBuildKey: dotnet
   - displayName: "ASP.NET Core - Client: Go"
-    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.options.collectCounters true --variable serverBuildKey=aspnetcore --variable clientBuildKey=go
+    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.options.collectCounters true
+    serverBuildKey: aspnetcore
+    clientBuildKey: go
 
   - displayName: "Go - Client: Grpc.Net.Client"
-    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient --variable serverBuildKey=go --variable clientBuildKey=dotnet
+    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
+    serverBuildKey: go
+    clientBuildKey: dotnet
   - displayName: "Go - Client: Go"
-    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient --variable serverBuildKey=go --variable clientBuildKey=go
+    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
+    serverBuildKey: go
+    clientBuildKey: go
 
 # H2Load scenarios
 - name: h2loadscenarios 
@@ -41,9 +49,13 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: h2load"
-    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.options.collectCounters true --variable serverBuildKey=aspnetcore --variable clientBuildKey=h2load
+    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.options.collectCounters true
+    serverBuildKey: aspnetcore
+    clientBuildKey: h2load
   - displayName: "Go - Client: h2load"
-    arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient --variable serverBuildKey=go --variable clientBuildKey=h2load
+    arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient
+    serverBuildKey: go
+    clientBuildKey: h2load
 
 # grpc-net only scenarios
 - name: grpcnetscenarios 
@@ -51,7 +63,9 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
-    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true --variable serverBuildKey=aspnetcore --variable clientBuildKey=dotnet
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
+    serverBuildKey: aspnetcore
+    clientBuildKey: dotnet
 
 - name: callTypes
   type: object
@@ -107,7 +121,7 @@ steps:
           {
             "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
             "name": "crank",
-            "args": [ "--application.framework net11.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --no-metadata --no-measurements ${{ parameters.arguments }} ${{ s.arguments }} ${{ stream.arguments }} $(buildReuseProfile) --profile grpc-build-reuse --variable buildCacheId=$(Build.BuildId) --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]
+            "args": [ "--application.framework net11.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --no-metadata --no-measurements ${{ parameters.arguments }} ${{ s.arguments }} ${{ stream.arguments }} --application.options.reuseBuild true --application.buildKey grpc-server-build-${{ s.serverBuildKey }}-{{job.Framework}}-$(Build.BuildId) --application.source.sourceKey grpc-server-source-${{ s.serverBuildKey }}-$(Build.BuildId) --application.onConfigure \"if (job.DockerImageName) job.DockerImageName += '-$(Build.BuildId)';\" --load.options.reuseBuild true --load.buildKey grpc-client-build-${{ s.clientBuildKey }}-{{job.Framework}}-$(Build.BuildId) --load.source.sourceKey grpc-client-source-${{ s.clientBuildKey }}-$(Build.BuildId) --load.onConfigure \"if (job.DockerImageName) job.DockerImageName += '-$(Build.BuildId)';\" --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]
           }
 
 # h2/h3 HttpClient to ASP.NET Core
@@ -132,7 +146,7 @@ steps:
                   {
                     "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                     "name": "crank",
-                    "args": [ "--application.framework net11.0 --load.framework net11.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --no-metadata --no-measurements ${{ parameters.arguments }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }} $(buildReuseProfile) --profile grpc-build-reuse --variable buildCacheId=$(Build.BuildId)" ]
+                    "args": [ "--application.framework net11.0 --load.framework net11.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --no-metadata --no-measurements ${{ parameters.arguments }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }} --application.options.reuseBuild true --application.buildKey grpc-server-build-${{ s.serverBuildKey }}-{{job.Framework}}-$(Build.BuildId) --application.source.sourceKey grpc-server-source-${{ s.serverBuildKey }}-$(Build.BuildId) --application.onConfigure \"if (job.DockerImageName) job.DockerImageName += '-$(Build.BuildId)';\" --load.options.reuseBuild true --load.buildKey grpc-client-build-${{ s.clientBuildKey }}-{{job.Framework}}-$(Build.BuildId) --load.source.sourceKey grpc-client-source-${{ s.clientBuildKey }}-$(Build.BuildId) --load.onConfigure \"if (job.DockerImageName) job.DockerImageName += '-$(Build.BuildId)';\"" ]
                   }
 
 # h2c between various clients and servers
@@ -154,5 +168,5 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--application.framework net11.0 --load.framework net11.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} $(buildReuseProfile) --profile grpc-build-reuse --variable buildCacheId=$(Build.BuildId) --variable protocol=h2c --property protocol=h2c" ]
+                "args": [ "--application.framework net11.0 --load.framework net11.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} --application.options.reuseBuild true --application.buildKey grpc-server-build-${{ s.serverBuildKey }}-{{job.Framework}}-$(Build.BuildId) --application.source.sourceKey grpc-server-source-${{ s.serverBuildKey }}-$(Build.BuildId) --application.onConfigure \"if (job.DockerImageName) job.DockerImageName += '-$(Build.BuildId)';\" --load.options.reuseBuild true --load.buildKey grpc-client-build-${{ s.clientBuildKey }}-{{job.Framework}}-$(Build.BuildId) --load.source.sourceKey grpc-client-source-${{ s.clientBuildKey }}-$(Build.BuildId) --load.onConfigure \"if (job.DockerImageName) job.DockerImageName += '-$(Build.BuildId)';\" --variable protocol=h2c --property protocol=h2c" ]
               }

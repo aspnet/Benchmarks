@@ -102,54 +102,22 @@ generated YAML drifts from the configs.
 
 ## Build reuse within a pipeline run
 
-`build-reuse.profile.yml` supplies opt-in Crank profiles for the high-repeat
-container, gRPC, HttpClient, SignalR, and WebSocket matrices. Their scenario
-templates load `$(buildReuseProfile)` and pass
-`--variable buildCacheId=$(Build.BuildId)`. The first use of each build on an
-agent checks out sources and builds; later compatible entries reuse it. A new
-pipeline build ID changes both the source key and the build key, so floating
-branches, .NET versions, and Docker base images are refreshed on the next run.
-`--session` alone does not invalidate Crank caches. Source and build keys have
-different prefixes because their metadata lives in the same cache directory.
+The container, gRPC, HttpClient, SignalR, and WebSocket templates pass Crank's
+`reuseBuild`, `buildKey`, and `source.sourceKey` options directly. Keys include
+`$(Build.BuildId)`: each agent builds once per compatible variant in a pipeline
+run, then refreshes sources and builds on the next run. Source and build keys use
+separate namespaces because their metadata shares a cache directory.
+`--session` alone does not invalidate caches.
 
-| Suite | Builds reused across entries |
-|---|---|
-| Containers | Application and database images across 9 sizes and 3 request rates |
-| gRPC | Separate ASP.NET Core/Go servers and .NET/Go/h2load clients across calls, protocols, and connection/stream counts |
-| HttpClient | Client and Kestrel server across GET/POST, HTTP versions, concurrency, and payload sizes |
-| SignalR | Server and client across scenarios, transports, and protocols; warmup and load share the client build |
-| WebSockets | Client across payload sizes; separate compressed/uncompressed server builds |
+Keys distinguish Docker images, gRPC implementations and frameworks, and
+WebSocket compression builds. Container scenarios with a database also include
+`$(containerDatabaseBuildReuse)`. Docker image names get the build ID appended in
+`onConfigure` hooks so interleaved runs cannot overwrite each other's image tags;
+the gRPC hooks leave non-Docker jobs unchanged.
 
-These profiles reuse builds, not running processes or database contents.
-Containers and applications are still started and stopped for each benchmark;
-warmup and measurement durations are unchanged. Caches are local to each agent,
-not shared between machines or architectures, and remain subject to the agent's
-normal cache cleanup/lifetime. These profiles do not add a cache TTL; retained
-builds need the same agent cleanup/restart policy as other Crank caches.
-
-Container cache keys include the image name. Different Dockerfiles must have
-different image names; the ASP.NET default, Alpine, Composite, and current
-variants therefore have separate tags. gRPC scenario entries specify
-`serverBuildKey` and `clientBuildKey` to separate implementations, and WebSocket
-server keys include the compile-time compression mode. When adding a new
-compile-time variant to these matrices, give it a distinct build identity
-rather than reusing an existing key.
-
-Other potential follow-ups are the proxy payload/protocol matrix and the
-baseline/trend suites. They are not opted in here: proxies vary configuration
-files copied into Docker images, while baseline/trend suites vary projects,
-frameworks, and publishing settings that need their own cache identities.
-The SslStream/QUIC matrix is currently disabled. Build-performance benchmarks
-must continue building because build time is what they measure.
-
-To check cache isolation without contacting agents or running benchmarks:
-
-```bash
-python -m unittest discover -s build/tests
-```
-
-The profile tests use the existing `crank --debug` configuration-only mode and
-skip when the Crank CLI is not installed. Template wiring checks run without it.
+Only builds are reused. Applications and database containers still start fresh,
+and warmup/measurement durations are unchanged. Caches remain local to each
+agent and rely on its existing cleanup/restart policy; no cache TTL is added.
 
 ## Minimal Todo
 
