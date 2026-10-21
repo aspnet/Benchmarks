@@ -102,7 +102,8 @@ generated YAML drifts from the configs.
 
 ## Minimal Todo
 
-`minimal-todo-scenarios.yml` dispatches `scenarios/minimal-todo/minimal-todo.benchmarks.yml`
+`minimal-todo-scenarios.yml` dispatches the baseline in
+`scenarios/minimal-todo/minimal-todo.benchmarks.yml`
 (1 CPU, 536,870,912 bytes / 512 MiB, 25200 req/s, enabled) for the `gold-lin`
 and Azure `azure-arm64`/`cobalt-cloud-lin` pods. C# runs on every regular
 scheduled slot using the direct (non-Docker) `csharp-project` build; Go and
@@ -111,8 +112,19 @@ Rust run the Docker `go`/`rust` builds but only on a shared weekly slot
 pod's own condition, matching the `containers-scenarios.yml` idiom). The
 Docker `csharp`/`go`/`rust` builds (floating, multi-arch base images, no
 pinned digests, no `requiredArchitecture` gating) remain the canonical
-generation/update/admission/pre-promotion comparison path and are unaffected
+generation/update/admission/pre-promotion comparison path
 -- see `scenarios/minimal-todo/README.md` for the full execution-path
 mapping. Generation, admission, and calibration tooling for this cohort live
 in the separate `dotnet-performance-tools`
 repository; this directory only carries the scheduled dispatch template.
+
+The same template also dispatches four Docker-only CPU/MiB/RPS tiers for
+each language: **0.25/64/2000**, **0.5/128/10000**, **1/256/20000**, and
+**2/512/37500**. C# tiers retain the every-slot cadence; Go/Rust tiers
+retain the weekly condition. Existing pod consumers and machine selection
+are unchanged, and the direct C# baseline remains separate. Tier profiles
+are defined in the scenario YAML; distinct scenario/size properties include
+the CPU, memory, and target to keep time series separate. Minimal Todo's
+enclosing timeout is 180 minutes (up from 40) to accommodate the expanded
+weekly sweep; per-case task timeouts stay at 10 minutes. See the package
+README for exact profile names, byte limits, and command examples.

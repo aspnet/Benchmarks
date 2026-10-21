@@ -1,12 +1,14 @@
-# Daily candidate, enabled with the accepted calibrated rate shared by all languages.
+# Legacy baseline: 1 CPU / 512 MiB at 25200 RPS for all languages.
 # C# uses the direct (non-Docker) csharp-project build day-to-day, every
-# regular scheduled run. Go and Rust use the Docker csharp/go/rust build and
+# regular scheduled run. Go and Rust use their Docker builds and
 # run on a shared weekly slot (once per 14 half-day scheduled slots, i.e. once
 # per ~7 days for each pipeline's own 12-hour cron, not a single global
 # schedule across pods). The Docker todo-csharp/csharp build, and the
 # todo-go/todo-rust/go/rust builds, remain the canonical generation/update/
 # admission/pre-promotion comparison path and are not removed -- see
 # scenarios/minimal-todo/README.md for the full execution-path mapping.
+# Additional Docker resource tiers retain each language's cadence and use
+# separate size/scenario properties rather than replacing the baselines.
 parameters:
 - name: arguments
   type: string
@@ -39,6 +41,46 @@ parameters:
     arguments: --scenario rust --property todo/language=rust --property todo/framework=axum-tokio
     condition: Math.round(Date.now() / 43200000) % 14 == 0 # once every 14 half-days (weekly)
 
+- name: containerScenarios
+  type: object
+  default:
+  - name: csharp
+    displayName: C# Docker
+    arguments: --scenario csharp --property todo/language=csharp --property todo/framework=net11.0
+    condition: 'true'
+  - name: go
+    displayName: Go Docker
+    arguments: --scenario go --property todo/language=go --property todo/framework=net-http
+    condition: Math.round(Date.now() / 43200000) % 14 == 0
+  - name: rust
+    displayName: Rust Docker
+    arguments: --scenario rust --property todo/language=rust --property todo/framework=axum-tokio
+    condition: Math.round(Date.now() / 43200000) % 14 == 0
+
+- name: sizes
+  type: object
+  default:
+  - profile: 250m-64mib-2000rps
+    displayName: 0.25 CPU - 64 MiB - 2000 RPS
+    cpu: 0.25
+    memoryBytes: 67108864
+    rate: 2000
+  - profile: 500m-128mib-10000rps
+    displayName: 0.5 CPU - 128 MiB - 10000 RPS
+    cpu: 0.5
+    memoryBytes: 134217728
+    rate: 10000
+  - profile: 1000m-256mib-20000rps
+    displayName: 1 CPU - 256 MiB - 20000 RPS
+    cpu: 1.0
+    memoryBytes: 268435456
+    rate: 20000
+  - profile: 2000m-512mib-37500rps
+    displayName: 2 CPU - 512 MiB - 37500 RPS
+    cpu: 2.0
+    memoryBytes: 536870912
+    rate: 37500
+
 steps:
 - ${{ each scenario in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@2
@@ -57,3 +99,22 @@ steps:
           "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
           "args": [ "--session $(session) $(minimalTodoJobs) ${{ scenario.arguments }} --application.cpuLimitRatio 1 --application.memoryLimitInBytes 536870912 --application.port 8080 --application.sources.app.branchOrCommit \"#$(Build.SourceVersion)\" --variable rate=${{ parameters.rate }} --variable connections=128 --variable warmup=30 --variable duration=120 --variable timeout=2 --variable serverPort=8080 --property todo/scenario=minimal-todo-v1 --property todo/cohort=minimal-todo-v1-20260929-01 --property todo/ratePolicy=csharp-quota-75-fixed-v1 --property cpu=1 --property memoryBytes=536870912 --property rate=${{ parameters.rate }} --property todo/cpu=1 --property todo/memoryBytes=536870912 --property todo/rate=${{ parameters.rate }} ${{ parameters.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --no-metadata --no-measurements --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
         }
+
+- ${{ each scenario in parameters.containerScenarios }}:
+  - ${{ each size in parameters.sizes }}:
+    - task: PublishToAzureServiceBus@2
+      condition: succeededOrFailed()
+      displayName: Minimal Todo ${{ scenario.displayName }} - ${{ size.displayName }}
+      timeoutInMinutes: 10
+      inputs:
+        connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
+        waitForCompletion: true
+        useDataContractSerializer: "false"
+        messageBody: |
+          {
+            "name": "crank",
+            "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
+            "args": [ "--session $(session) $(minimalTodoJobs) ${{ scenario.arguments }} --profile ${{ size.profile }} --application.port 8080 --application.sources.app.branchOrCommit \"#$(Build.SourceVersion)\" --variable connections=128 --variable warmup=30 --variable duration=120 --variable timeout=2 --variable serverPort=8080 --property scenario=MinimalTodo-${{ scenario.name }}-${{ size.profile }} --property size=${{ size.profile }} --property todo/scenario=minimal-todo-v1 --property todo/execution=docker --property todo/cohort=minimal-todo-v1-20260929-01 --property todo/ratePolicy=container-size-fixed-v1 --property cpu=${{ size.cpu }} --property memoryBytes=${{ size.memoryBytes }} --property rate=${{ size.rate }} --property todo/cpu=${{ size.cpu }} --property todo/memoryBytes=${{ size.memoryBytes }} --property todo/rate=${{ size.rate }} ${{ parameters.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --no-metadata --no-measurements --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+          }

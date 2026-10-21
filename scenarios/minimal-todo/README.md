@@ -36,8 +36,8 @@ reproducibility between invocations.
 [minimal-todo.benchmarks.yml](minimal-todo.benchmarks.yml) defines three
 Docker-building scenarios (`csharp`, `go`, `rust`), each with two roles:
 `application` and `load`; plus one direct, non-Docker scenario,
-`csharp-project` (see "Execution paths" below for which one is scheduled
-day-to-day). In each Docker scenario, the application job
+`csharp-project` (see "Execution paths" below for the baseline and resource-tier
+schedules). In each Docker scenario, the application job
 clones `aspnet/Benchmarks` (the `app` source, `branchOrCommit` defaulting to
 `main`), builds that language's
 `Dockerfile`, and waits for `Application started.`
@@ -81,16 +81,16 @@ this YAML. Manual connected runs use the shared `build/ci.profile.yml` /
 scenario in this repository does; there is no scenario-specific profile
 file.
 
-### Execution paths: Docker (generation/comparison) vs. direct (day-to-day C#)
+### Execution paths: Docker comparisons vs. direct C# baseline
 
 The Docker scenarios (`csharp`, `go`, `rust`, backed by the `todo-csharp`/
 `todo-go`/`todo-rust` jobs) are unchanged and remain the canonical
 generation/update/admission/pre-promotion comparison path: fully resolvable
 for manual runs and for the separate `dotnet-performance-tools` generation
-flow, exactly as before.
+flow. They also supply the scheduled container resource tiers below.
 
-`build/minimal-todo-scenarios.yml`'s scheduled dispatch now differs by
-language:
+`build/minimal-todo-scenarios.yml` retains the existing 1 CPU / 512 MiB /
+25200 req/s baseline dispatch:
 
 - **C#** submits `--scenario csharp-project` (the direct, non-Docker build
   described below) on every regular scheduled run, at the same cadence as
@@ -135,6 +135,75 @@ the prior operational policy value, unchanged and not re-derived from this
 comparison. The direct build was still adopted for day-to-day C# scheduling
 based on this preliminary closeness, as an explicit operational decision.
 
+### Scheduled container resource tiers
+
+In addition to those unchanged baselines, the same dispatch template expands
+the Docker `csharp`, `go`, and `rust` scenarios across these four paired
+profiles. Each profile applies typed `application.cpuLimitRatio` and
+`application.memoryLimitInBytes` fields plus `load.variables.rate`; its target
+is identical for all three languages.
+
+| Profile | CPU cores | Memory (MiB) | Memory (bytes) | Target (req/s) |
+| --- | --- | --- | --- | --- |
+| `250m-64mib-2000rps` | 0.25 | 64 | 67108864 | 2000 |
+| `500m-128mib-10000rps` | 0.5 | 128 | 134217728 | 10000 |
+| `1000m-256mib-20000rps` | 1 | 256 | 268435456 | 20000 |
+| `2000m-512mib-37500rps` | 2 | 512 | 536870912 | 37500 |
+
+`cpuLimitRatio` is the number/fraction of **one CPU core**, not a fraction
+of the host's core count. These profiles do not change CPU affinity or the
+manual defaults when no size profile is selected.
+
+The new C# Docker tiers run every regular slot; Go and Rust tiers use the
+same weekly condition as their existing baselines. The existing consumers
+in `build/benchmarks-ci-01.yml` (`gold-lin`, cron `0 3/12 * * *`) and
+`build/benchmarks-ci-azure.yml` (`azure-arm64` and `cobalt-cloud-lin`, cron
+`0 2/12 * * *`) invoke this template, so the tiers are regular scheduled
+work, not just manual aliases. Machine profiles, queues, cron expressions,
+and pod conditions are unchanged. Only Minimal Todo's enclosing job timeout
+in the pod configs/generated pipelines increases from 40 to 180 minutes:
+the weekly slot now dispatches 15 sequential cases (three baselines plus
+twelve resource cases), each retaining its existing 10-minute task timeout.
+
+Every tier uses HTTP/1.1 GET `/todos`, 128 connections, 30 seconds of warmup,
+120 seconds of measurement, a 2-second timeout, and the three explicit
+headers above. The dispatch appends the unchanged `steadystate.profile.yml`
+as its final config; its measurement window uses `load.variables.duration`.
+No rate override from the legacy baseline is applied to tier runs. Results
+use the existing `ContainerBenchmarks` table with distinct
+`scenario=MinimalTodo-<language>-<profile>` and `size=<profile>` properties,
+plus CPU, byte-memory, rate, and `todo/execution=docker` properties. Direct
+C# baseline results are not relabeled as container results.
+
+For example, a connected manual run with a size profile and the same load
+settings is:
+
+```bash
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/minimal-todo/minimal-todo.benchmarks.yml \
+  --scenario csharp --profile 250m-64mib-2000rps \
+  --variable connections=128 --variable warmup=30 --variable duration=120 \
+  --variable timeout=2 --variable serverPort=8080 \
+  --config build/ci.profile.yml --profile gold-lin-app --profile gold-load-load \
+  --config build/azure.profile.yml \
+  --config scenarios/steadystate.profile.yml
+```
+
+Select `go` or `rust` with the same profile for the paired implementations.
+As for the baselines, scheduled runs pin the app source to the triggering
+commit; manual runs retain the normal source overrides described above.
+
+These targets were selected from Linux ARM64 Cobalt Docker comparisons,
+not certified across all scheduled machines or floating image versions.
+Each selected pair had two consecutive C# passes and one matched Go and
+Rust pass, with at least 99% successful target-rate attainment and no
+HTTP/transport errors. The quarter-core C# case had about 56 ms P99 latency
+and used about 28% of its quota: the tiny tier is an informative low-quota
+case, not a low-latency SLA recommendation. Higher fractional-quota offered
+rates missed target attainment; this is not evidence of a Docker build
+failure or a universal language capacity ceiling. Limits are based on the
+configured quotas/logged limits, not independent Docker HostConfig
+attestation. No admission or capacity gate is added to scheduled execution.
+
 ### Results
 
 Append the **unchanged** `../steadystate.profile.yml` once as the final
@@ -151,9 +220,10 @@ calibrated and accepted against the **prior** pinned-digest C#/Go/Rust images
 and project settings. This round floated the Docker base images and moved the
 C# project to `net11.0`; that calibration has not been re-run against the new
 images, so a post-merge scheduled run is the first operational confirmation
-under the new images, not a re-validation. 25200 req/s is the current
-**operational policy value** applied uniformly to all three languages and
-both the Docker and direct C# builds — it is not a per-language or
+under the new images, not a re-validation. 25200 req/s remains the legacy baseline's
+**operational policy value** applied uniformly to its three languages —
+the additional container tiers use their explicit per-size targets above.
+Neither is a per-language or
 per-resource-point capacity guarantee, and resource headroom is not
 independently verified for every combination. Full generated test
 suites, fixture/contract checkers, review, and campaign/validation history

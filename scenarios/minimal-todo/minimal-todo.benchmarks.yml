@@ -160,6 +160,47 @@ scenarios:
           - "Connection: keep-alive"
           - "Accept-Encoding: identity"
 
+profiles:
+  # Paired container tiers; cpuLimitRatio is a quota in CPU cores, not a
+  # fraction of the host's core count. Scheduled load timing is set by the
+  # dispatch template, leaving the manual scenario defaults unchanged.
+  # Use the same agents mapping as the CI machine profiles, not legacy jobs.
+  250m-64mib-2000rps:
+    agents:
+      application:
+        cpuLimitRatio: 0.25
+        memoryLimitInBytes: 67108864
+      load:
+        variables:
+          rate: 2000
+
+  500m-128mib-10000rps:
+    agents:
+      application:
+        cpuLimitRatio: 0.5
+        memoryLimitInBytes: 134217728
+      load:
+        variables:
+          rate: 10000
+
+  1000m-256mib-20000rps:
+    agents:
+      application:
+        cpuLimitRatio: 1.0
+        memoryLimitInBytes: 268435456
+      load:
+        variables:
+          rate: 20000
+
+  2000m-512mib-37500rps:
+    agents:
+      application:
+        cpuLimitRatio: 2.0
+        memoryLimitInBytes: 536870912
+      load:
+        variables:
+          rate: 37500
+
 results:
   # bombardier/raw is the raw per-request Bombardier JSON payload; excluded
   # here only to avoid persisting that large aggregate -- standard Bombardier

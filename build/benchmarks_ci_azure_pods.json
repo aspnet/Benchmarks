@@ -67,7 +67,7 @@
             "type": 2,
             "pods": ["azure-arm64", "cobalt-cloud-lin"],
             "estimated_runtime": 15.0,
-            "timeout": 40
+            "timeout": 180
         },
         {
             "name": "Containers",
