@@ -15,13 +15,12 @@ Build commands in this order:
 
 - `--config <path-or-url>`: load scenario/profile definitions from YAML files.
 - `--scenario <name>`: select one scenario from loaded configuration.
-- `--profile <name>`: apply profile overlays; prefer deterministic profile groups first (for example `aspnet-gold-lin`, `aspnet-perf-win`), then fall back to per-role profiles (`*-app`, `*-load`, `*-db`) when needed.
+- `--profile <name>`: apply profile overlays; prefer deterministic profile groups first (for example `aspnet-gold-lin`, `aspnet-gold-win`), then fall back to per-role profiles (`*-app`, `*-load`, `*-db`) when needed.
 - `--[JOB].framework <tfm>`: override target framework per job.
 - `--[JOB].sdkVersion|runtimeVersion|aspNetCoreVersion <version>`: optional pins for reproducing runtime regressions; normally omit and use only `--[JOB].framework`.
 - `--[JOB].source.branchOrCommit <branch_name|#commit_hash>`: for git-backed sources, run a specific branch or exact commit.
 - `--[JOB].options.collectCounters true`: enable dotnet counter collection.
 - `--[JOB].collectDependencies true`: CI-focused switch used to track transitive dependency changes.
-- `--[JOB].noGlobalJson false`: OrchardCore-specific override; do not apply by default to non-Orchard scenarios.
 - `--json <output.json>`: persist results to JSON for later comparison.
 - `--compare <baseline.json>`: compare current run against previous persisted results.
 

@@ -29,30 +29,28 @@ Default to framework-band targeting (`--application.framework`) and persisted JS
 5. Validate command completeness against scenario roles (`application`, optional `db`, `load`).
 6. Produce follow-up compare commands when prior JSON files are available.
 
-## Quick-start Orchard example
+## Quick-start example
 
-Use this baseline command when the request matches Orchard Core steady-state benchmarking:
+Minimal APIs JSON (TechEmpower) on the Linux gold machines:
 
 ```bash
 crank \
-  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml \
-  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/ci.profile.yml \
-  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml \
-  --scenario about-sqlite \
+  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml \
+  --scenario json \
   --profile aspnet-gold-lin \
-  --application.noGlobalJson false \
   --application.framework net11.0 \
   --application.options.collectCounters true \
-  --load.options.reuseBuild true \
-  --json orchard-about-sqlite.json
+  --json minimal-json.json
 ```
+
+The Platform variant uses `--config .../scenarios/platform.benchmarks.yml` instead; see `references/techempower-scenarios.md`.
 
 ## Defaults and guardrails
 
 Follow these defaults unless the user asks otherwise:
 
 - Keep one explicit `--scenario`.
-- Prefer one deterministic profile group (for example `aspnet-gold-lin` or `aspnet-perf-win`) before role-specific profile tuples.
+- Prefer one deterministic profile group (for example `aspnet-gold-lin` or `aspnet-gold-win`, defined in `scenarios/aspnet.profiles.standard.yml`) before role-specific profile tuples.
 - Include exactly the profiles needed to satisfy scenario roles and machine placement.
 - Add `--json <file>` for every run meant to be compared later.
 - Use `--application.framework net10.0|net11.0` as the normal version selector; pin SDK/runtime/aspnetcore versions only when reproducing a .NET regression.
@@ -61,7 +59,6 @@ Follow these defaults unless the user asks otherwise:
 - When using a git-based benchmark source, use `--application.source.branchOrCommit <branch_name>` or `--application.source.branchOrCommit #<commit_hash>` to target specific code.
 - Add `--application.collectDependencies true` only for CI transitive dependency analysis.
 - Add `build/azure.profile.yml` only when Azure machines/relay/auth-specific profiles are required.
-- Keep `--application.noGlobalJson false` only for OrchardCore-specific runs.
 - Prefer additive diagnostics (`--*.collectCounters`, traces, dumps) over changing scenario behavior.
 - If result comparison is requested, include `--compare <prior.json>` arguments or a follow-up `crank compare` step.
 
@@ -70,8 +67,7 @@ Follow these defaults unless the user asks otherwise:
 Read references based on task:
 
 - `references/api_reference.md` for command argument semantics and repeatable command templates.
-- `references/orchard-scenarios.md` for Orchard-specific scenario wiring and profile-role mapping.
-- `references/benchmarks-json-example.md` for a JSON benchmark example from `aspnet/Benchmarks` (`build/benchmarks_ci.json`) and how to apply it.
+- `references/techempower-scenarios.md` for the TechEmpower Minimal APIs and Platform plaintext/json/fortunes scenarios, their config files, and CI trend names.
 
 ## Output expectations
 
