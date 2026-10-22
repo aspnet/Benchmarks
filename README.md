@@ -7,6 +7,15 @@ The current results tracked by the ASP.NET team are available at [https://aka.ms
 
 These benchmark applications and docker images work best when used with [Microsoft Crank](https://github.com/dotnet/crank). Follow the instructions in the Crank repository in order to run the benchmarks on your own machines.
 
+## Copilot skill plugin
+
+This repository includes a `crank-benchmarks` Copilot plugin that helps build, review and troubleshoot crank commands for the TechEmpower Minimal APIs and Platform scenarios (including relay profiles). To install it:
+
+```
+/plugin marketplace add aspnet/Benchmarks
+/plugin install crank-benchmarks@aspnet-benchmarks
+```
+
 # Scenarios
 
 The ASP.NET team runs all the scenarios in this repository as part of a continuous benchmarking effort.

@@ -29,6 +29,21 @@ Default to framework-band targeting (`--application.framework`) and persisted JS
 5. Validate command completeness against scenario roles (`application`, optional `db`, `load`).
 6. Produce follow-up compare commands when prior JSON files are available.
 
+## Installing and updating crank
+
+Crank is a .NET global tool and needs the .NET SDK and git. Only the controller (`crank`) is needed to run benchmarks against existing agents (including the gold machines through relay profiles); `Microsoft.Crank.Agent` is only for hosting your own agent.
+
+```bash
+# install
+dotnet tool install -g Microsoft.Crank.Controller --version "0.2.0-*"
+# update to the latest 0.2.0 prerelease
+dotnet tool update -g Microsoft.Crank.Controller --version "0.2.0-*"
+# verify
+crank --help
+```
+
+For a local agent, do the same with `Microsoft.Crank.Agent` and run `crank-agent`. Check the installed version with `dotnet tool list -g` before troubleshooting unexpected option errors; update if it is outdated. Docs: https://github.com/dotnet/crank/blob/main/docs/getting_started.md
+
 ## Quick-start example
 
 Minimal APIs JSON (TechEmpower) on the Linux gold machines:
