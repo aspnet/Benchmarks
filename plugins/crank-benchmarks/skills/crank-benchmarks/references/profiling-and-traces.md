@@ -2,9 +2,13 @@
 
 Source: crank controller README (`src/Microsoft.Crank.Controller/README.md`, "Diagnostics" section). Diagnostics are job-level options: replace `[JOB]` with `application` (usually), `load` or `db`.
 
-Do not confuse `--application.profile true` (collect a profile of the job) with `--profile <name>` (a machine/config profile such as `aspnet-gold-lin`). Both can be in the same command.
+Do not confuse `--application.profile true` / `--application.dotnetTrace true` (collect a trace of the job) with `--profile <name>` (a machine/config profile such as `aspnet-gold-lin`). Both can be in the same command.
 
 ## CPU profile / trace (dotnet-trace)
+
+Enable a trace with `--[JOB].dotnetTrace true`. On Linux profiles (for example `aspnet-gold-lin`), also set `--[JOB].dotnetTraceCollectMode collect-linux` for perf_event-based sampling with kernel and native frames.
+
+Linux:
 
 ```bash
 crank \
@@ -12,17 +16,22 @@ crank \
   --scenario json \
   --profile aspnet-gold-lin \
   --application.framework net11.0 \
-  --application.profile true \
+  --application.dotnetTrace true \
+  --application.dotnetTraceCollectMode collect-linux \
   --application.options.traceOutput minimal-json \
   --json minimal-json-trace.json
 ```
 
-- `--[JOB].profile true`: collect a profile. `--[JOB].profileType ultra|dotnet-trace|perfview` picks the tool (default `dotnet-trace`).
-- `--[JOB].dotnetTrace true`: collect a dotnet-trace EventPipe trace directly.
+Windows (for example `aspnet-gold-win`): same command without `dotnetTraceCollectMode` (default in-process EventPipe), using `--profile aspnet-gold-win`.
+
+`collect-linux` is Linux-only, needs root and kernel >= 6.4, and the job fails if prerequisites are missing (no silent fallback).
+
+- `--[JOB].dotnetTrace true|false`: collect a diagnostics trace using dotnet-trace.
+- `--[JOB].profile true` with `--[JOB].profileType ultra|dotnet-trace|perfview` (default `dotnet-trace`) is the generic profiler switch; prefer `dotnetTrace` for dotnet-trace.
 - `--[JOB].dotnetTraceProviders "<profile|provider|clrevent>,..."`: default is the `cpu-sampling` profile. Examples: `gc-verbose`, `Microsoft-DotNETCore-SampleProfiler`, `JIT+Contention`.
 - `--[JOB].dotnetTraceBufferSizeMB <n>`: EventPipe buffer, default 256; raise it if events are dropped (for example allocation sampling).
 - `--[JOB].dotnetTraceRequestRundown false`: shorter stop on long runs, at the cost of symbol rundown.
-- `--[JOB].dotnetTraceCollectMode default|collect|collect-linux`: `collect` shells out to the dotnet-trace CLI; `collect-linux` does perf_event-based whole-machine sampling with kernel and native frames (Linux only, needs root and kernel >= 6.4, fails hard if prerequisites are missing). `--[JOB].dotnetTraceStopTimeoutSec <s>` sets the finalize grace period for those two modes.
+- `--[JOB].dotnetTraceCollectMode default|collect|collect-linux`: `collect` shells out to the dotnet-trace CLI; `collect-linux` is the one to use on Linux (see above). `--[JOB].dotnetTraceStopTimeoutSec <s>` sets the finalize grace period for those two modes.
 - `--[JOB].collectStartup true`: include the startup phase (before the app is ready) in the trace.
 - `--[JOB].options.traceOutput <name>`: trace file name. A prefix gets `*.DATE*.zip` appended; a specific path is used as is. The trace is downloaded to the machine running `crank`.
 
