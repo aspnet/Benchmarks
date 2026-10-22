@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <DefineConstants>$(DefineConstants);DATABASE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Apex.PgClient" Version="$(ApexPgClientVersion)" />
+    <PackageReference Include="RazorSlices" Version="$(RazorSlicesVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../PlatformBenchmarks/BenchmarkApplication.HttpConnection.cs" Link="Platform/BenchmarkApplication.HttpConnection.cs" />
+    <Compile Include="../PlatformBenchmarks/BufferExtensions.cs" Link="Platform/BufferExtensions.cs" />
+    <Compile Include="../PlatformBenchmarks/BufferWriter.cs" Link="Platform/BufferWriter.cs" />
+    <Compile Include="../PlatformBenchmarks/ChunkedPipeWriter.cs" Link="Platform/ChunkedPipeWriter.cs" />
+    <Compile Include="../PlatformBenchmarks/DateHeader.cs" Link="Platform/DateHeader.cs" />
+    <Compile Include="../PlatformBenchmarks/HttpApplication.cs" Link="Platform/HttpApplication.cs" />
+    <Compile Include="../PlatformBenchmarks/IHttpConnection.cs" Link="Platform/IHttpConnection.cs" />
+  </ItemGroup>
+
+</Project>
