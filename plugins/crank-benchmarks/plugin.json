@@ -1,0 +1,6 @@
+{
+  "name": "crank-benchmarks",
+  "version": "0.1.0",
+  "description": "Build, review, and troubleshoot crank benchmark commands for aspnet/Benchmarks (TechEmpower Minimal APIs and Platform scenarios, relay profiles).",
+  "skills": ["./skills/"]
+}
