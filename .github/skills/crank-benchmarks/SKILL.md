@@ -51,7 +51,7 @@ Follow these defaults unless the user asks otherwise:
 
 - Keep one explicit `--scenario`.
 - Prefer one deterministic profile group (for example `aspnet-gold-lin` or `aspnet-gold-win`, defined in `scenarios/aspnet.profiles.standard.yml`) before role-specific profile tuples.
-- When the user is not on the benchmark network (or says relay), use the `-relay` twin of the profile together with `--relay`; see `references/techempower-scenarios.md`.
+- When the user is not on the benchmark network (or says relay), use the `-relay` twin of the profile together with `--relay` (bare `--relay` authenticates via `az login`); see `references/techempower-scenarios.md`.
 - Include exactly the profiles needed to satisfy scenario roles and machine placement.
 - Add `--json <file>` for every run meant to be compared later.
 - Use `--application.framework net10.0|net11.0` as the normal version selector; pin SDK/runtime/aspnetcore versions only when reproducing a .NET regression.
