@@ -30,9 +30,30 @@ Use one profile group so all roles are placed consistently:
 - `aspnet-gold-lin`: Linux gold machines (`asp-gold-lin` app, `asp-gold-load` load, `asp-gold-db` db).
 - `aspnet-gold-win`: Windows gold machines.
 - `aspnet-cobalt-hosted-lin` / `aspnet-cobalt-hosted-al3-lin`: Cobalt (ARM) hosted Linux machines.
-- Append `-relay` (for example `aspnet-gold-lin-relay`) to go through the relay.
+- Each has a `-relay` twin (for example `aspnet-gold-lin-relay`); see Relay profiles below.
 
 Names are defined in `scenarios/aspnet.profiles.standard.yml`; check there for the current list before using others.
+
+## Relay profiles
+
+Non-relay profiles (for example `aspnet-gold-lin`) address the crank agents directly, e.g. `http://asp-gold-lin:5001`, so they only work from a machine on the benchmark network.
+
+`-relay` profiles define the same roles, addresses and variables but reach the agents through Azure Relay endpoints (for example `https://aspnetperf.servicebus.windows.net/goldlin`, `goldload`, `golddb`). Use them from outside the network, and as CI/PR-benchmark bots do:
+
+- Swap only the profile name: `--profile aspnet-gold-lin-relay`. Scenarios, configs and other arguments are unchanged.
+- Also pass crank's `--relay` option. The repo's `build/prbenchmarks.*.config.yml` files add `--relay` alongside `--{{job}}.framework net11.0`. The value is the Azure Relay connection string (or the name of an environment variable holding it); never print it or commit it. Ask the user for it if it isn't already configured.
+- Gold Windows (`aspnet-gold-win-relay`) uses `goldwin`, `goldload2` and `golddb`.
+- Do not mix relay and non-relay profiles in one command.
+
+```bash
+crank \
+  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml \
+  --scenario json \
+  --profile aspnet-gold-lin-relay \
+  --relay <connection-string-or-env-var-name> \
+  --application.framework net11.0 \
+  --json platform-json.json
+```
 
 ## Commands
 
