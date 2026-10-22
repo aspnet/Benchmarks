@@ -83,6 +83,7 @@ Follow these defaults unless the user asks otherwise:
 Read references based on task:
 
 - `references/api_reference.md` for command argument semantics and repeatable command templates.
+- `references/profiling-and-traces.md` for CPU profiles, dotnet-trace/perf traces, counters and dumps.
 - `references/techempower-scenarios.md` for the TechEmpower Minimal APIs and Platform plaintext/json/fortunes scenarios, their config files, and CI trend names.
 
 ## Output expectations
