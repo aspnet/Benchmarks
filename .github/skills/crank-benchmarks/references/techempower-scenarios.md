@@ -41,12 +41,8 @@ Non-relay profiles (for example `aspnet-gold-lin`) address the crank agents dire
 `-relay` profiles define the same roles, addresses and variables but reach the agents through Azure Relay endpoints (for example `https://aspnetperf.servicebus.windows.net/goldlin`, `goldload`, `golddb`). Use them from outside the network, and as CI/PR-benchmark bots do:
 
 - Swap only the profile name: `--profile aspnet-gold-lin-relay`. Scenarios, configs and other arguments are unchanged.
-- Also pass crank's `--relay` option, which is how the controller authenticates to the relay (the repo's `build/prbenchmarks.*.config.yml` files append `--relay` to their defaults). It supports these modes:
-  - `--relay` with no value (default choice): uses Azure CLI credentials, so run `az login` first with an account that has access to the relay.
-  - `--relay <connection-string-or-env-var-name>`: shared access key auth, e.g. `Endpoint=sb://<namespace>.servicebus.windows.net;SharedAccessKeyName=...;SharedAccessKey=...`. Prefer the environment variable name; never print or commit the key.
-  - `--mi-client-id <id>`: user-assigned managed identity (used when the controller runs on Azure).
-  - `--cert-client-id`, `--cert-tenant-id` with `--cert-path`/`--cert-pwd` (or a thumbprint, optionally `--cert-sni`): service principal certificate auth, mainly for CI.
-  Authentication fails with an error from the controller ("Failed to authenticate with ..."); in that case check `az account show` and access to the relay.
+- Also pass a bare `--relay` (no value). The controller then authenticates to the relay with Azure CLI credentials, so run `az login` first with an account that has access. No connection string, client id, certificate or other auth options are needed.
+- If authentication fails ("Failed to authenticate with Azure CLI"), check `az account show` and re-run `az login`.
 - Gold Windows (`aspnet-gold-win-relay`) uses `goldwin`, `goldload2` and `golddb`.
 - Do not mix relay and non-relay profiles in one command.
 
