@@ -1,9 +1,9 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 COPY . .
-RUN dotnet publish src/Benchmarks/Benchmarks.csproj -c Release -o out -f net9.0 /p:BenchmarksTargetFramework=net9.0 /p:MicrosoftAspNetCoreAppPackageVersion=$ASPNET_VERSION
+RUN dotnet publish src/Benchmarks/Benchmarks.csproj -c Release -o out -f net10.0 /p:BenchmarksTargetFramework=net10.0 /p:MicrosoftAspNetCoreAppPackageVersion=$ASPNET_VERSION
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 # ENV ASPNETCORE_URLS http://*:5000
 WORKDIR /app
 COPY --from=build /app/out ./
