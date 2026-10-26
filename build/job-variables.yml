@@ -77,6 +77,12 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/azure.profile.yml
 - name: ciProfile
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/ci.profile.yml
+- name: containerDatabaseBuildReuse
+  value: >-
+    --db.options.reuseBuild true
+    --db.buildKey containers-build-{{job.Source.DockerImageName}}-$(Build.BuildId)
+    --db.source.sourceKey containers-source-{{job.Source.DockerImageName}}-$(Build.BuildId)
+    --db.onConfigure \"job.DockerImageName += '-$(Build.BuildId)';\"
 - name: grpcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/grpc.benchmarks.yml
 - name: efcoreJobs

@@ -62,52 +62,52 @@ parameters:
     arguments: --scenario json_aspnet --property scenario=JsonAspNet
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET
-    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
+    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0 $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET - DATAS
-    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNetDATAS --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
+    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNetDATAS --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
 
   - displayName: Json ASP.NET Alpine
     arguments: --scenario json_aspnet_alpine --property scenario=JsonAspNetAlpine
     condition: Math.round(Date.now() / 43200000) % 8 == 2 # once every 8 half-days
   - displayName: Fortunes ASP.NET Alpine
-    arguments: --scenario fortunes_aspnet_alpine --property scenario=FortunesAspNetAlpine
+    arguments: --scenario fortunes_aspnet_alpine --property scenario=FortunesAspNetAlpine $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 8 == 2 # once every 8 half-days
 
   - displayName: Json ASP.NET Composite
     arguments: --scenario json_aspnet_composite --property scenario=JsonAspNetComposite
     condition: Math.round(Date.now() / 43200000) % 8 == 4 # once every 8 half-days
   - displayName: Fortunes ASP.NET Composite
-    arguments: --scenario fortunes_aspnet_composite --property scenario=FortunesAspNetComposite
+    arguments: --scenario fortunes_aspnet_composite --property scenario=FortunesAspNetComposite $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 8 == 4 # once every 8 half-days
 
   - displayName: Json ASP.NET 8.0
     arguments: --scenario json_aspnet_current --property scenario=JsonAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
   - displayName: Fortunes ASP.NET 8.0
-    arguments: --scenario fortunes_aspnet_current --property scenario=FortunesAspNet80
+    arguments: --scenario fortunes_aspnet_current --property scenario=FortunesAspNet80 $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
 
   - displayName: Json NodeJS
-    arguments: --scenario json_nodejs --property scenario=JsonNodeJs
+    arguments: --scenario json_nodejs --property scenario=JsonNodeJs $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 10 == 2 # once every 10 half-days
   - displayName: Fortunes NodeJS
-    arguments: --scenario fortunes_nodejs --property scenario=FortunesNodeJs
+    arguments: --scenario fortunes_nodejs --property scenario=FortunesNodeJs $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 10 == 3 # once every 10 half-days
 
   - displayName: Json FastHttp
-    arguments: --scenario json_fasthttp --property scenario=JsonFastHttp
+    arguments: --scenario json_fasthttp --property scenario=JsonFastHttp $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 10 == 4 # once every 10 half-days
   - displayName: Fortunes FastHttp
-    arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
+    arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 10 == 5 # once every 10 half-days
 
   - displayName: Json Vertx
-    arguments: --scenario json_vertx --property scenario=JsonVertx
+    arguments: --scenario json_vertx --property scenario=JsonVertx $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
   - displayName: Fortunes Vertx
-    arguments: --scenario fortunes_vertx --property scenario=FortunesVertx
+    arguments: --scenario fortunes_vertx --property scenario=FortunesVertx $(containerDatabaseBuildReuse)
     condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
   # Json NTex and Fortunes NTex are disabled: their docker builds
@@ -145,6 +145,6 @@ steps:
             {
               "name": "crank",
               "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
-              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} $(azureProfile) --no-metadata --no-measurements --load.options.reuseBuild true --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
+              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} $(azureProfile) --application.options.reuseBuild true --application.buildKey containers-build-{{job.Source.DockerImageName}}-$(Build.BuildId) --application.source.sourceKey containers-source-{{job.Source.DockerImageName}}-$(Build.BuildId) --application.onConfigure \"job.DockerImageName += '-$(Build.BuildId)';\" --no-metadata --no-measurements --load.options.reuseBuild true --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
             }
             

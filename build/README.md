@@ -100,6 +100,25 @@ together. The snapshot tests in
 `scripts/pod-scheduler/tests/test_snapshots.py` will fail in CI if the
 generated YAML drifts from the configs.
 
+## Build reuse within a pipeline run
+
+The container, gRPC, HttpClient, SignalR, and WebSocket templates pass Crank's
+`reuseBuild`, `buildKey`, and `source.sourceKey` options directly. Keys include
+`$(Build.BuildId)`: each agent builds once per compatible variant in a pipeline
+run, then refreshes sources and builds on the next run. Source and build keys use
+separate namespaces because their metadata shares a cache directory.
+`--session` alone does not invalidate caches.
+
+Keys distinguish Docker images, gRPC implementations and frameworks, and
+WebSocket compression builds. Container scenarios with a database also include
+`$(containerDatabaseBuildReuse)`. Docker image names get the build ID appended in
+`onConfigure` hooks so interleaved runs cannot overwrite each other's image tags;
+the gRPC hooks leave non-Docker jobs unchanged.
+
+Only builds are reused. Applications and database containers still start fresh,
+and warmup/measurement durations are unchanged. Caches remain local to each
+agent and rely on its existing cleanup/restart policy; no cache TTL is added.
+
 ## Minimal Todo
 
 `minimal-todo-scenarios.yml` dispatches one Docker language-by-size matrix
