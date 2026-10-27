@@ -25,7 +25,7 @@ All four native engines accept optional TLS through `NetworkNativeTlsOptions`, s
 ```
 Common/ServerHost.cs        shared Kestrel host and /{bytes} endpoint
 Common/NativeTransport.cs   UseNetworkTransport(engine, optional native TLS)
-Common/Common.props         net10.0, certificates from ../TLS/Certificates/2048
+Common/Common.props         certificates from ../TLS/Certificates/2048 (net10.0 is set in each csproj, see below)
 Common/Native.props         references to libs/*.dll and copies libs/*.so next to the app
 Epoll/ IoUring/ Iocp/ Rio/  one project per engine (Program.cs picks the engine options)
 Sockets/                    stock transport baseline (not a prototype engine)
@@ -46,6 +46,13 @@ Build the prototype (`src/Servers/Kestrel/Transport.Networking`) and pass these 
 ```
 
 The `.so` files link to liburing and OpenSSL 3 (rpath `$HOME/.local/lib` when they were built), so the crank Linux machine needs compatible versions or they must be built there. The DLLs should come from a build that matches the `--application.aspNetCoreVersion` used on crank.
+
+Crank details learned on `idna-intel-win-relay`:
+
+- The crank agent only rewrites `<TargetFramework>` when it is written in the csproj itself. The csprojs therefore declare `net10.0` directly instead of inheriting it from `Common.props`; otherwise `dotnet publish --framework net11.0` fails with NETSDK1005.
+- `buildFiles` uploaded the DLLs but the agent build did not find them in `<project>\libs` (MSB3245, CS0234). What worked: upload the repo with `--application.source.localFolder <repo copy>` that already contains `Iocp\libs\*.dll` / `Rio\libs\*.dll`, and drop `buildFiles`. With the git-clone source, `buildFiles` is still the only way to inject the DLLs and is untested here.
+- Pin the same `--application.aspNetCoreVersion`, `--application.runtimeVersion` and `--application.sdkVersion` as the antiforgery command, the floating latest SDK could not be installed on the agent.
+- The scenario YAML defaults `forkOwner` to `DeagleGross`; the samples were pushed to `aspnet/Benchmarks`, so pass `--variable forkOwner=aspnet` when using the git source.
 
 ## Running
 
