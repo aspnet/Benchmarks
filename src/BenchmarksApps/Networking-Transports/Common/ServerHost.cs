@@ -10,7 +10,6 @@ internal static class ServerHost
 {
     private const int DefaultSize = 1024;
     private const int MaxSize = 256 * 1024;
-    private const string PfxPassword = "testPassword";
 
     private static readonly byte[] s_payload = CreatePayload();
 
@@ -24,9 +23,7 @@ internal static class ServerHost
         var settings = ReadSettings(builder.Configuration);
         useTransport?.Invoke(builder.WebHost, settings);
 
-        X509Certificate2? certificate = settings.Tls && useTransport is null
-            ? X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "certificates", "testCert-2048.pfx"), PfxPassword)
-            : null;
+        X509Certificate2? certificate = settings.Tls && useTransport is null ? LoadCertificate(settings) : null;
 
         builder.WebHost.ConfigureKestrel(options =>
         {
@@ -87,6 +84,14 @@ internal static class ServerHost
             configuration["cpus"]?.Split(',').Select(int.Parse).ToArray(),
             configuration["cert"] ?? Path.Combine(certificates, "cert.pem"),
             configuration["key"] ?? Path.Combine(certificates, "key.pem"));
+    }
+
+    // Same cert.pem/key.pem pair the native transports use, so every transport serves an identical certificate.
+    // Re-importing from PFX bytes gives SChannel a persisted key, which a PEM-created key lacks on Windows.
+    private static X509Certificate2 LoadCertificate(ServerSettings settings)
+    {
+        using var pem = X509Certificate2.CreateFromPemFile(settings.CertificatePath, settings.PrivateKeyPath);
+        return X509CertificateLoader.LoadPkcs12(pem.Export(X509ContentType.Pfx), null);
     }
 
     private static int GetSize(string? path)
