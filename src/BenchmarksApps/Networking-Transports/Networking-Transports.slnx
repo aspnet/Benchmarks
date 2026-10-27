@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Common/">
+    <File Path="Common/Common.props" />
+    <File Path="Common/Native.props" />
+    <File Path="Common/NativeTransport.cs" />
+    <File Path="Common/ServerHost.cs" />
+  </Folder>
+  <Folder Name="/Docs and scripts/">
+    <File Path="README.md" />
+    <File Path="scripts/mixed-sizes.lua" />
+    <File Path="../../../scenarios/networking-transports.benchmarks.yml" />
+  </Folder>
+  <Project Path="Epoll/Epoll.csproj" />
+  <Project Path="IoUring/IoUring.csproj" />
+  <Project Path="Iocp/Iocp.csproj" />
+  <Project Path="Rio/Rio.csproj" />
+  <Project Path="Sockets/Sockets.csproj" />
+</Solution>

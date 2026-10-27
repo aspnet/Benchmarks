@@ -1,0 +1,17 @@
+<Project>
+
+  <!-- The prototype assemblies are copied into <project>\libs before the build with the crank option application.options.buildFiles set to "path-or-glob;libs". -->
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Networking">
+      <HintPath>$(MSBuildProjectDirectory)\libs\Microsoft.AspNetCore.Server.Kestrel.Transport.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="NetworkTransport.Primitives">
+      <HintPath>$(MSBuildProjectDirectory)\libs\NetworkTransport.Primitives.dll</HintPath>
+    </Reference>
+
+    <Compile Include="$(MSBuildThisFileDirectory)NativeTransport.cs" Link="NativeTransport.cs" />
+
+    <None Include="libs\*.so" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Iocp": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:60800;http://localhost:60802"
+    }
+  }
+}

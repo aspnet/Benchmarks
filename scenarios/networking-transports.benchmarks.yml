@@ -1,0 +1,277 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.yml
+
+# Compares the prototype native transports (epoll, io_uring, IOCP, RIO) with the stock Sockets transport,
+# plain TCP vs TCP+TLS, for different response sizes. See src/BenchmarksApps/Networking-Transports/README.md.
+#
+# Response size:   --variable size=1024|4096|8192|16384|65536|262144
+# Workers:         --variable workers=N   (and optionally --variable cpus=0,1,2,3)
+# Windows accept:  --variable windowsAccept=pool   (IOCP/RIO only; default is the single-listener accept on worker 0)
+# io_uring TLS:    --variable uringTls=ring|fd  --variable ktls=0|1
+# Mixed sizes:     --load.variables.script <raw url of scripts/mixed-sizes.lua>
+variables:
+  serverPort: 5000
+  serverScheme: http
+  forkOwner: DeagleGross
+  forkBranch: dmkorolev/networking-proto
+  size: 1024
+  workers: 4
+  cpus: ''
+  tls: false
+  windowsAccept: default
+  uringTls: ring
+  ktls: 0
+
+jobs:
+  epollServer:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/Epoll/Epoll.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    options:
+      requiredOperatingSystem: linux
+
+  ioUringServer:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/IoUring/IoUring.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    environmentVariables:
+      NETWORKPROTO_URING_TLS: "{{uringTls}}"
+      NETWORKPROTO_KTLS: "{{ktls}}"
+    options:
+      requiredOperatingSystem: linux
+
+  iocpServer:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/Iocp/Iocp.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    environmentVariables:
+      NETWORKPROTO_WINDOWS_ACCEPT: "{{windowsAccept}}"
+    options:
+      requiredOperatingSystem: windows
+
+  rioServer:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/Rio/Rio.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    environmentVariables:
+      NETWORKPROTO_WINDOWS_ACCEPT: "{{windowsAccept}}"
+    options:
+      requiredOperatingSystem: windows
+
+  socketsServer:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/Sockets/Sockets.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}}"
+
+scenarios:
+
+  # ---------------------------------------------------------------- wrk (closed loop, max throughput)
+
+  epoll-tcp:
+    application:
+      job: epollServer
+    load:
+      job: wrk
+      variables:
+        path: /{{size}}
+
+  epoll-tls:
+    application:
+      job: epollServer
+      variables:
+        tls: true
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  iouring-tcp:
+    application:
+      job: ioUringServer
+    load:
+      job: wrk
+      variables:
+        path: /{{size}}
+
+  iouring-tls:
+    application:
+      job: ioUringServer
+      variables:
+        tls: true
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  iocp-tcp:
+    application:
+      job: iocpServer
+    load:
+      job: wrk
+      variables:
+        path: /{{size}}
+
+  iocp-tls:
+    application:
+      job: iocpServer
+      variables:
+        tls: true
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  rio-tcp:
+    application:
+      job: rioServer
+    load:
+      job: wrk
+      variables:
+        path: /{{size}}
+
+  rio-tls:
+    application:
+      job: rioServer
+      variables:
+        tls: true
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  sockets-tcp:
+    application:
+      job: socketsServer
+    load:
+      job: wrk
+      variables:
+        path: /{{size}}
+
+  sockets-tls:
+    application:
+      job: socketsServer
+      variables:
+        tls: true
+    load:
+      job: wrk
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  # ---------------------------------------------------------------- wrk2 (open loop at a fixed --load.variables.rate, latency focus)
+
+  epoll-tcp-rate:
+    application:
+      job: epollServer
+    load:
+      job: wrk2
+      variables:
+        path: /{{size}}
+
+  epoll-tls-rate:
+    application:
+      job: epollServer
+      variables:
+        tls: true
+    load:
+      job: wrk2
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  iouring-tcp-rate:
+    application:
+      job: ioUringServer
+    load:
+      job: wrk2
+      variables:
+        path: /{{size}}
+
+  iouring-tls-rate:
+    application:
+      job: ioUringServer
+      variables:
+        tls: true
+    load:
+      job: wrk2
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  iocp-tcp-rate:
+    application:
+      job: iocpServer
+    load:
+      job: wrk2
+      variables:
+        path: /{{size}}
+
+  iocp-tls-rate:
+    application:
+      job: iocpServer
+      variables:
+        tls: true
+    load:
+      job: wrk2
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  rio-tcp-rate:
+    application:
+      job: rioServer
+    load:
+      job: wrk2
+      variables:
+        path: /{{size}}
+
+  rio-tls-rate:
+    application:
+      job: rioServer
+      variables:
+        tls: true
+    load:
+      job: wrk2
+      variables:
+        serverScheme: https
+        path: /{{size}}
+
+  sockets-tcp-rate:
+    application:
+      job: socketsServer
+    load:
+      job: wrk2
+      variables:
+        path: /{{size}}
+
+  sockets-tls-rate:
+    application:
+      job: socketsServer
+      variables:
+        tls: true
+    load:
+      job: wrk2
+      variables:
+        serverScheme: https
+        path: /{{size}}

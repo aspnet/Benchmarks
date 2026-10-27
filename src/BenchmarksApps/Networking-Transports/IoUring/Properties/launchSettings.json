@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "IoUring": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:60797;http://localhost:60804"
+    }
+  }
+}
