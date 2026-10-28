@@ -36,7 +36,7 @@ internal static class ServerHost
                     listen.UseHttps(https =>
                     {
                         https.ServerCertificate = certificate;
-                        https.SslProtocols = OperatingSystem.IsWindows() ? SslProtocols.Tls13 : SslProtocols.Tls12;
+                        https.SslProtocols = Environment.GetEnvironmentVariable("NETWORKPROTO_WINDOWS_TLS") == "1.2" || !OperatingSystem.IsWindows() ? SslProtocols.Tls12 : SslProtocols.Tls13;
                         https.OnAuthenticate = (_, ssl) =>
                         {
                             if (!OperatingSystem.IsWindows())
