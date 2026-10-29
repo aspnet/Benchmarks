@@ -30,7 +30,7 @@ Measured on crank on 2026-10-28, 3 runs per cell (162 runs). The values below ar
 | io_uring fd | TLS only. The ring only signals readiness (poll SQEs), OpenSSL does the socket I/O on the fd (`NETWORKPROTO_URING_TLS=fd`) |
 | io_uring + session | TLS only. fd-bound `TlsSocketSession`, the ring only signals readiness (`NETWORKPROTO_LINUX_TLS_IMPL=session`) |
 
-`n/a`: variant has no TCP-only mode. Percentages are the change versus Sockets in the same row.
+All TLS columns except Sockets are transport-owned TLS, enabled when binding the listener (`NativeTls`). `n/a`: variant has no TCP-only mode. Percentages are the change versus Sockets in the same row.
 
 ## RPS
 
@@ -86,26 +86,30 @@ Measured on crank on 2026-10-28, 3 runs per cell (162 runs). The values below ar
 
 ## Architecture: full TLS transport or TCP + optional TLS layer?
 
-| | Approach | TLS ownership | Variants |
-|---|---|---|---|
-| A | TCP transport, TLS as a Stream above it | SslStream | Sockets |
-| B | Full TCP and full TCP+TLS transport | Inside the transport | epoll (native OpenSSL on the fd), io_uring ring/BIO (ring owns ciphertext) |
-| C | TCP transport + optional TLS layer | Layer over the connection fd | epoll + session, io_uring fd, io_uring + session |
+Every Linux TLS variant measured here (epoll, epoll + session, io_uring, io_uring fd, io_uring + session) is a **full TCP + TLS transport**: TLS is switched on per listener when binding (`NativeTls`), the transport owns the TLS state and publishes plaintext. None of them exposes raw TCP bytes under TLS, and none layers TLS over a plain TCP transport.
 
-Change of each approach versus the closest alternative, TLS keep-alive RPS at 1 / 8 / 64 KB:
+| | Approach | TLS ownership | I/O shape | Variants |
+|---|---|---|---|---|
+| A | TCP transport, TLS as a Stream above it | SslStream, per connection | Stream over the transport pipe | Sockets |
+| B | Full TCP + TLS transport, fd-bound | Inside the transport | TLS does `recv`/`send` on the fd, epoll or the ring only signal readiness | epoll (native OpenSSL), epoll + session, io_uring fd, io_uring + session |
+| C | Full TCP + TLS transport, ciphertext buffers | Inside the transport | The ring does all socket I/O, OpenSSL only sees a memory BIO | io_uring (ring/BIO) |
+| D | TCP transport + optional TLS layer | Layer above the transport pipe, per connection | Ciphertext in, plaintext out | **Not measured** |
 
-| Comparison | 1 KB | 8 KB | 64 KB |
-|---|---|---|---|
-| epoll + session vs epoll native | -7.6% | -2.8% | -3.1% |
-| io_uring fd vs io_uring ring/BIO | -15.1% | -8.0% | +1.3% |
-| io_uring + session vs io_uring ring/BIO | -26.4% | -13.5% | +2.4% |
-| io_uring + session vs io_uring fd | -13.3% | -5.9% | +1.1% |
+Within B and C only two things differ: the I/O shape and the TLS implementation (native OpenSSL wrapper vs the runtime's `TlsSocketSession`). TLS keep-alive RPS change at 1 / 8 / 64 KB:
+
+| Axis | Comparison | 1 KB | 8 KB | 64 KB |
+|---|---|---|---|---|
+| TLS implementation | epoll + session vs epoll | -7.6% | -2.8% | -3.1% |
+| TLS implementation | io_uring + session vs io_uring fd | -13.3% | -5.9% | +1.1% |
+| I/O shape | io_uring fd vs io_uring ring/BIO | -15.1% | -8.0% | +1.3% |
+| Both | io_uring + session vs io_uring ring/BIO | -26.4% | -13.5% | +2.4% |
 
 In TLS close the same comparisons are within -1% to -10% (indicative only, note 2).
 
 **Conclusion** (this setup only: 2 server CPUs, TLS 1.2, 3 runs per cell):
 
-- **epoll:** TCP + an optional TLS layer is enough. The layer is within 1-8% of the full TLS transport, still +31% to +39% over Sockets, and both do the same `recv`/`send` pattern on the fd. A separate full TLS transport buys little.
-- **io_uring:** an fd-bound layer (the ring only signals readiness) loses 8-15% at 1-8 KB keep-alive against ring/BIO and is even at 64 KB. The only measured advantage of a TLS-aware transport is ring-owned ciphertext at small payloads.
-- A layer can only match that if its contract takes ciphertext in and out (buffer mode). The fd-bound `TlsSocketSession` cannot. A buffer-mode session over ring-owned buffers on Linux was not tested.
-- **Design consequence:** do not build a separate TLS transport per backend. Make TLS an optional layer with two modes, fd-bound (epoll, large payloads) and buffer-based (io_uring, small payloads), and keep the ring/BIO path as the reference point to beat.
+- **Full TLS transport, io_uring:** ring-owned ciphertext (ring/BIO) is the fastest TLS variant at 1-8 KB keep-alive: +18% / +9% over io_uring fd and +36% / +16% over io_uring + session. At 64 KB all three are level (within 3%).
+- **Full TLS transport, epoll:** the runtime's `TlsSocketSession` on the same fd path costs 3-8% against native OpenSSL, and both are +31% to +43% over Sockets.
+- **Group D was not measured**, so this data does not say whether a full TLS transport is needed or a TCP transport with an optional TLS layer is enough. Every variant compared here owns TLS inside the transport.
+- If a layer is used on io_uring, it has to take ciphertext in and out (buffer mode) to have a chance of matching ring/BIO. `TlsSocketSession` is fd-bound and cannot.
+- **Not run:** a plain TCP transport (epoll or io_uring) with Kestrel `UseHttps` and the sans-IO `TlsBufferSession`, as in [dotnet/aspnetcore#69565](https://github.com/dotnet/aspnetcore/pull/69565) (opt-in via `Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls`). It needs a Kestrel build that contains that PR.
