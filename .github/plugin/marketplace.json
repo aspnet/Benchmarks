@@ -1,0 +1,13 @@
+{
+  "name": "aspnet-benchmarks",
+  "owner": {
+    "name": "ASP.NET Core Performance Team"
+  },
+  "plugins": [
+    {
+      "name": "crank-benchmarks",
+      "source": "./plugins/crank-benchmarks",
+      "description": "Build, review, and troubleshoot crank benchmark commands for aspnet/Benchmarks."
+    }
+  ]
+}

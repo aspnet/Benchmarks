@@ -39,6 +39,7 @@ scenarios:
       job: aspnet
       source:
         dockerFile: docker/container-matrix/Middleware-alpine.dockerfile
+        dockerImageName: app-alpine
       variables:
         scenario: json
     load:
@@ -53,6 +54,7 @@ scenarios:
       job: aspnet
       source:
         dockerFile: docker/container-matrix/Middleware-composite.dockerfile
+        dockerImageName: app-composite
       variables:
         scenario: json
     load:
@@ -83,6 +85,7 @@ scenarios:
       job: aspnet
       source:
         dockerFile: docker/container-matrix/Middleware-alpine.dockerfile
+        dockerImageName: app-alpine
       variables:
         scenario: dbfortunesraw
     load:
@@ -99,6 +102,7 @@ scenarios:
       job: aspnet
       source:
         dockerFile: docker/container-matrix/Middleware-composite.dockerfile
+        dockerImageName: app-composite
       variables:
         scenario: dbfortunesraw
     load:
@@ -113,6 +117,7 @@ scenarios:
       job: aspnet
       source:
         dockerFile: docker/container-matrix/Middleware-current.dockerfile
+        dockerImageName: app-current
       variables:
         scenario: json
     load:
@@ -129,6 +134,7 @@ scenarios:
       job: aspnet
       source:
         dockerFile: docker/container-matrix/Middleware-current.dockerfile
+        dockerImageName: app-current
       variables:
         scenario: dbfortunesraw
     load:

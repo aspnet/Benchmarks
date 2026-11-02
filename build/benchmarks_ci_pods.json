@@ -125,7 +125,7 @@
             "type": 2,
             "pods": ["gold-lin"],
             "estimated_runtime": 15.0,
-            "timeout": 40
+            "timeout": 150
         },
         {
             "name": "MVC",
