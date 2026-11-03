@@ -60,4 +60,50 @@ INSERT INTO "Fortune" (id, message) VALUES (10, 'Computers make very fast, very 
 INSERT INTO "Fortune" (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO "Fortune" (id, message) VALUES (12, 'フレームワークのベンチマーク');
 
+
+CREATE TABLE "RewriteRule" (
+  id integer NOT NULL,
+  regex varchar(2048) NOT NULL,
+  replacement varchar(2048) NOT NULL,
+  PRIMARY KEY  (id)
+);
+
+GRANT SELECT ON "RewriteRule" to benchmarkdbuser;
+
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (1, 'rewrite1' ,'replacement1');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (2, 'rewrite1' ,'replacement2');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (3, 'rewrite1' ,'replacement3');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (4, 'rewrite1' ,'replacement4');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (5, 'rewrite1' ,'replacement5');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (6, 'rewrite1' ,'replacement6');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (7, 'rewrite1' ,'replacement7');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (8, 'rewrite1' ,'replacement8');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (9, 'rewrite1' ,'replacement9');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (10,'rewrite1' ,'replacement10');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (11,'rewrite1' ,'replacement11');
+INSERT INTO "RewriteRule" (id, regex,replacement) VALUES (12,'rewrite1' ,'replacement12');
+
+
+
+CREATE TABLE RewriteRule (
+  id integer NOT NULL,
+  regex varchar(2048) NOT NULL,
+  replacement varchar(2048) NOT NULL,
+  PRIMARY KEY  (id)
+);
+GRANT SELECT ON RewriteRule to benchmarkdbuser;
+
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (1, 'rewrite1' ,'replacement1');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (2, 'rewrite1' ,'replacement2');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (3, 'rewrite1' ,'replacement3');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (4, 'rewrite1' ,'replacement4');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (5, 'rewrite1' ,'replacement5');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (6, 'rewrite1' ,'replacement6');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (7, 'rewrite1' ,'replacement7');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (8, 'rewrite1' ,'replacement8');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (9, 'rewrite1' ,'replacement9');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (10,'rewrite1' ,'replacement10');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (11,'rewrite1' ,'replacement11');
+INSERT INTO RewriteRule (id, regex,replacement) VALUES (12,'rewrite1' ,'replacement12');
+
 COMMIT;

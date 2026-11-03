@@ -8,6 +8,6 @@ docker run \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
     --name postgres-techempower \
-    --network host \
+    -p 5432:5432 \
     --restart always \
     postgres-techempower
