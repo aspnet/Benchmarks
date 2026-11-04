@@ -3,11 +3,16 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;SYSLIB5007</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ServerHost.cs" Link="ServerHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TlsLayer.cs" Link="TlsLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TlsRecordSessions.cs" Link="TlsRecordSessions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TlsSessionDuplexPipe.cs" Link="TlsSessionDuplexPipe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchannelNative.cs" Link="SchannelNative.cs" />
 
     <None Include="..\..\TLS\Certificates\2048\cert.pem" Link="certificates\cert.pem" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <None Include="..\..\TLS\Certificates\2048\key.pem" Link="certificates\key.pem" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

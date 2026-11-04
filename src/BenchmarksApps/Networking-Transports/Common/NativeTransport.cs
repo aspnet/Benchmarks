@@ -7,7 +7,7 @@ internal static class NativeTransport
         engine.WorkerCount = settings.Workers;
         engine.WorkerProcessors = settings.Cpus ?? DefaultProcessors(engine, settings.Workers);
 
-        var tls = settings.Tls
+        var tls = settings.Tls && settings.Layer == NetworkingTransports.TlsLayerKind.Native
             ? new NetworkNativeTlsOptions { CertificatePath = settings.CertificatePath, PrivateKeyPath = settings.PrivateKeyPath }
             : null;
 

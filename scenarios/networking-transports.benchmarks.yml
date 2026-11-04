@@ -10,6 +10,8 @@ imports:
 # Workers:         --variable workers=N   (and optionally --variable cpus=0,1,2,3)
 # Windows accept:  --variable windowsAccept=pool   (IOCP/RIO only; default is the single-listener accept on worker 0)
 # io_uring TLS:    --variable uringTls=ring|fd  --variable ktls=0|1
+# TLS layer:       --variable tlsLayer=native|sslstream|tlssession|schannel   (only with tls=true; native = inside the custom
+#                  transport, or Kestrel UseHttps for Sockets; the others run over a plain-TCP transport, schannel is Windows-only)
 # Mixed sizes:     --load.variables.script <raw url of scripts/mixed-sizes.lua>
 variables:
   serverPort: 5000
@@ -20,6 +22,7 @@ variables:
   workers: 4
   cpus: ''
   tls: false
+  tlsLayer: native
   windowsAccept: default
   uringTls: ring
   ktls: 0
@@ -31,7 +34,7 @@ jobs:
       branchOrCommit: "{{forkBranch}}"
       project: src/BenchmarksApps/Networking-Transports/Epoll/Epoll.csproj
     readyStateText: Application started.
-    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
     options:
       requiredOperatingSystem: linux
 
@@ -41,7 +44,7 @@ jobs:
       branchOrCommit: "{{forkBranch}}"
       project: src/BenchmarksApps/Networking-Transports/IoUring/IoUring.csproj
     readyStateText: Application started.
-    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
     environmentVariables:
       NETWORKPROTO_URING_TLS: "{{uringTls}}"
       NETWORKPROTO_KTLS: "{{ktls}}"
@@ -54,7 +57,7 @@ jobs:
       branchOrCommit: "{{forkBranch}}"
       project: src/BenchmarksApps/Networking-Transports/Iocp/Iocp.csproj
     readyStateText: Application started.
-    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
     environmentVariables:
       NETWORKPROTO_WINDOWS_ACCEPT: "{{windowsAccept}}"
     options:
@@ -66,7 +69,7 @@ jobs:
       branchOrCommit: "{{forkBranch}}"
       project: src/BenchmarksApps/Networking-Transports/Rio/Rio.csproj
     readyStateText: Application started.
-    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
     environmentVariables:
       NETWORKPROTO_WINDOWS_ACCEPT: "{{windowsAccept}}"
     options:
@@ -78,7 +81,7 @@ jobs:
       branchOrCommit: "{{forkBranch}}"
       project: src/BenchmarksApps/Networking-Transports/Sockets/Sockets.csproj
     readyStateText: Application started.
-    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}}"
+    arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}}"
 
 scenarios:
 

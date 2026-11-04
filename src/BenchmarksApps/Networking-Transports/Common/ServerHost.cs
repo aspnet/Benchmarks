@@ -3,8 +3,9 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using NetworkingTransports;
 
-internal sealed record ServerSettings(IPAddress Address, int Port, bool Tls, int Workers, int[]? Cpus, string CertificatePath, string PrivateKeyPath);
+internal sealed record ServerSettings(IPAddress Address, int Port, bool Tls, int Workers, int[]? Cpus, string CertificatePath, string PrivateKeyPath, TlsLayerKind Layer);
 
 internal static class ServerHost
 {
@@ -13,8 +14,10 @@ internal static class ServerHost
 
     private static readonly byte[] s_payload = CreatePayload();
 
-    // useTransport == null keeps the stock Sockets transport and Kestrel's own UseHttps for --tls true.
-    // Otherwise the delegate swaps the transport; the transport then owns TLS and Kestrel sees plaintext.
+    // useTransport == null keeps the stock Sockets transport. --tls true then terminates TLS in Kestrel (--tlsLayer native/sslstream: UseHttps),
+    // or in a connection middleware over the plain stream (--tlsLayer tlssession/schannel).
+    // Otherwise the delegate swaps the transport. With --tlsLayer native (the default) that transport owns TLS and Kestrel sees plaintext;
+    // with sslstream/tlssession/schannel the transport is plain TCP and the same layers as for Sockets sit on top of it.
     public static async Task RunAsync(string name, string[] args, Action<IWebHostBuilder, ServerSettings>? useTransport = null)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +26,9 @@ internal static class ServerHost
         var settings = ReadSettings(builder.Configuration);
         useTransport?.Invoke(builder.WebHost, settings);
 
-        X509Certificate2? certificate = settings.Tls && useTransport is null ? LoadCertificate(settings) : null;
+        var useSslStream = settings.Tls && (settings.Layer == TlsLayerKind.SslStream || (settings.Layer == TlsLayerKind.Native && useTransport is null));
+        var useSessionLayer = settings.Tls && settings.Layer is TlsLayerKind.TlsSession or TlsLayerKind.Schannel;
+        X509Certificate2? certificate = useSslStream || useSessionLayer ? LoadCertificate(settings) : null;
 
         builder.WebHost.ConfigureKestrel(options =>
         {
@@ -31,12 +36,12 @@ internal static class ServerHost
             options.Listen(settings.Address, settings.Port, listen =>
             {
                 listen.Protocols = HttpProtocols.Http1;
-                if (certificate is not null)
+                if (useSslStream)
                 {
                     listen.UseHttps(https =>
                     {
                         https.ServerCertificate = certificate;
-                        https.SslProtocols = Environment.GetEnvironmentVariable("NETWORKPROTO_WINDOWS_TLS") == "1.2" || !OperatingSystem.IsWindows() ? SslProtocols.Tls12 : SslProtocols.Tls13;
+                        https.SslProtocols = TlsLayer.Protocol;
                         https.OnAuthenticate = (_, ssl) =>
                         {
                             if (!OperatingSystem.IsWindows())
@@ -46,6 +51,10 @@ internal static class ServerHost
                             ssl.AllowTlsResume = false;
                         };
                     });
+                }
+                else if (useSessionLayer)
+                {
+                    TlsLayer.UseSessionLayer(listen, settings.Layer, certificate!);
                 }
             });
         });
@@ -62,7 +71,7 @@ internal static class ServerHost
             await response.BodyWriter.WriteAsync(s_payload.AsMemory(0, size));
         });
 
-        Console.WriteLine($"Transport: {name}, listen: {settings.Address}:{settings.Port}, tls: {settings.Tls}, workers: {settings.Workers}, cpus: {(settings.Cpus is null ? "default" : string.Join(',', settings.Cpus))}");
+        Console.WriteLine($"Transport: {name}, listen: {settings.Address}:{settings.Port}, tls: {settings.Tls}, tlsLayer: {settings.Layer}, workers: {settings.Workers}, cpus: {(settings.Cpus is null ? "default" : string.Join(',', settings.Cpus))}");
 
         await app.StartAsync();
         Console.WriteLine("Application started.");
@@ -83,7 +92,8 @@ internal static class ServerHost
             configuration.GetValue("workers", 4),
             configuration["cpus"]?.Split(',').Select(int.Parse).ToArray(),
             configuration["cert"] ?? Path.Combine(certificates, "cert.pem"),
-            configuration["key"] ?? Path.Combine(certificates, "key.pem"));
+            configuration["key"] ?? Path.Combine(certificates, "key.pem"),
+            TlsLayer.Parse(configuration["tlsLayer"]));
     }
 
     // Same cert.pem/key.pem pair the native transports use, so every transport serves an identical certificate.
