@@ -26,6 +26,12 @@ variables:
   windowsAccept: default
   uringTls: ring
   ktls: 0
+  registration: legacy
+  handler: sockets
+  clientConnections: 256
+  clientWarmup: 15
+  clientDuration: 15
+  loadAddress: 10.0.0.124
 
 jobs:
   epollServer:
@@ -35,6 +41,8 @@ jobs:
       project: src/BenchmarksApps/Networking-Transports/Epoll/Epoll.csproj
     readyStateText: Application started.
     arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
+    environmentVariables:
+      NETWORKPROTO_REGISTRATION: "{{registration}}"
     options:
       requiredOperatingSystem: linux
 
@@ -48,6 +56,7 @@ jobs:
     environmentVariables:
       NETWORKPROTO_URING_TLS: "{{uringTls}}"
       NETWORKPROTO_KTLS: "{{ktls}}"
+      NETWORKPROTO_REGISTRATION: "{{registration}}"
     options:
       requiredOperatingSystem: linux
 
@@ -60,6 +69,7 @@ jobs:
     arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
     environmentVariables:
       NETWORKPROTO_WINDOWS_ACCEPT: "{{windowsAccept}}"
+      NETWORKPROTO_REGISTRATION: "{{registration}}"
     options:
       requiredOperatingSystem: windows
 
@@ -72,6 +82,7 @@ jobs:
     arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}} --workers {{workers}} {% if cpus != blank %}--cpus {{cpus}}{% endif %}"
     environmentVariables:
       NETWORKPROTO_WINDOWS_ACCEPT: "{{windowsAccept}}"
+      NETWORKPROTO_REGISTRATION: "{{registration}}"
     options:
       requiredOperatingSystem: windows
 
@@ -83,7 +94,52 @@ jobs:
     readyStateText: Application started.
     arguments: "--urls http://{{serverAddress}}:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}}"
 
+  # Sockets server for the client scenarios: binds all interfaces because it may run on a different machine than the profile's serverAddress.
+  socketsClientServer:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/Sockets/Sockets.csproj
+    readyStateText: Application started.
+    arguments: "--urls http://0.0.0.0:{{serverPort}} --tls {{tls}} --tlsLayer {{tlsLayer}}"
+
+  # HttpClient (SocketsHttpHandler) load generator. handler=sockets uses the stock socket layer, the other handlers
+  # plug the prototype transport in through SocketsHttpHandler.ConnectCallback (Bedrock).
+  bedrockClient:
+    source:
+      repository: https://github.com/{{forkOwner}}/Benchmarks.git
+      branchOrCommit: "{{forkBranch}}"
+      project: src/BenchmarksApps/Networking-Transports/BedrockClient/BedrockClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 900
+    arguments: "--handler {{handler}} --url http://{{host}}:{{serverPort}}/{{size}} --connections {{clientConnections}} --warmup {{clientWarmup}} --duration {{clientDuration}} --workers {{workers}} --body-bytes {{size}}"
+
 scenarios:
+
+  # ---------------------------------------------------------------- client (HttpClient against a Kestrel Sockets server)
+
+  # Linux client (epoll/io_uring/sockets) on the load agent, Sockets server on the application agent.
+  client-lin-tcp:
+    server:
+      job: socketsClientServer
+      agent: main
+    client:
+      job: bedrockClient
+      agent: secondary
+      variables:
+        host: "{{serverAddress}}"
+
+  # Windows client (iocp/rio/sockets) on the application agent, Sockets server on the (Linux) load agent.
+  client-win-tcp:
+    server:
+      job: socketsClientServer
+      agent: secondary
+    client:
+      job: bedrockClient
+      agent: main
+      variables:
+        host: "{{loadAddress}}"
 
   # ---------------------------------------------------------------- wrk (closed loop, max throughput)
 

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ServerHost.cs" Link="ServerHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MemoryDiagnostics.cs" Link="MemoryDiagnostics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TlsLayer.cs" Link="TlsLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TlsRecordSessions.cs" Link="TlsRecordSessions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TlsSessionDuplexPipe.cs" Link="TlsSessionDuplexPipe.cs" />

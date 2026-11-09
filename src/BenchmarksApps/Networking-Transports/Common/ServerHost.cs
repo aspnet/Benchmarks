@@ -1,3 +1,4 @@
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -20,6 +21,8 @@ internal static class ServerHost
     // with sslstream/tlssession/schannel the transport is plain TCP and the same layers as for Sockets sit on top of it.
     public static async Task RunAsync(string name, string[] args, Action<IWebHostBuilder, ServerSettings>? useTransport = null)
     {
+        MemoryDiagnostics.StartIfRequested();
+
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
 
@@ -61,10 +64,16 @@ internal static class ServerHost
 
         var app = builder.Build();
 
-        // GET /{bytes} returns that many bytes (1..262144); any other path returns 1 KiB.
+        // GET or POST /{bytes} returns that many bytes (1..262144); any other path returns 1 KiB. A request body is read and discarded.
         app.Run(async context =>
         {
-            var size = GetSize(context.Request.Path.Value);
+            var request = context.Request;
+            if (request.ContentLength is > 0)
+            {
+                await DrainBodyAsync(request.BodyReader);
+            }
+
+            var size = GetSize(request.Path.Value);
             var response = context.Response;
             response.ContentType = "application/octet-stream";
             response.ContentLength = size;
@@ -73,6 +82,7 @@ internal static class ServerHost
 
         Console.WriteLine($"Transport: {name}, listen: {settings.Address}:{settings.Port}, tls: {settings.Tls}, tlsLayer: {settings.Layer}, workers: {settings.Workers}, cpus: {(settings.Cpus is null ? "default" : string.Join(',', settings.Cpus))}");
 
+        MemoryDiagnostics.StopHost = () => app.Lifetime.StopApplication();
         await app.StartAsync();
         Console.WriteLine("Application started.");
         await app.WaitForShutdownAsync();
@@ -102,6 +112,19 @@ internal static class ServerHost
     {
         using var pem = X509Certificate2.CreateFromPemFile(settings.CertificatePath, settings.PrivateKeyPath);
         return X509CertificateLoader.LoadPkcs12(pem.Export(X509ContentType.Pfx), null);
+    }
+
+    private static async Task DrainBodyAsync(PipeReader reader)
+    {
+        while (true)
+        {
+            var result = await reader.ReadAsync();
+            reader.AdvanceTo(result.Buffer.End);
+            if (result.IsCompleted)
+            {
+                return;
+            }
+        }
     }
 
     private static int GetSize(string? path)

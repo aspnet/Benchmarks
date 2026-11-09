@@ -29,10 +29,14 @@ Common/Common.props         certificates from ../TLS/Certificates/2048 (net10.0 
 Common/Native.props         references to libs/*.dll and copies libs/*.so next to the app
 Epoll/ IoUring/ Iocp/ Rio/  one project per engine (Program.cs picks the engine options)
 Sockets/                    stock transport baseline (not a prototype engine)
+BedrockClient/              HttpClient load generator; the prototype plugs in through SocketsHttpHandler.ConnectCallback
 scripts/mixed-sizes.lua     wrk script that cycles through 1K, 4K, 8K, 16K, 64K, 256K
+results/                    summary CSVs behind GOLD-RESULTS.md
 ```
 
-The crank scenarios are in `scenarios/networking-transports.benchmarks.yml`: `{epoll,iouring,iocp,rio,sockets}-{tcp,tls}` for wrk (closed loop) and the same names with a `-rate` suffix for wrk2 (open loop).
+The crank scenarios are in `scenarios/networking-transports.benchmarks.yml`: `{epoll,iouring,iocp,rio,sockets}-{tcp,tls}` for wrk (closed loop) and the same names with a `-rate` suffix for wrk2 (open loop). `client-lin-tcp` and `client-win-tcp` run `BedrockClient` against a Sockets server. Setting `NETWORKPROTO_REGISTRATION=bedrock` (variable `registration`) registers the engine through the Connections abstractions instead of the prototype's own factory.
+
+Results: [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md) (original registration, 4-vCPU machines), [GOLD-RESULTS.md](GOLD-RESULTS.md) (Bedrock registration, 56-core machines, server and client).
 
 ## Supplying the prototype binaries
 
@@ -45,7 +49,7 @@ Build the prototype (`src/Servers/Kestrel/Transport.Networking`) and pass these 
 --application.options.buildFiles "C:\prototype\libs\*;libs"
 ```
 
-The `.so` files link to liburing and OpenSSL 3 (rpath `$HOME/.local/lib` when they were built), so the crank Linux machine needs compatible versions or they must be built there. The DLLs should come from a build that matches the `--application.aspNetCoreVersion` used on crank.
+The `.so` files need OpenSSL 3 on the crank Linux machine. The smoke runs used `.so` files compiled in WSL (Ubuntu 24.04, gcc 13) with liburing linked statically (`~/.local/lib/liburing.a` instead of `-luring`), which keeps the required glibc at 2.14 or lower. The DLLs should come from a build that matches the `--application.aspNetCoreVersion` used on crank.
 
 Crank details learned on `idna-intel-win-relay`:
 
@@ -79,13 +83,14 @@ Useful switches:
 - Short connections (handshake and accept dominated): `--variable presetHeaders=connectionclose`.
 - Client load: `--load.variables.connections 64 --load.variables.threads 8` (the wrk defaults are 256 connections and 32 threads); `--load.variables.rate 20000` for wrk2.
 - Workers and CPUs: `--variable workers=4 --variable cpus=0,1,2,3`.
+- Linux comparisons on the 4-vCPU `idna-intel-lin-relay` machines use a 2 CPU server: `--variable workers=2 --application.cpuSet 0-1`. With all 4 CPUs the 4-CPU wrk machine saturates first (about 88k RPS at 8 KB for every transport), so the transports cannot be told apart.
 - Windows accept: `--variable windowsAccept=pool` sets `NETWORKPROTO_WINDOWS_ACCEPT=pool` (thread-pool accept) for IOCP and RIO.
 - io_uring TLS mode: `--variable uringTls=ring|fd` and `--variable ktls=0|1` (`NETWORKPROTO_URING_TLS`, `NETWORKPROTO_KTLS`).
 - Source: the scenario file builds the sample from `https://github.com/{{forkOwner}}/Benchmarks.git` at `{{forkBranch}}`; override with `--variable forkOwner=<owner> --variable forkBranch=<branch>`. The branch must be pushed for crank to clone it.
 
 ## Known gaps
 
-- Epoll and io_uring providers currently bind only IPv4 loopback (`IPAddress.IsLoopback` in `Epoll/Transport.cs` and `IoUringTcp/Transport.cs`, `INADDR_LOOPBACK` in both `native.c` files), so they throw `NotSupportedException` when listening on the crank machine address. They need to bind a configurable IPv4 address before they can take load from another machine. The Windows providers bind any IPv4 address.
+- Epoll and io_uring providers bind any IPv4 address and a fixed nonzero port (no IPv6, no port 0).
 - The io_uring provider pins worker `i` to CPU `2*i` by default; `NativeTransport` falls back to CPUs `0..workers-1` when the machine has fewer than `2*workers` CPUs.
 - TLS versions are fixed by the native engines: OpenSSL TLS 1.2 on Linux, SChannel TLS 1.3 on Windows.
 - The wrk2 job from the crank repository does not support Lua scripts, so mixed sizes are only available with wrk. wrk2 needs at least a 15 second duration.
