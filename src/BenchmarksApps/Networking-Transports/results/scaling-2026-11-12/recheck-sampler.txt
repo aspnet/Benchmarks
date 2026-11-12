@@ -1,0 +1,56 @@
+Gold-lin re-check, 2026-11-12. Single crank runs (one per cell unless noted) of aspnet-gold-lin-relay, default registration, TCP HTTP/1.1 keep-alive, 1 KB response,
+NETWORKPROTO_DIAG=1. Measured on crank, not independently reproduced. Raw rows: recheck-linux.csv.
+
+Cell naming: wN = N workers on cpuset 0-(N-1) (w56 = the whole machine). "inline" = CompleteReceivesInline for the Bedrock providers, and
+UnsafePreferInlineScheduling + DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 for Sockets.
+
+Connections / wrk threads: w2 256/32, w4 256/32, w16 576/48, w28 896/56, w56 1792/56.
+
+Throughput and client load
+--------------------------
+cell                 req/s        % of Sockets default   load machine CPU (logical, steady average)   p99 ms
+w16 Sockets          1,007,239    100%                    34%                                          3.29
+w16 epoll            1,184,912    118%                    41%                                          3.70
+w16 io_uring         1,181,887    117%                    40%                                          2.83
+w16 Sockets inline   1,342,160    133%                    44%                                          1.85
+w16 io_uring inline  1,750,669    174%  (130% of Sockets inline)   58%                                 1.28
+w28 Sockets          1,779,187    100%                    57%                                          3.31
+w28 io_uring         1,819,649    102%                    61%                                          2.80
+w28 io_uring inline  2,628,242    148%                    82%                                          1.15
+w56 Sockets          2,222,302    100%                    69%                                          3.25
+w56 epoll            2,403,503    108%                    76%                                          4.10
+w56 io_uring         2,398,586    108%                    73%                                          4.15
+
+Per-request CPU of the process (analyze-diag.py, steady window, "us/req" = process cores / requests per second)
+-------------------------------------------------------------------------------------------------------------
+cell                 total   I/O threads (user + sys)   thread-pool threads (user + sys)   TP items/req   alloc/req   GC pause (window)
+w16 Sockets          14.82   .NET Sockets 0.16 + 0.55    6.93 + 7.08                         1.90           2 B         37 ms
+w16 epoll            12.40   Epoll 1.74 + 5.66           4.09 + 0.69                         0.92           246 B       1677 ms
+w16 io_uring         11.46   IoUring 1.48 + 5.13         3.80 + 0.81                         0.81           218 B       3369 ms
+w16 Sockets inline   11.50   all on the 16 Sockets threads 4.78 + 6.61                       0              133 B       773 ms
+w16 io_uring inline   8.87   IoUring 2.96 + 5.79         none                                0              249 B       804 ms
+w28 Sockets          15.11   .NET Sockets 0.11 + 0.40    6.68 + 7.86                         1.94           2 B         25 ms
+w28 io_uring         14.54   IoUring 1.79 + 6.71         4.53 + 1.32                         0.97           259 B       689 ms
+w56 Sockets          22.62   .NET Sockets 0.16 + 0.56    8.95 + 12.87                        1.96           3 B         102 ms
+w56 epoll            21.71   Epoll 2.65 + 10.70          5.78 + 2.33                         0.96           256 B       370 ms
+w56 io_uring         21.44   IoUring 2.39 + 11.34        5.13 + 2.43                         1.05           280 B       223 ms
+(w56 uses both SMT siblings of every core, so its microseconds per request are not comparable with the 16 and 28 worker rows. The io_uring and epoll w56 steady windows are 13-14 s, Sockets 28 s.)
+
+NET_RX softirq: where it runs
+-----------------------------
+The NIC (ens1f0np0, mlx5_core, 40 Gbit/s) has 56 receive queues, and /proc/irq/<n>/smp_affinity_list shows one completion-queue interrupt per queue, each pinned to a different single
+logical CPU, covering all of 0-55 once. A cpuset of N CPUs therefore only contains N of the 56 queues' interrupts; the rest run on CPUs the process is not allowed on.
+
+cell                 CPUs outside the cpuset   softirq on outside CPUs (average)   = us per request   share of NET_RX events on outside CPUs
+w16 Sockets          40                        3.8%                                 1.51               64%
+w16 io_uring         40                        4.8%                                 1.63               62%
+w16 Sockets inline   40                        8.4%                                 2.50               67%
+w16 io_uring inline  40                        10.2%                                2.34               63%
+w28 Sockets          28 (SMT siblings 28-55)   11.1%                                1.74               49%
+w28 io_uring         28 (SMT siblings 28-55)   12.8%                                1.96               49%
+w56                  0                         n/a                                  n/a                0%
+
+Softirq inside the cpuset (share of the allowed CPUs): w16 Sockets 10.9%, w16 io_uring 10.4%, w28 Sockets 17.9-18.5%, w28 io_uring 18.1-18.9%, w56 Sockets 25.0%, epoll 26.9%, io_uring 28.1%.
+Total softirq CPU per request, inside plus outside: w16 Sockets about 3.2 us, w28 Sockets about 4.75 us, w28 io_uring about 5.0 us.
+
+Idle CPUs inside the cpuset (sampler): w16 Sockets 5.6%, epoll 7.4%, io_uring 11.3%; w28 Sockets 3.1%, io_uring 2.1%; w56 Sockets 7.6%, epoll 4.8%, io_uring 1.6%.

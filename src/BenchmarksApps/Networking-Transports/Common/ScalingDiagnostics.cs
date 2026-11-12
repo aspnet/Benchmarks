@@ -36,6 +36,9 @@ internal static class ScalingDiagnostics
 
         Console.WriteLine($"DIAG_START cpus={cpus.Length} processorCount={Environment.ProcessorCount} tickHz={Hz}");
         WriteTopology(cpus);
+        var outside = ReadAllCpuIds().Except(cpus).ToArray();
+        var previousOutside = ReadCpuTimes(outside);
+        WriteNic();
         while (true)
         {
             Thread.Sleep(1000);
@@ -48,6 +51,11 @@ internal static class ScalingDiagnostics
             var cpu = ReadCpuTimes(cpus);
             WriteCpu(t, cpus, previousCpu, cpu, sample % 5 == 0);
             previousCpu = cpu;
+
+            var outsideNow = ReadCpuTimes(outside);
+            WriteOutside(t, outside, previousOutside, outsideNow);
+            previousOutside = outsideNow;
+            WriteNetRx(t, cpus);
 
             var groups = new Dictionary<string, Group>();
             var current = new Dictionary<int, ThreadSample>();
@@ -81,6 +89,126 @@ internal static class ScalingDiagnostics
         catch
         {
             return "?";
+        }
+    }
+
+    private static int[] ReadAllCpuIds()
+    {
+        var ids = new List<int>();
+        foreach (var line in File.ReadLines("/proc/stat"))
+        {
+            if (line.StartsWith("cpu", StringComparison.Ordinal) && line.Length > 3 && char.IsDigit(line[3]))
+            {
+                ids.Add(int.Parse(line.AsSpan(3, line.IndexOf(' ') - 3), CultureInfo.InvariantCulture));
+            }
+        }
+
+        return [.. ids];
+    }
+
+    // The CPUs the process may not run on still do kernel work for it (NIC interrupts, softirqs), so show what they spend.
+    private static void WriteOutside(int t, int[] cpus, Dictionary<int, long[]> before, Dictionary<int, long[]> after)
+    {
+        var total = new long[8];
+        foreach (var cpu in cpus)
+        {
+            if (!before.TryGetValue(cpu, out var b) || !after.TryGetValue(cpu, out var a))
+            {
+                continue;
+            }
+
+            for (var i = 0; i < 8; i++)
+            {
+                total[i] += a[i] - b[i];
+            }
+        }
+
+        double all = total.Sum();
+        if (all <= 0)
+        {
+            return;
+        }
+
+        string P(long v) => (100.0 * v / all).ToString("0.0", CultureInfo.InvariantCulture);
+        Console.WriteLine($"DIAG_OUT t={t} cpus={cpus.Length} user={P(total[0] + total[1])} sys={P(total[2])} irq={P(total[5])} softirq={P(total[6])} iowait={P(total[4])} idle={P(total[3])}");
+    }
+
+    // Cumulative NET_RX softirq counts, split into the allowed CPUs and the others.
+    private static void WriteNetRx(int t, int[] allowed)
+    {
+        var inside = new HashSet<int>(allowed);
+        foreach (var line in File.ReadLines("/proc/softirqs"))
+        {
+            var trimmed = line.TrimStart();
+            if (!trimmed.StartsWith("NET_RX:", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            long within = 0, other = 0;
+            var values = trimmed["NET_RX:".Length..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            for (var cpu = 0; cpu < values.Length; cpu++)
+            {
+                var count = long.Parse(values[cpu], CultureInfo.InvariantCulture);
+                if (inside.Contains(cpu))
+                {
+                    within += count;
+                }
+                else
+                {
+                    other += count;
+                }
+            }
+
+            Console.WriteLine($"DIAG_NETRX t={t} inside={within} outside={other}");
+            return;
+        }
+    }
+
+    // Link speed, queue counts and interrupt affinity of every up interface other than loopback.
+    private static void WriteNic()
+    {
+        try
+        {
+            foreach (var directory in Directory.GetDirectories("/sys/class/net"))
+            {
+                var name = Path.GetFileName(directory);
+                if (name == "lo" || ReadText($"{directory}/operstate") != "up")
+                {
+                    continue;
+                }
+
+                var driver = "?";
+                try
+                {
+                    driver = Path.GetFileName(new DirectoryInfo($"{directory}/device/driver").ResolveLinkTarget(true)?.FullName ?? "?");
+                }
+                catch
+                {
+                }
+
+                var rx = Directory.Exists($"{directory}/queues") ? Directory.GetDirectories($"{directory}/queues", "rx-*").Length : 0;
+                var tx = Directory.Exists($"{directory}/queues") ? Directory.GetDirectories($"{directory}/queues", "tx-*").Length : 0;
+                Console.WriteLine($"DIAG_NIC name={name} speedMbps={ReadText($"{directory}/speed")} driver={driver} rxQueues={rx} txQueues={tx}");
+                var irqs = new List<string>();
+                foreach (var line in File.ReadLines("/proc/interrupts"))
+                {
+                    // mlx5 names its completion-queue interrupts mlx5_comp<N>@pci:<address> rather than after the interface.
+                    if (!line.Contains(name, StringComparison.Ordinal) && !(driver.StartsWith("mlx5", StringComparison.Ordinal) && line.Contains("mlx5_comp", StringComparison.Ordinal)))
+                    {
+                        continue;
+                    }
+
+                    var irq = line.TrimStart().Split(':')[0];
+                    irqs.Add($"{irq}={ReadText($"/proc/irq/{irq}/smp_affinity_list")}");
+                }
+
+                Console.WriteLine($"DIAG_NICIRQ name={name} count={irqs.Count} {string.Join(' ', irqs.Take(80))}");
+            }
+        }
+        catch (Exception error)
+        {
+            Console.WriteLine($"DIAG_NIC error={error.GetType().Name}");
         }
     }
 

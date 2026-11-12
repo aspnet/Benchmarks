@@ -89,6 +89,40 @@ Single runs on gold-lin at 28 workers, [default-mode-experiments.txt](results/sc
 - `Connection: close` is not measurable with this load generator (Sockets: 10.6K requests per second, 896 socket errors, load machine at 95% CPU).
 - Bedrock allocates about 258 B per request (Sockets default: 2 B), which costs 2.4-2.8% in GC pauses.
 
+### Re-check: small machine, client capacity, and the NIC's interrupts
+
+Files: [recheck-linux.csv](results/scaling-2026-11-12/recheck-linux.csv) (22 runs, one row each) and [recheck-sampler.txt](results/scaling-2026-11-12/recheck-sampler.txt) (per-request CPU, softirq inside and outside the cpuset, client load). Single runs unless stated, measured on crank, not independently reproduced. The sampler now also prints the CPUs outside the cpuset (`DIAG_OUT`), cumulative `NET_RX` softirq counts inside and outside (`DIAG_NETRX`), and each NIC's link speed, queue count and interrupt affinity (`DIAG_NIC`, `DIAG_NICIRQ`).
+
+**Default-mode margin by cpuset size (gold-lin, % of Sockets):**
+
+| Workers | Sockets default | epoll | io_uring | Runs |
+| --- | --- | --- | --- | --- |
+| 4 | 312.9K | 123% | 126% | 2 |
+| 8 | 539.6K | 100% | 111% | 2 |
+| 16 | 1.007M | 118% | 117% | 1 |
+| 28 | 1.78M | 104% | 102% | 2 |
+| 56 (whole machine) | 2.222M | 108% | 108% | 1 |
+
+**The NIC explains part of the shape.** `ens1f0np0` is a Mellanox mlx5 at 40 Gbit/s with 56 receive queues, and each queue's interrupt is pinned to a different single CPU, covering 0-55 once. A cpuset of `W` CPUs holds only `W` of them. Measured share of `NET_RX` softirq events handled on CPUs outside the cpuset: 62-67% at 16 workers, 49% at 28, 0% at 56. At 28 workers those outside CPUs are the idle SMT siblings of the busy cores, running 11-13% softirq (1.7-2.0 µs per request). Total soft-interrupt CPU per request is about 3.2 µs at 16 workers and about 4.75 µs at 28. At 56 workers every CPU is 92-98% busy.
+
+**The client is not the limit in default mode.** Load machine CPU (logical, steady average): 34-41% at 16 workers, 57-61% at 28 and 69-76% at 56 in default mode; 44% (Sockets inline) and 58% (io_uring inline) at 16, and 82% (io_uring inline) at 28. The same machine produced 2.40-2.63M requests per second against inline transports at 28 workers. Because it has SMT, 80% logical is close to its physical limit, so inline results at 28 workers and above may be partly client-limited.
+
+**16 workers, inline** (single runs): io_uring inline 1.751M (174% of Sockets default, 130% of Sockets inline), Sockets inline 1.342M (133% of Sockets default). At 28 workers: 148% and 131%. The inline margin over the equally inline Sockets path is stable across 16 and 28 workers.
+
+**Small machine** (`idna-intel-lin-relay`, application limited to 2 CPUs, 2 workers, 256 connections, 1 KB keep-alive, 2 runs each, application CPUs saturated at about 198%):
+
+| Transport | Requests per second (run 1, run 2) | Mean | % of Sockets | CPU per request |
+| --- | --- | --- | --- | --- |
+| Sockets | 67,969, 65,315 | 66.6K | 100% | 30.6 µs |
+| epoll | 81,411, 89,094 | 85.3K | 128% | 23.0 µs |
+| io_uring | 97,704, 99,670 | 98.7K | 148% | 20.3 µs |
+
+System time per request is 15.8 µs for Sockets and 11.1 µs for io_uring. The cause of the gap was not isolated. An earlier pre-Bedrock run on a similar machine gave io_uring +23% and epoll +9% ([LINUX-RESULTS.md](LINUX-RESULTS.md)).
+
+**Per-request CPU by cpuset size (default mode, µs):** Sockets 14.8 (16 workers) and 15.1 (28); epoll 12.4 and 14.6; io_uring 11.5 and 14.5. Thread-pool items per request at 28 workers: Sockets 1.94, io_uring 0.97, so Bedrock is not hopping to the thread pool more than Sockets does. Why io_uring's CPU per request rises by 3 µs between 16 and 28 workers while Sockets' does not was not isolated. SMT contention with softirq on the sibling CPUs is a hypothesis.
+
+One run did not complete: the second io_uring repetition at 4 workers (`chk-gold-w4`) hung and was killed, so that cell has one run.
+
 ## Windows server
 
 | Workers | Configuration | Repetition 1 | Repetition 2 | Mean | % of Sockets default |
