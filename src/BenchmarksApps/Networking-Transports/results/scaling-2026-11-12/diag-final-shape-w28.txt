@@ -1,0 +1,46 @@
+== m-sockets-default\sockets-w28-tcp-keepalive-1024-r1.log  steady window t=15..42 (28s)  wrk rps=1,774,934
+  cpuset: user=44.0%  sys=35.7%  irq=0.0%  softirq=17.3%  idle=3.0%
+  process cores 26.91  -> 15.16 cpu-us/request
+    TPWorker       threads=   48  user= 11.98  sys= 13.90 cores   user/req= 6.75us sys/req= 7.83us   vcs/req= 0.00 ivcs/req= 0.01 runqueue-wait=2.49 cores
+    .NET_Sockets   threads=    1  user=  0.20  sys=  0.71 cores   user/req= 0.11us sys/req= 0.40us   vcs/req= 0.01 ivcs/req= 0.00 runqueue-wait=0.01 cores
+    .NET_Tiered_JIT threads=    1  user=  0.08  sys=  0.02 cores   user/req= 0.05us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.02 cores
+  runtime: tpThreads=47 tpWorkItems/req=1.955 lockContention/req=0.0000 gc0=3 gc2=0 alloc/req=2B gcPause=31ms
+== m-sockets-inline\sockets-w28-tcp-keepalive-1024-r1.log  steady window t=17..43 (27s)  wrk rps=1,990,877
+  cpuset: user=39.9%  sys=38.5%  irq=0.0%  softirq=18.8%  idle=2.8%
+  process cores 27.08  -> 13.60 cpu-us/request
+    .NET_Sockets   threads=   28  user= 10.97  sys= 15.90 cores   user/req= 5.51us sys/req= 7.99us   vcs/req= 0.00 ivcs/req= 0.01 runqueue-wait=0.24 cores
+    .NET_Server_GC threads=   28  user=  0.12  sys=  0.00 cores   user/req= 0.06us sys/req= 0.00us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.00 cores
+  runtime: tpThreads=8 tpWorkItems/req=0.000 lockContention/req=0.0000 gc0=426 gc2=2 alloc/req=141B gcPause=697ms
+== m-epoll-default\epoll-w28-tcp-keepalive-1024-r1.log  steady window t=15..41 (27s)  wrk rps=1,853,393
+  cpuset: user=43.7%  sys=34.5%  irq=0.0%  softirq=18.8%  idle=3.0%
+  process cores 26.93  -> 14.53 cpu-us/request
+    Epoll          threads=   29  user=  3.55  sys= 12.58 cores   user/req= 1.91us sys/req= 6.78us   vcs/req= 0.02 ivcs/req= 0.01 runqueue-wait=10.37 cores
+    TPWorker       threads=   42  user=  8.37  sys=  2.16 cores   user/req= 4.51us sys/req= 1.17us   vcs/req= 0.00 ivcs/req= 0.01 runqueue-wait=7.00 cores
+    .NET_Server_GC threads=   28  user=  0.16  sys=  0.01 cores   user/req= 0.09us sys/req= 0.00us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.01 cores
+    .NET_Tiered_JIT threads=    1  user=  0.06  sys=  0.01 cores   user/req= 0.03us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.02 cores
+  runtime: tpThreads=43 tpWorkItems/req=0.979 lockContention/req=0.0003 gc0=597 gc2=2 alloc/req=261B gcPause=633ms
+  epoll (per recv): epoll_wait=0.11 events=1.07 send=1.00 wakeWrite=0.07 wakeRead=0.07 commands=2.00 epoll_ctl=0.00 recvEAGAIN=0.00 loopIterations=0.11  conns min/max=0/0
+== m-epoll-inline\epoll-w28-tcp-keepalive-1024-r1.log  steady window t=15..42 (28s)  wrk rps=2,408,393
+  cpuset: user=30.3%  sys=43.8%  irq=0.0%  softirq=22.5%  idle=3.3%
+  process cores 26.89  -> 11.17 cpu-us/request
+    Epoll          threads=   29  user=  8.22  sys= 18.31 cores   user/req= 3.41us sys/req= 7.60us   vcs/req= 0.00 ivcs/req= 0.01 runqueue-wait=0.51 cores
+    .NET_Server_GC threads=   28  user=  0.18  sys=  0.03 cores   user/req= 0.07us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.00 cores
+    TPWorker       threads=   17  user=  0.07  sys=  0.00 cores   user/req= 0.03us sys/req= 0.00us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.01 cores
+  runtime: tpThreads=17 tpWorkItems/req=0.000 lockContention/req=0.0000 gc0=792 gc2=4 alloc/req=257B gcPause=761ms
+  epoll (per recv): epoll_wait=0.07 events=1.00 send=1.00 wakeWrite=0.00 wakeRead=0.00 commands=2.00 epoll_ctl=0.00 recvEAGAIN=0.00 loopIterations=0.07  conns min/max=0/0
+== m-iouring-default\iouring-w28-tcp-keepalive-1024-r1.log  steady window t=2..45 (44s)  wrk rps=1,835,313
+  cpuset: user=29.0%  sys=23.3%  irq=0.0%  softirq=12.1%  idle=1.6%
+  process cores 21.39  -> 11.65 cpu-us/request
+    IoUring        threads=   28  user=  2.27  sys=  8.40 cores   user/req= 1.23us sys/req= 4.58us   vcs/req= 0.06 ivcs/req= 0.01 runqueue-wait=6.58 cores
+    TPWorker       threads=   47  user=  8.15  sys=  2.34 cores   user/req= 4.44us sys/req= 1.27us   vcs/req= 0.00 ivcs/req= 0.04 runqueue-wait=11.49 cores
+    .NET_Server_GC threads=   28  user=  0.10  sys=  0.01 cores   user/req= 0.06us sys/req= 0.00us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.01 cores
+    .NET_Tiered_JIT threads=    1  user=  0.06  sys=  0.01 cores   user/req= 0.03us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.03 cores
+  runtime: tpThreads=48 tpWorkItems/req=0.630 lockContention/req=0.0010 gc0=633 gc2=3 alloc/req=169B gcPause=778ms
+== m-iouring-inline\iouring-w28-tcp-keepalive-1024-r1.log  steady window t=2..44 (43s)  wrk rps=2,600,642
+  cpuset: user=21.7%  sys=30.3%  irq=0.0%  softirq=15.6%  idle=1.7%
+  process cores 18.90  -> 7.27 cpu-us/request
+    IoUring        threads=   28  user=  5.87  sys= 12.71 cores   user/req= 2.26us sys/req= 4.89us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.13 cores
+    .NET_Server_GC threads=   28  user=  0.13  sys=  0.03 cores   user/req= 0.05us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.01 cores
+    .NET_Tiered_JIT threads=    1  user=  0.05  sys=  0.01 cores   user/req= 0.02us sys/req= 0.00us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.04 cores
+    TPWorker       threads=   18  user=  0.05  sys=  0.00 cores   user/req= 0.02us sys/req= 0.00us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.03 cores
+  runtime: tpThreads=19 tpWorkItems/req=0.000 lockContention/req=0.0000 gc0=896 gc2=4 alloc/req=173B gcPause=912ms

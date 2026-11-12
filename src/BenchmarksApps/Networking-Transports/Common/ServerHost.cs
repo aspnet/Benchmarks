@@ -22,12 +22,19 @@ internal static class ServerHost
     public static async Task RunAsync(string name, string[] args, Action<IWebHostBuilder, ServerSettings>? useTransport = null)
     {
         MemoryDiagnostics.StartIfRequested();
+        ScalingDiagnostics.StartIfRequested();
 
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
 
         var settings = ReadSettings(builder.Configuration);
         useTransport?.Invoke(builder.WebHost, settings);
+
+        // NETWORKPROTO_SOCKETS_INLINE=1 runs the stock Sockets transport with inline scheduling, the closest stock counterpart of the native transports' inline input mode.
+        if (useTransport is null && Environment.GetEnvironmentVariable("NETWORKPROTO_SOCKETS_INLINE") == "1")
+        {
+            builder.WebHost.UseSockets(options => options.UnsafePreferInlineScheduling = true);
+        }
 
         var useSslStream = settings.Tls && (settings.Layer == TlsLayerKind.SslStream || (settings.Layer == TlsLayerKind.Native && useTransport is null));
         var useSessionLayer = settings.Tls && settings.Layer is TlsLayerKind.TlsSession or TlsLayerKind.Schannel;

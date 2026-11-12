@@ -1,0 +1,25 @@
+== diag-sockets-w28\sockets-w28-tcp-keepalive-1024-r1.log  steady window t=17..43 (27s)  wrk rps=1,780,760
+  cpuset: user=43.5%  sys=35.8%  irq=0.0%  softirq=17.8%  idle=2.9%
+  process cores 26.95  -> 15.13 cpu-us/request
+    TPWorker       threads=   46  user= 11.87  sys= 14.07 cores   user/req= 6.67us sys/req= 7.90us   vcs/req= 0.00 ivcs/req= 0.01 runqueue-wait=2.28 cores
+    .NET_Sockets   threads=    1  user=  0.19  sys=  0.73 cores   user/req= 0.11us sys/req= 0.41us   vcs/req= 0.01 ivcs/req= 0.00 runqueue-wait=0.01 cores
+    .NET_Tiered_JIT threads=    1  user=  0.07  sys=  0.01 cores   user/req= 0.04us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.02 cores
+  runtime: tpThreads=48 tpWorkItems/req=1.958 lockContention/req=0.0000 gc0=3 gc2=1 alloc/req=2B gcPause=45ms
+== diag-epoll-w28\epoll-w28-tcp-keepalive-1024-r1.log  steady window t=19..45 (27s)  wrk rps=1,413,591
+  cpuset: user=39.2%  sys=37.1%  irq=0.0%  softirq=15.8%  idle=7.8%
+  process cores 25.07  -> 17.73 cpu-us/request
+    Epoll          threads=   29  user=  3.19  sys= 10.59 cores   user/req= 2.26us sys/req= 7.49us   vcs/req= 0.23 ivcs/req= 0.01 runqueue-wait=6.53 cores
+    TPWorker       threads=   48  user=  7.38  sys=  3.63 cores   user/req= 5.22us sys/req= 2.57us   vcs/req= 0.03 ivcs/req= 0.10 runqueue-wait=11.89 cores
+    .NET_Server_GC threads=   28  user=  0.16  sys=  0.01 cores   user/req= 0.11us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.00 cores
+    .NET_Tiered_JIT threads=    1  user=  0.07  sys=  0.01 cores   user/req= 0.05us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.01 cores
+  runtime: tpThreads=48 tpWorkItems/req=0.970 lockContention/req=0.0213 gc0=556 gc2=2 alloc/req=261B gcPause=703ms
+  epoll (per recv): epoll_wait=0.46 events=1.22 send=1.00 wakeWrite=2.00 wakeRead=0.22 commands=2.00 epoll_ctl=0.00 recvEAGAIN=0.00 loopIterations=0.46  conns min/max=0/0
+== x-epoll-w28-coalesce\epoll-w28-tcp-keepalive-1024-r1.log  steady window t=16..43 (28s)  wrk rps=1,831,146
+  cpuset: user=43.3%  sys=34.2%  irq=0.0%  softirq=19.1%  idle=3.5%
+  process cores 26.77  -> 14.62 cpu-us/request
+    Epoll          threads=   29  user=  3.57  sys= 12.49 cores   user/req= 1.95us sys/req= 6.82us   vcs/req= 0.02 ivcs/req= 0.01 runqueue-wait=10.22 cores
+    TPWorker       threads=   35  user=  8.24  sys=  2.18 cores   user/req= 4.50us sys/req= 1.19us   vcs/req= 0.00 ivcs/req= 0.01 runqueue-wait=6.97 cores
+    .NET_Server_GC threads=   28  user=  0.17  sys=  0.02 cores   user/req= 0.09us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.01 cores
+    .NET_Tiered_JIT threads=    1  user=  0.07  sys=  0.01 cores   user/req= 0.04us sys/req= 0.01us   vcs/req= 0.00 ivcs/req= 0.00 runqueue-wait=0.02 cores
+  runtime: tpThreads=38 tpWorkItems/req=0.968 lockContention/req=0.0004 gc0=684 gc2=0 alloc/req=258B gcPause=783ms
+  epoll (per recv): epoll_wait=0.11 events=1.06 send=1.00 wakeWrite=0.07 wakeRead=0.06 commands=2.00 epoll_ctl=0.00 recvEAGAIN=0.00 loopIterations=0.11  conns min/max=0/0

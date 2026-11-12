@@ -6,6 +6,8 @@ internal static class NativeTransport
     {
         engine.WorkerCount = settings.Workers;
         engine.WorkerProcessors = settings.Cpus ?? DefaultProcessors(engine, settings.Workers);
+        // NETWORKPROTO_INLINE_INPUT=1 completes receives on the provider worker instead of the thread pool (NetworkEngineOptions.CompleteReceivesInline).
+        engine.CompleteReceivesInline = Environment.GetEnvironmentVariable("NETWORKPROTO_INLINE_INPUT") == "1";
         ConfigureWindowsPools(engine);
 
         var tls = settings.Tls && settings.Layer == NetworkingTransports.TlsLayerKind.Native

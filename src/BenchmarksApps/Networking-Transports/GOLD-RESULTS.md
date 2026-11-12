@@ -4,6 +4,8 @@ These results were measured on crank on the 56-core "gold" machines on 2026-11-0
 
 All numbers are as measured on crank. They have not been independently reproduced, and the prototype is an experiment, not a shipping component. In every table "% of Sockets" means throughput as a fraction of the System.Net.Sockets run in the same table (100% is parity, 120% is 20% more requests per second than Sockets).
 
+> **Update 2026-11-12.** The Linux server gap and the client stall described below were investigated and fixed; see [SCALING-RESULTS.md](SCALING-RESULTS.md). The tables here are the 2026-11-09 measurements and are kept as measured. With the fixes the Linux server numbers at 4, 8 and 28 workers are epoll 123%, 100%, 104% and io_uring 126%, 111%, 102% of Sockets, and the Windows numbers are unchanged within noise.
+
 ## Environment
 
 | Item | Linux | Windows |
@@ -44,7 +46,7 @@ What this shows:
 - On Linux, epoll and io_uring are ahead of Sockets only at 4 workers (about +8%). They fall behind at 8 workers and clearly behind at 28 workers. This is much less favourable than the +9% to +30% measured on the 4-vCPU machines with the original registration.
 - The Bedrock adapter is not the cause of the Linux gap. With the legacy registration at 28 workers the numbers are the same within noise (epoll 1,437,679 and io_uring 1,132,181 requests per second, [results/gold-2026-11-09/diag-linux-legacy-registration.csv](results/gold-2026-11-09/diag-linux-legacy-registration.csv)), against 1,422,328 and 1,145,692 with Bedrock.
 - Explicit CPU pinning of the native workers (`--cpus`) did not help (epoll 346,083 at 8 workers and 1,216,721 at 28 workers; io_uring 481,971 and 1,145,123; [results/gold-2026-11-09/diag-linux-pinned-cpus.csv](results/gold-2026-11-09/diag-linux-pinned-cpus.csv)).
-- The reason the Linux native transports stop scaling between 8 and 28 workers on this machine is not established.
+- The reason the Linux native transports stop scaling between 8 and 28 workers on this machine was not established at the time of this run. It was found afterwards: two worker wake-ups per request and a thread-pool hop per receive ([SCALING-RESULTS.md](SCALING-RESULTS.md)).
 
 ## Client (HttpClient with the prototype as ConnectCallback)
 
@@ -72,7 +74,7 @@ Raw rows: [results/gold-2026-11-09/client-linux.csv](results/gold-2026-11-09/cli
 Caveats for the client numbers:
 
 - Single run per cell, so differences of a few percent are not meaningful.
-- The matrices were stopped after 7 successful runs each (of 18 planned) because non-Sockets handlers sometimes stalled until `HttpClient.Timeout` (for example `epoll-w28-1024-r1` failed three attempts). The stall is rare and has not been root-caused. The leading hypothesis is the zero-byte read handling in `ConnectionContextStream.ReadAsync` (`AdvanceTo(Start, End)` makes the next read wait for new data). A `System.IO.Pipelines` test confirmed that primitive, but the end-to-end HttpClient chain has not been proven, and no fix has been applied.
+- The matrices were stopped after 7 successful runs each (of 18 planned) because non-Sockets handlers sometimes stalled until `HttpClient.Timeout` (for example `epoll-w28-1024-r1` failed three attempts). The stall is rare and had not been root-caused at the time. The leading hypothesis was the zero-byte read handling in `ConnectionContextStream.ReadAsync` (`AdvanceTo(Start, End)` makes the next read wait for new data). A `System.IO.Pipelines` test confirmed that primitive, the end-to-end chain was not proven, and no fix had been applied. The read now calls `AdvanceTo(Start)`, and the 24 client runs of [SCALING-RESULTS.md](SCALING-RESULTS.md) completed without a stall (supportive, not proof).
 - Windows Sockets at 28 workers (249,196 requests per second at about 7% client CPU) looks throttled, so ratios at that worker count would be inflated and are intentionally not reported.
 - Linux io_uring in the crank staging copy used a statically linked native library because the gold Linux machine lacks `liburing.so.2`. The shipping `.csproj` still links dynamically.
 

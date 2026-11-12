@@ -25,18 +25,21 @@ All four native engines accept optional TLS through `NetworkNativeTlsOptions`, s
 ```
 Common/ServerHost.cs        shared Kestrel host and /{bytes} endpoint
 Common/NativeTransport.cs   UseNetworkTransport(engine, optional native TLS)
+Common/ScalingDiagnostics.cs  opt-in per-second CPU / scheduler / runtime sampler (NETWORKPROTO_DIAG=1)
 Common/Common.props         certificates from ../TLS/Certificates/2048 (net10.0 is set in each csproj, see below)
 Common/Native.props         references to libs/*.dll and copies libs/*.so next to the app
 Epoll/ IoUring/ Iocp/ Rio/  one project per engine (Program.cs picks the engine options)
 Sockets/                    stock transport baseline (not a prototype engine)
 BedrockClient/              HttpClient load generator; the prototype plugs in through SocketsHttpHandler.ConnectCallback
 scripts/mixed-sizes.lua     wrk script that cycles through 1K, 4K, 8K, 16K, 64K, 256K
-results/                    summary CSVs behind GOLD-RESULTS.md
+results/                    summary CSVs behind GOLD-RESULTS.md and SCALING-RESULTS.md
 ```
 
 The crank scenarios are in `scenarios/networking-transports.benchmarks.yml`: `{epoll,iouring,iocp,rio,sockets}-{tcp,tls}` for wrk (closed loop) and the same names with a `-rate` suffix for wrk2 (open loop). `client-lin-tcp` and `client-win-tcp` run `BedrockClient` against a Sockets server. Setting `NETWORKPROTO_REGISTRATION=bedrock` (variable `registration`) registers the engine through the Connections abstractions instead of the prototype's own factory.
 
-Results: [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md) (original registration, 4-vCPU machines), [GOLD-RESULTS.md](GOLD-RESULTS.md) (Bedrock registration, 56-core machines, server and client).
+Results: [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md) (original registration, 4-vCPU machines), [GOLD-RESULTS.md](GOLD-RESULTS.md) (Bedrock registration, 56-core machines, server and client, 2026-11-09), [SCALING-RESULTS.md](SCALING-RESULTS.md) (why Linux lost at 56 cores, the fix, and the 2026-11-12 server and small-machine client runs).
+
+The apps read these environment variables, all optional: `NETWORKPROTO_REGISTRATION=bedrock` (see above), `NETWORKPROTO_INLINE_INPUT=1` (`NetworkEngineOptions.CompleteReceivesInline`, server and `BedrockClient`), `NETWORKPROTO_SOCKETS_INLINE=1` (`UnsafePreferInlineScheduling` for the Sockets baseline) and `NETWORKPROTO_DIAG=1` (a once-per-second CPU, scheduler and runtime sampler, see `Common/ScalingDiagnostics.cs`).
 
 ## Supplying the prototype binaries
 
