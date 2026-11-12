@@ -35,6 +35,7 @@ internal static class ScalingDiagnostics
         ReadThreads(previousThreads, new Dictionary<string, Group>());
 
         Console.WriteLine($"DIAG_START cpus={cpus.Length} processorCount={Environment.ProcessorCount} tickHz={Hz}");
+        WriteTopology(cpus);
         while (true)
         {
             Thread.Sleep(1000);
@@ -54,6 +55,32 @@ internal static class ScalingDiagnostics
             previousThreads = current;
             WriteThreads(t, seconds, groups);
             WriteRuntime(t);
+        }
+    }
+
+    // One line per allowed CPU: package, core, SMT siblings, the CPUs that share its last-level cache and its NUMA node, so that a cpuset such as 0-27 can be read as physical cores.
+    private static void WriteTopology(int[] cpus)
+    {
+        foreach (var cpu in cpus)
+        {
+            var root = $"/sys/devices/system/cpu/cpu{cpu}";
+            var node = Directory.Exists("/sys/devices/system/node")
+                ? Directory.GetDirectories("/sys/devices/system/node", "node*").FirstOrDefault(n => Directory.Exists($"{n}/cpu{cpu}"))
+                : null;
+            Console.WriteLine($"DIAG_TOPO cpu={cpu} package={ReadText($"{root}/topology/physical_package_id")} core={ReadText($"{root}/topology/core_id")} " +
+                $"siblings={ReadText($"{root}/topology/thread_siblings_list")} l3={ReadText($"{root}/cache/index3/shared_cpu_list")} node={Path.GetFileName(node) ?? "?"}");
+        }
+    }
+
+    private static string ReadText(string path)
+    {
+        try
+        {
+            return File.ReadAllText(path).Trim();
+        }
+        catch
+        {
+            return "?";
         }
     }
 

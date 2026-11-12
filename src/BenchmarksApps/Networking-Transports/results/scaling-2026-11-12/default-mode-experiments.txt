@@ -1,0 +1,31 @@
+Default-mode experiments on gold-lin, 2026-11-12 (evening)
+
+Measured on crank (profile aspnet-gold-lin-relay), not independently reproduced.
+Kestrel with the Bedrock registration, TCP HTTP/1.1 keep-alive, 1 KB response, wrk with 896 connections and 56 threads on a separate machine,
+15 s measured, application limited to cores 0-27 (28 physical cores, hyper-thread siblings are cores 28-55 and are outside the cpuset).
+One run per cell. Differences under about 5% are not findings.
+NETWORKPROTO_DIAG=1 was set for every cell; the per-request figures come from analyze-diag.py (steady window, iowait counted as idle).
+The full sampler output is in default-mode-experiments-diag.txt. The code of the experiments is in default-mode-experiments.patch (applies on aspnetcore 51af49adea).
+
+cell                 requests/s   p99 ms   what it is
+spin0-sockets         1,774,180     3.25   Sockets, DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0
+spin0-epoll           1,748,855     2.17   epoll default, spin limit 0
+spin0-iouring         1,716,357     1.82   io_uring default, spin limit 0
+w14-epoll             1,660,775     1.67   epoll default, 14 workers
+w20-epoll             1,849,580     3.58   epoll default, 20 workers
+w14-iouring           1,577,731     1.85   io_uring default, 14 workers
+w20-iouring           1,779,372     3.14   io_uring default, 20 workers
+direct-sockets        1,767,697     3.38   Sockets default (control for the cells below)
+nodirect-epoll        1,805,829     2.80   epoll default (allocation-free command queue, direct off)
+direct-epoll          1,699,151     3.31   epoll default, the flushing thread sends and returns pages (NETWORKPROTO_EPOLL_DIRECT=1)
+dispatch-epoll        1,447,026     2.24   epoll default, thread-pool thread runs recv/app/send (NETWORKPROTO_EPOLL_DISPATCH=1)
+dispatch-inl-epoll    1,447,543     2.19   the same with CompleteReceivesInline
+inline-epoll          2,399,702     1.55   epoll with CompleteReceivesInline (control for the next cell)
+directinl-epoll       2,233,851     1.65   epoll inline plus direct send inside the flush (NETWORKPROTO_EPOLL_DIRECT=1)
+
+Not measurable: connection:close on this load generator. Sockets default reached 10,599 requests per second with 896 socket errors,
+a p99 of 44.7 ms and the load machine at 94.7% CPU, so the remaining close cells were stopped.
+
+Machine topology (DIAG_TOPO): 1 package, 28 cores with 2 threads each (cpu i and i+28), one L3 shared by all 56 logical CPUs.
+
+Sockets runs and the experiments ran about 10-40 minutes apart; the "% of Sockets" figures in Bedrock.md use the direct-sockets run (1,767,697).

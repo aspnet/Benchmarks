@@ -71,11 +71,23 @@ Single runs with `NETWORKPROTO_DIAG=1` (per-thread-group CPU from `/proc`, threa
 | epoll, wake-ups not joined (the GOLD-RESULTS build) | 1.41M | 17.7 µs | 0.97 | 2.00 | 18.4 |
 | epoll, wake-ups joined | 1.83M | 14.6 µs | 0.97 | 0.07 | 17.2 |
 | epoll, joined and inline receive | 2.41M | 11.2 µs | 0 | 0 | 0.5 |
+| io_uring, default | 1.82M | 14.5 µs | 0.97 | n/a | 21.6 |
+| io_uring, inline receive | 2.64M | 10.3 µs | 0 | n/a | 0.2 |
 
 - The `recv` and `send` system time per request is similar: 6.8-7.6 µs on the epoll threads against 7.9-8.0 µs on the Sockets thread-pool threads.
 - Not joining wake-ups added about 3 µs per request (two `eventfd` writes per request from thread-pool threads, and 0.46 `epoll_wait` calls per request against 0.11 once joined), and more runtime lock contention (0.021 contended acquisitions per request against 0.0004).
 - In default mode 28 epoll threads and about 40 thread-pool threads share 28 cores. Inline completion removes the thread-pool set and the run-queue wait.
-- io_uring CPU per request is not reported: the sampler counts threads that wait in the kernel for completions as busy, so the cores look saturated while the process uses 19-21 of 28.
+- io_uring is reported now: [scripts/analyze-diag.py](scripts/analyze-diag.py) counts `iowait` as idle (idle time before and after the load shows up as `iowait` for io_uring, which had widened the steady window and diluted the per-request CPU). In default mode io_uring uses 14.5 µs per request against 14.7 µs for epoll.
+
+### Default mode has a ceiling
+
+Single runs on gold-lin at 28 workers, [default-mode-experiments.txt](results/scaling-2026-11-12/default-mode-experiments.txt) (summary), [default-mode-experiments-diag.txt](results/scaling-2026-11-12/default-mode-experiments-diag.txt) (sampler output per cell) and [default-mode-experiments.patch](results/scaling-2026-11-12/default-mode-experiments.patch) (the experimental code, not merged). Sockets control of the same evening: 1.77M requests per second.
+
+- About 8 µs per request is kernel TCP work, the same for Sockets, epoll and inline. The hop to the thread pool costs the Bedrock providers about 3.5 µs per request (14.7 µs in default mode against 11.2 µs inline) and Sockets about 1.5 µs. That is why default mode is only 102-104% of Sockets at 28 workers and inline is 136-146%.
+- Sending from the thread that flushes the response and returning pages from the thread that releases them (no commands, no wake-ups): 1.70M, 96% of Sockets. Running `recv`, the application and `send` on a thread-pool thread with an edge-triggered epoll thread: 1.45M, 82%. The same direct send inside inline completion: 2.23M against 2.40M for inline. None of them helped.
+- 14 workers lose (epoll 1.66M, io_uring 1.58M, 12-17% of the cores idle), 20 workers equal 28 (1.85M and 1.78M), and `DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0` makes no difference (1.75M and 1.72M).
+- `Connection: close` is not measurable with this load generator (Sockets: 10.6K requests per second, 896 socket errors, load machine at 95% CPU).
+- Bedrock allocates about 258 B per request (Sockets default: 2 B), which costs 2.4-2.8% in GC pauses.
 
 ## Windows server
 
@@ -146,7 +158,7 @@ Add `--application.environmentVariables NETWORKPROTO_SOCKETS_INLINE=1` and `DOTN
 
 ## Caveats
 
-- Two repetitions per cell (a few percent between them). The diagnostic rows are single runs.
+- Two repetitions per cell (a few percent between them). The diagnostic and default-mode experiment rows are single runs.
 - 1 KB keep-alive TCP only; TLS, larger bodies and connection churn were not measured on these machines.
 - `W` workers on `W` cores of a 56-core machine is not the same as a `W`-core machine.
 - Inline completion runs the consumer's code on the transport's worker thread. A consumer that blocks stalls the other connections of that worker, which is why it is an option and not the default.

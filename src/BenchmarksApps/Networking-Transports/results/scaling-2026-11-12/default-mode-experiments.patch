@@ -1,0 +1,615 @@
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/Epoll/ConnectionState.cs b/src/Servers/Kestrel/Transport.Networking/src/Epoll/ConnectionState.cs
+index 1b6bb0fc56..cfd00eb8e5 100644
+--- a/src/Servers/Kestrel/Transport.Networking/src/Epoll/ConnectionState.cs
++++ b/src/Servers/Kestrel/Transport.Networking/src/Epoll/ConnectionState.cs
+@@ -19,5 +19,11 @@ internal abstract class ConnectionState(ulong id)
+     internal abstract void RequestClose();
+     internal abstract void ResumeForPool();
+     internal abstract void Finish(Exception? error);
++    internal virtual void Pump() => Application!.PumpOutput();
++    // Direct mode lets the thread that produced output (or released a page) do the work instead of queueing a command to the epoll thread.
++    // Both return false when the caller must fall back to the command path.
++    internal virtual bool TryPumpDirect() => false;
++    internal virtual bool TryReturnPageDirect(int page) => false;
++    internal virtual bool TryDispatch(uint ready) => false;
+     internal virtual void CheckDeadline(long now) { }
+ }
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/Epoll/EpollWorker.cs b/src/Servers/Kestrel/Transport.Networking/src/Epoll/EpollWorker.cs
+index e809f3717a..d251493995 100644
+--- a/src/Servers/Kestrel/Transport.Networking/src/Epoll/EpollWorker.cs
++++ b/src/Servers/Kestrel/Transport.Networking/src/Epoll/EpollWorker.cs
+@@ -2,7 +2,6 @@
+ // The .NET Foundation licenses this file to you under the MIT license.
+ 
+ using System.Buffers.Binary;
+-using System.Collections.Concurrent;
+ using System.Globalization;
+ using System.Linq;
+ using System.Net;
+@@ -20,11 +19,11 @@ internal sealed class EpollWorker
+ {
+     internal const int PageCount = 2048, PageSize = 16384;
+     private const ulong ListenerId = 1, WakeId = 2;
+-    internal enum CommandKind { OutputReady, ReturnPage, Close, Forget, Unbind, Stop, Connected }
++    internal enum CommandKind { OutputReady, ReturnPage, Close, Forget, Unbind, Stop, Connected, Poke }
+     internal readonly record struct Command(CommandKind Kind, ConnectionState? State = null, int Page = 0, int Fd = -1, IPEndPoint? Remote = null,
+         TaskCompletionSource<IProviderConnection>? Connect = null);
+ 
+-    private readonly ConcurrentQueue<Command> _commands = new();
++    private readonly CommandQueue<Command> _commands = new();
+     private readonly Dictionary<ulong, ConnectionState> _connections = new();
+     private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+     private readonly TaskCompletionSource _stopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
+@@ -49,6 +48,11 @@ internal sealed class EpollWorker
+     private readonly bool _coalesced;
+     private readonly int _sendBufferSize = int.Parse(Environment.GetEnvironmentVariable("NETWORKPROTO_EPOLL_SNDBUF") ?? "0", CultureInfo.InvariantCulture);
+     internal readonly bool FinalSendEnabled = Environment.GetEnvironmentVariable("NETWORKPROTO_FINAL_SEND") is "1" or "2" or "3";
++    // Experimental: the epoll thread only reports readiness; a thread-pool thread runs recv, the application continuation and the send for that connection (like Sockets does). Implies Direct and edge-triggered registration.
++    internal static readonly bool DispatchEnabled = Environment.GetEnvironmentVariable("NETWORKPROTO_EPOLL_DISPATCH") == "1";
++    // Experimental: the thread that flushes a response sends it, and the thread that releases a request page returns it, instead of queueing commands to this worker.
++    internal static readonly bool Direct = DispatchEnabled || Environment.GetEnvironmentVariable("NETWORKPROTO_EPOLL_DIRECT") == "1";
++    private readonly Lock _pageGate = new();
+     internal readonly bool CorkFinal = Environment.GetEnvironmentVariable("NETWORKPROTO_FINAL_SEND") == "3";
+     internal readonly Counters Metrics = new();
+     internal readonly ILogger Logger;
+@@ -254,7 +258,10 @@ internal sealed class EpollWorker
+             {
+                 mask |= Native.Readable | Native.Writable;
+             }
+-            state.Drive(mask);
++            if (!DispatchEnabled || !state.TryDispatch(mask))
++            {
++                state.Drive(mask);
++            }
+         }
+         // A closed/reused fd cannot alias an old event: registrations carry monotonic IDs.
+     }
+@@ -333,6 +340,10 @@ internal sealed class EpollWorker
+             AdoptConnected(command.Fd, command.Remote!, command.Connect!);
+             return;
+         }
++        if (command.Kind == CommandKind.Poke)
++        {
++            return;
++        }
+         var state = command.State;
+         if (state is null)
+         {
+@@ -341,7 +352,7 @@ internal sealed class EpollWorker
+         switch (command.Kind)
+         {
+             case CommandKind.OutputReady:
+-                state.Application!.PumpOutput();
++                state.Pump();
+                 break;
+             case CommandKind.ReturnPage:
+                 state.ReturnPage(command.Page);
+@@ -459,38 +470,50 @@ internal sealed class EpollWorker
+ 
+     internal int RentPage(ulong owner)
+     {
+-        if (!_freePages.TryPop(out var page))
+-        {
+-            return -1;
+-        }
+-        if (_pageOwners[page] != 0)
++        lock (_pageGate)
+         {
+-            throw new InvalidOperationException("Epoll page was already owned.");
++            if (!_freePages.TryPop(out var page))
++            {
++                return -1;
++            }
++            if (_pageOwners[page] != 0)
++            {
++                throw new InvalidOperationException("Epoll page was already owned.");
++            }
++            _pageOwners[page] = owner;
++            return page;
+         }
+-        _pageOwners[page] = owner;
+-        return page;
+     }
+ 
+     internal Memory<byte> Page(int page) => _pages.AsMemory(page * PageBytes, PageBytes);
+ 
+-    internal void OfferPage(ulong owner, int page)
++    // Returns true when the pool was empty, so a paused reader may now be able to resume.
++    internal bool OfferPage(ulong owner, int page)
+     {
+-        if ((uint)page >= (uint)_pageCount || _pageOwners[page] != owner)
++        lock (_pageGate)
+         {
+-            throw new InvalidOperationException("Epoll page returned by the wrong connection.");
++            if ((uint)page >= (uint)_pageCount || _pageOwners[page] != owner)
++            {
++                throw new InvalidOperationException("Epoll page returned by the wrong connection.");
++            }
++            _pageOwners[page] = 0;
++            var wasEmpty = _freePages.Count == 0;
++            _resumePages |= wasEmpty;
++            _freePages.Push(page);
++            return wasEmpty;
+         }
+-        _pageOwners[page] = 0;
+-        _resumePages |= _freePages.Count == 0;
+-        _freePages.Push(page);
+     }
+ 
+     private void ResumeReaders()
+     {
+-        if (!_resumePages)
++        if (!Volatile.Read(ref _resumePages))
+         {
+             return;
+         }
+-        _resumePages = false;
++        lock (_pageGate)
++        {
++            _resumePages = false;
++        }
+         foreach (var state in _connections.Values.ToArray())
+         {
+             if (_freePages.Count == 0)
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/Epoll/Native.cs b/src/Servers/Kestrel/Transport.Networking/src/Epoll/Native.cs
+index cd5e4f5838..52580ab7f1 100644
+--- a/src/Servers/Kestrel/Transport.Networking/src/Epoll/Native.cs
++++ b/src/Servers/Kestrel/Transport.Networking/src/Epoll/Native.cs
+@@ -11,7 +11,7 @@ internal static unsafe partial class Native
+     internal const int Again = -11, Interrupted = -4, ConnectionAborted = -103, NotConnected = -107;
+     internal const int ConnectionReset = -104, BrokenPipe = -32;
+     internal const int Add = 1, Delete = 2, Modify = 3;
+-    internal const uint Readable = 1, Writable = 4, Error = 8, Hangup = 16;
++    internal const uint Readable = 1, Writable = 4, Error = 8, Hangup = 16, Edge = 0x80000000;
+     internal enum SocketOption { NoDelay, Cork, SendBuffer }
+     internal enum TlsOperation { Handshake, Read, Write, Shutdown }
+     internal enum TlsStatus { Complete, WantRead, WantWrite, Closed, PeerAbort, Failed }
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/Epoll/TcpConnection.cs b/src/Servers/Kestrel/Transport.Networking/src/Epoll/TcpConnection.cs
+index e05d6750e8..8ba11fcbb6 100644
+--- a/src/Servers/Kestrel/Transport.Networking/src/Epoll/TcpConnection.cs
++++ b/src/Servers/Kestrel/Transport.Networking/src/Epoll/TcpConnection.cs
+@@ -10,33 +10,149 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Networking.Shared;
+ 
+ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Networking.Epoll;
+ 
+-internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndPoint? remote = null, TaskCompletionSource<IProviderConnection>? connect = null) : ConnectionState(id)
++internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndPoint? remote = null, TaskCompletionSource<IProviderConnection>? connect = null) : ConnectionState(id), IThreadPoolWorkItem
+ {
+     private const int WriteBudget = 256 * 1024;
+     // A client may write a whole request before reading the response, so it needs a receive window far larger than a server's to keep an echoing peer unblocked.
+     private static readonly int ClientLeaseBytes = int.Parse(Environment.GetEnvironmentVariable("NETWORKPROTO_CLIENT_LEASE_BYTES") ?? "1048576", CultureInfo.InvariantCulture);
+     private readonly int _maxLeased = connect is null ? 4 : Math.Max(2, ClientLeaseBytes / engine.PageBytes);
++    // Serializes the epoll thread with the direct-mode threads that send and return pages. It is re-entrant, so epoll-thread-only mode pays only an uncontended enter.
++    private readonly Lock _gate = new();
+     private int _fd = fd, _sendLength, _sendOffset;
+     private nint _sendData;
+     private uint _interest;
+-    private bool _registered, _readPaused, _readEnded, _finalSend;
++    private bool _registered, _readPaused, _readEnded, _finalSend, _pumpActive, _inWrite;
++    private int _pendingReady, _scheduled;
+ 
+     internal override void Drive(uint ready)
+     {
+-        if (Closed)
++        lock (_gate)
+         {
+-            return;
++            if (Closed)
++            {
++                return;
++            }
++            Application ??= connect is null ? engine.Publish(this) : engine.PublishClient(this, remote!, connect);
++            if (_sendData != 0 && (ready & Native.Writable) != 0)
++            {
++                Write();
++            }
++            if (!Closed && !_readPaused && !_readEnded && (ready & Native.Readable) != 0)
++            {
++                Read();
++            }
++            UpdateInterest();
+         }
+-        Application ??= connect is null ? engine.Publish(this) : engine.PublishClient(this, remote!, connect);
+-        if (_sendData != 0 && (ready & Native.Writable) != 0)
++    }
++
++    internal override void Pump()
++    {
++        lock (_gate)
+         {
+-            Write();
++            RunPump();
+         }
+-        if (!Closed && !_readPaused && !_readEnded && (ready & Native.Readable) != 0)
++    }
++
++    private void RunPump()
++    {
++        _pumpActive = true;
++        try
+         {
+-            Read();
++            Application!.PumpOutput();
++        }
++        finally
++        {
++            _pumpActive = false;
++        }
++    }
++
++    // The gate is re-entrant, so a thread inside Drive (inline completion) may pump from within Read. It must not pump from within Write or another pump: the completion would nest.
++    internal override bool TryPumpDirect()
++    {
++        if (!_gate.TryEnter())
++        {
++            return false;
++        }
++        try
++        {
++            if (_pumpActive || _inWrite)
++            {
++                return false;
++            }
++            RunPump();
++            return true;
++        }
++        finally
++        {
++            _gate.Exit();
++        }
++    }
++
++    internal override bool TryDispatch(uint ready)
++    {
++        if (Application is null)
++        {
++            return false;
++        }
++        Interlocked.Or(ref _pendingReady, (int)ready);
++        if (Interlocked.Exchange(ref _scheduled, 1) == 0)
++        {
++            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
++        }
++        return true;
++    }
++
++    void IThreadPoolWorkItem.Execute()
++    {
++        while (true)
++        {
++            var ready = (uint)Interlocked.Exchange(ref _pendingReady, 0);
++            if (ready != 0)
++            {
++                try
++                {
++                    Drive(ready);
++                }
++                catch (Exception error)
++                {
++                    engine.Logger.LogError(error, "Epoll TCP dispatch failed.");
++                    Finish(error);
++                }
++            }
++            // A producer that set a bit after the exchange above either sees _scheduled == 1 (and we loop) or queues a new item.
++            Interlocked.Exchange(ref _scheduled, 0);
++            if (Volatile.Read(ref _pendingReady) == 0 || Interlocked.Exchange(ref _scheduled, 1) != 0)
++            {
++                return;
++            }
++        }
++    }
++
++    // A paused reader must be resumed by the epoll thread, so that case (and a busy gate) falls back to the ReturnPage command.
++    internal override bool TryReturnPageDirect(int page)
++    {
++        if (!_gate.TryEnter())
++        {
++            return false;
++        }
++        try
++        {
++            if (_readPaused || Leased <= 0)
++            {
++                return false;
++            }
++            if (engine.OfferPage(Id, page))
++            {
++                engine.Enqueue(new(EpollWorker.CommandKind.Poke));
++            }
++            Leased--;
++            Interlocked.Increment(ref engine.Metrics.ReturnedPages);
++            return true;
++        }
++        finally
++        {
++            _gate.Exit();
+         }
+-        UpdateInterest();
+     }
+ 
+     internal override void Send(nint data, int length, bool final)
+@@ -64,6 +180,19 @@ internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndP
+     }
+ 
+     private void Write()
++    {
++        _inWrite = true;
++        try
++        {
++            WriteCore();
++        }
++        finally
++        {
++            _inWrite = false;
++        }
++    }
++
++    private void WriteCore()
+     {
+         var budget = WriteBudget;
+         while (_sendData != 0 && budget > 0)
+@@ -103,7 +232,7 @@ internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndP
+ 
+     private unsafe void Read()
+     {
+-        while (Leased < _maxLeased)
++        while (!Closed && Leased < _maxLeased)
+         {
+             var page = engine.RentPage(Id);
+             if (page < 0)
+@@ -139,13 +268,17 @@ internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndP
+             engine.Metrics.RecvBytes += count;
+             Leased++;
+             engine.Received(Application!, page, count);
+-            // Level-triggered epoll will report any remaining input. Do not make
+-            // another usually-empty recv after the common small request.
++            // Level-triggered epoll will report any remaining input; edge-triggered dispatch relies on a short read meaning the socket is drained.
++            // Either way, do not make another usually-empty recv after the common small request.
+             if (count < engine.PageBytes && Leased < _maxLeased)
+             {
+                 return;
+             }
+         }
++        if (Closed)
++        {
++            return;
++        }
+         _readPaused = true;
+         engine.Metrics.ReadPauses++;
+     }
+@@ -167,7 +300,7 @@ internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndP
+         }
+         else if (!_registered || mask != _interest)
+         {
+-            engine.Control(_registered ? Native.Modify : Native.Add, _fd, mask, Id);
++            engine.Control(_registered ? Native.Modify : Native.Add, _fd, EpollWorker.DispatchEnabled ? mask | Native.Edge : mask, Id);
+             _registered = true;
+             _interest = mask;
+         }
+@@ -175,22 +308,28 @@ internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndP
+ 
+     internal override void ReturnPage(int page)
+     {
+-        if (Leased <= 0)
++        lock (_gate)
+         {
+-            throw new InvalidOperationException("Epoll TCP page lease returned twice.");
++            if (Leased <= 0)
++            {
++                throw new InvalidOperationException("Epoll TCP page lease returned twice.");
++            }
++            engine.OfferPage(Id, page);
++            Leased--;
++            Interlocked.Increment(ref engine.Metrics.ReturnedPages);
++            ResumeReader();
+         }
+-        engine.OfferPage(Id, page);
+-        Leased--;
+-        engine.Metrics.ReturnedPages++;
+-        ResumeReader();
+     }
+ 
+     internal override void ResumeForPool()
+     {
+-        if (!Closed && _readPaused && Leased < _maxLeased)
++        lock (_gate)
+         {
+-            engine.Metrics.PageResumes++;
+-            ResumeReader();
++            if (!Closed && _readPaused && Leased < _maxLeased)
++            {
++                engine.Metrics.PageResumes++;
++                ResumeReader();
++            }
+         }
+     }
+ 
+@@ -222,44 +361,50 @@ internal sealed class TcpConnection(EpollWorker engine, ulong id, int fd, IPEndP
+ 
+     internal override void RequestClose()
+     {
+-        Finish(_sendData == 0 ? null : new ConnectionAbortedException("Epoll TCP closed with pending output."));
++        lock (_gate)
++        {
++            Finish(_sendData == 0 ? null : new ConnectionAbortedException("Epoll TCP closed with pending output."));
++        }
+     }
+ 
+     internal override void Finish(Exception? error)
+     {
+-        if (Closed)
+-        {
+-            return;
+-        }
+-        Closed = true;
+-        try
+-        {
+-            if (_registered)
+-            {
+-                engine.Control(Native.Delete, _fd, 0, Id);
+-            }
+-        }
+-        finally
++        lock (_gate)
+         {
+-            _registered = false;
+-            var result = Native.Shutdown(_fd);
+-            if (result == 0 && _finalSend && error is null)
++            if (Closed)
+             {
+-                engine.Metrics.FinalShutdowns++;
++                return;
+             }
+-            else if (result == Native.NotConnected)
++            Closed = true;
++            try
+             {
+-                engine.Metrics.NotConnected++;
++                if (_registered)
++                {
++                    engine.Control(Native.Delete, _fd, 0, Id);
++                }
+             }
+-            else if (result < 0)
++            finally
+             {
+-                engine.Metrics.ShutdownFailures++;
+-                engine.Logger.LogError("Epoll TCP shutdown failed: {Error}", result);
++                _registered = false;
++                var result = Native.Shutdown(_fd);
++                if (result == 0 && _finalSend && error is null)
++                {
++                    engine.Metrics.FinalShutdowns++;
++                }
++                else if (result == Native.NotConnected)
++                {
++                    engine.Metrics.NotConnected++;
++                }
++                else if (result < 0)
++                {
++                    engine.Metrics.ShutdownFailures++;
++                    engine.Logger.LogError("Epoll TCP shutdown failed: {Error}", result);
++                }
++                engine.CloseDescriptor(ref _fd);
++                _sendData = 0;
++                engine.Metrics.Closed++;
++                Application!.Closed(error);
+             }
+-            engine.CloseDescriptor(ref _fd);
+-            _sendData = 0;
+-            engine.Metrics.Closed++;
+-            Application!.Closed(error);
+         }
+     }
+ }
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/IoUringTcp/Engine.cs b/src/Servers/Kestrel/Transport.Networking/src/IoUringTcp/Engine.cs
+index eeabf17f03..54dfebdf18 100644
+--- a/src/Servers/Kestrel/Transport.Networking/src/IoUringTcp/Engine.cs
++++ b/src/Servers/Kestrel/Transport.Networking/src/IoUringTcp/Engine.cs
+@@ -23,7 +23,7 @@ internal sealed class Engine
+     private static readonly int ClientPageBytes = int.Parse(Environment.GetEnvironmentVariable("NETWORKPROTO_CLIENT_PAGE_KB") ?? "64", CultureInfo.InvariantCulture) * 1024;
+     private static readonly int ClientPageCount = int.Parse(Environment.GetEnvironmentVariable("NETWORKPROTO_CLIENT_PAGES") ?? "128", CultureInfo.InvariantCulture);
+     private const ulong AcceptId = 1, WakeId = 2, CancelAcceptId = 3, CancelWakeId = 4;
+-    private readonly ConcurrentQueue<Native.Command> _commands = new();
++    private readonly CommandQueue<Native.Command> _commands = new();
+     private readonly Dictionary<ulong, RingConnection> _connections = new();
+     private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+     private readonly TaskCompletionSource _stopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/Shared/CommandQueue.cs b/src/Servers/Kestrel/Transport.Networking/src/Shared/CommandQueue.cs
+new file mode 100644
+index 0000000000..a763860a14
+--- /dev/null
++++ b/src/Servers/Kestrel/Transport.Networking/src/Shared/CommandQueue.cs
+@@ -0,0 +1,58 @@
++// Licensed to the .NET Foundation under one or more agreements.
++// The .NET Foundation licenses this file to you under the MIT license.
++
++namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Networking.Shared;
++
++/// <summary>
++/// A multi-producer, single-consumer queue of commands for one worker thread. It reuses two arrays and swaps them under a short lock,
++/// so enqueueing allocates nothing in steady state. <see cref="System.Collections.Concurrent.ConcurrentQueue{T}"/> drops a 32-slot segment
++/// after every 32 items, which at two commands per request was about half of the transport's per-request allocation.
++/// </summary>
++internal sealed class CommandQueue<T>
++{
++    private readonly Lock _gate = new();
++    private T[] _incoming = new T[128];
++    private T[] _draining = new T[128];
++    private int _incomingCount;
++    private int _drainCount;
++    private int _drainIndex;
++
++    /// <summary>Gets whether no command is waiting. Call it from the consumer only.</summary>
++    internal bool IsEmpty => _drainIndex == _drainCount && Volatile.Read(ref _incomingCount) == 0;
++
++    internal void Enqueue(T command)
++    {
++        lock (_gate)
++        {
++            if (_incomingCount == _incoming.Length)
++            {
++                Array.Resize(ref _incoming, _incoming.Length * 2);
++            }
++            _incoming[_incomingCount++] = command;
++        }
++    }
++
++    /// <summary>Takes the oldest command. Call it from the consumer only.</summary>
++    internal bool TryDequeue(out T command)
++    {
++        if (_drainIndex == _drainCount)
++        {
++            lock (_gate)
++            {
++                if (_incomingCount == 0)
++                {
++                    command = default!;
++                    return false;
++                }
++                // The drained array is empty (each slot is cleared when taken), so it becomes the next incoming array.
++                (_incoming, _draining) = (_draining, _incoming);
++                _drainCount = _incomingCount;
++                _drainIndex = 0;
++                _incomingCount = 0;
++            }
++        }
++        command = _draining[_drainIndex];
++        _draining[_drainIndex++] = default!;
++        return true;
++    }
++}
+diff --git a/src/Servers/Kestrel/Transport.Networking/src/Shared/ProviderNetworkConnection.cs b/src/Servers/Kestrel/Transport.Networking/src/Shared/ProviderNetworkConnection.cs
+index bbc360b5bf..32e40c9c84 100644
+--- a/src/Servers/Kestrel/Transport.Networking/src/Shared/ProviderNetworkConnection.cs
++++ b/src/Servers/Kestrel/Transport.Networking/src/Shared/ProviderNetworkConnection.cs
+@@ -132,7 +132,13 @@ internal sealed class ProviderNetworkConnection : NetworkConnection, IProviderCo
+     {
+         internal override MemoryPool<byte>? OutputPool => worker.OutputPool is { } pool ? AdaptivePool ??= AdaptiveOutputPool.Create(pool, 4096, 262144) : null;
+         internal override NetworkMemoryKind OutputKind => worker.OutputPool is null ? NetworkMemoryKind.Managed : NetworkMemoryKind.Native;
+-        internal override void Schedule() => worker.Enqueue(new(EpollWorker.CommandKind.OutputReady, state));
++        internal override void Schedule()
++        {
++            if (!EpollWorker.Direct || !state.TryPumpDirect())
++            {
++                worker.Enqueue(new(EpollWorker.CommandKind.OutputReady, state));
++            }
++        }
+         internal override void Send(ReadOnlyMemory<byte> data, nint pinnedAddress, bool final)
+         {
+             worker.Send(state, pinnedAddress, data.Length, final && worker.FinalSendEnabled);
+@@ -140,7 +146,13 @@ internal sealed class ProviderNetworkConnection : NetworkConnection, IProviderCo
+         internal override void Close() => state.RequestClose();
+         internal override void Abort(Exception error) => worker.Enqueue(new(EpollWorker.CommandKind.Close, state));
+         internal override void Forget() => worker.Enqueue(new(EpollWorker.CommandKind.Forget, state));
+-        internal override void Return(int page) => worker.Enqueue(new(EpollWorker.CommandKind.ReturnPage, state, Page: page));
++        internal override void Return(int page)
++        {
++            if (!EpollWorker.Direct || !state.TryReturnPageDirect(page))
++            {
++                worker.Enqueue(new(EpollWorker.CommandKind.ReturnPage, state, Page: page));
++            }
++        }
+     }
+ 
+     private sealed class RingDriver(RingEngine engine, RingState state) : Driver
