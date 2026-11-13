@@ -1,6 +1,6 @@
 # Networking-Transports: 56-core (gold) results
 
-Kestrel serving through the prototype transports on the 56-core "gold" crank machines, server and client, with the transports registered through the Connections abstractions ("Project Bedrock", `src/Servers/Kestrel/Transport.Networking/Bedrock.md` in the aspnetcore branch `dmkorolev/project-bedrock` of DeagleGross/aspnetcore). The small-machine results are in [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md), and the CPU-per-request and NIC measurements that explain these numbers are in [SCALING-RESULTS.md](SCALING-RESULTS.md).
+Kestrel serving through the prototype transports on the 56-core "gold" crank machines, server and client, with the transports registered through the Connections abstractions ("Project Bedrock", [Bedrock.md](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/Bedrock.md) in the aspnetcore branch `dmkorolev/project-bedrock` of DeagleGross/aspnetcore). The small-machine results are in [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md), and the CPU-per-request and NIC measurements that explain these numbers are in [SCALING-RESULTS.md](SCALING-RESULTS.md).
 
 All numbers are as measured on crank and have not been independently reproduced, and the prototype is an experiment, not a shipping component. In every table "% of Sockets" means throughput as a fraction of the System.Net.Sockets run in the same table (100% is parity, 120% is 20% more requests per second than Sockets).
 
@@ -126,4 +126,4 @@ Limits of the client numbers:
 
 ## Other related measurements (not on crank)
 
-The raw-TCP client study against a plain C echo server (HTTP and Kestrel removed from the picture) and the local WSL2 / Windows server matrices are in `Bedrock-History.md` in the aspnetcore branch, not repeated here.
+The raw-TCP client study against a plain C echo server (HTTP and Kestrel removed from the picture) and the local WSL2 / Windows server matrices are in [`Bedrock-History.md`](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/Bedrock-History.md) in the aspnetcore branch, not repeated here.

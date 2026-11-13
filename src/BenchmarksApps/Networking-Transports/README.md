@@ -39,11 +39,13 @@ The crank scenarios are in `scenarios/networking-transports.benchmarks.yml`: `{e
 
 Results: [GOLD-RESULTS.md](GOLD-RESULTS.md) (the 56-core machines: server on Linux and Windows, and the client), [SCALING-RESULTS.md](SCALING-RESULTS.md) (CPU per request, where the network receive work runs, whether the load machine is the limit, and how to run one cell), [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md) (the 4-vCPU Intel machines: TCP and TLS, the 1 KB TCP cell on the current build, and the small-machine client).
 
+Prototype documents (aspnetcore branch `dmkorolev/project-bedrock`, `src/Servers/Kestrel/Transport.Networking`): [PROTOTYPE.md](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/PROTOTYPE.md) and [PUBLIC-API.md](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/PUBLIC-API.md) (the provider model and API), [Bedrock.md](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/Bedrock.md) and [Bedrock-API.md](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/Bedrock-API.md) (the Connections-abstractions fit, its architecture, results and API), [Bedrock-Deep-Dive.md](https://github.com/DeagleGross/aspnetcore/blob/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking/Bedrock-Deep-Dive.md) (where each provider does its I/O, with links into the code).
+
 The apps read these environment variables, all optional: `NETWORKPROTO_REGISTRATION=bedrock` (see above), `NETWORKPROTO_INLINE_INPUT=1` (`NetworkEngineOptions.CompleteReceivesInline`, server and `BedrockClient`), `NETWORKPROTO_SOCKETS_INLINE=1` (`UnsafePreferInlineScheduling` for the Sockets baseline) and `NETWORKPROTO_DIAG=1` (a once-per-second CPU, scheduler and runtime sampler, see `Common/ScalingDiagnostics.cs`).
 
 ## Supplying the prototype binaries
 
-Build the prototype (`src/Servers/Kestrel/Transport.Networking`) and pass these files to the crank build so they land in the project's `libs` folder before `dotnet publish` runs:
+Build the prototype ([`src/Servers/Kestrel/Transport.Networking`](https://github.com/DeagleGross/aspnetcore/tree/dmkorolev/project-bedrock/src/Servers/Kestrel/Transport.Networking) in the aspnetcore branch `dmkorolev/project-bedrock`) and pass these files to the crank build so they land in the project's `libs` folder before `dotnet publish` runs:
 
 - `Microsoft.AspNetCore.Server.Kestrel.Transport.Networking.dll` and `NetworkTransport.Primitives.dll` (all engines).
 - `libnetworkproto2.so`, `libnetworkprotobio.so` (io_uring) and `libnetworkprotoepoll.so` (epoll). They are produced by the adapter's Linux build and copied next to the DLL.
