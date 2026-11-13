@@ -1,6 +1,6 @@
-# Networking-Transports: Linux results (epoll and io_uring vs stock Sockets)
+# Networking-Transports: Linux results on small machines (epoll and io_uring vs stock Sockets)
 
-Measured on crank on 2026-10-28, 3 runs per cell (162 runs). The values below are means of the 3 runs. They are not independently reproduced.
+The 4-vCPU Intel crank machines (`idna-intel-lin-relay`), server limited to 2 CPUs. The 56-core machines are in [GOLD-RESULTS.md](GOLD-RESULTS.md), and the CPU-per-request measurements are in [SCALING-RESULTS.md](SCALING-RESULTS.md). This file has three parts: the TCP and TLS matrix with the original (private-factory) registration, which is the only TLS data ([RPS](#rps)); the TCP keep-alive 1 KB cell re-measured on the current build ([Current build](#current-build-tcp-keep-alive-1-kb)); and the client ([Client](#client)). All values are means of the runs listed, measured on crank, and not independently reproduced.
 
 ## Environment
 
@@ -10,7 +10,7 @@ Measured on crank on 2026-10-28, 3 runs per cell (162 runs). The values below ar
 | Server | `IDNA_INTEL`, Linux x64, 4 logical CPUs, server limited to 2 CPUs (`--application.cpuSet 0-1`, `workers=2`) |
 | Load generator | `IDNA_AMD`, Linux x64, 4 logical CPUs, wrk |
 | Runtime | net11.0, `11.0.0-rtm.26480.113` (SDK `11.0.100-rtm.26480.113`) |
-| Prototype | `dmkorolev/network-proto` of the aspnetcore fork, Release build of `src/Servers/Kestrel/Transport.Networking`; native `.so` files built in WSL (Ubuntu 24.04, gcc 13), liburing linked statically |
+| Prototype | The TCP and TLS matrix (2026-10-28, 3 runs per cell, 162 runs) used a Release build of `src/Servers/Kestrel/Transport.Networking` from the aspnetcore branch `dmkorolev/network-proto`, registered through the prototype's own factory (`UseEpollTcp`, `UseIoUringTcp`). It predates joined worker wake-ups and `CompleteReceivesInline`. The current-build cell and the client use branch `dmkorolev/project-bedrock`. Native `.so` files built in WSL (Ubuntu 24.04, gcc 13), liburing linked statically |
 | TLS | TLS 1.2, `ECDHE-RSA-AES128-GCM-SHA256`, same RSA certificate, session resumption disabled; OpenSSL 3.5.5 on the server |
 | Sockets | stock Kestrel Sockets transport, `UseHttps` (SslStream) |
 | Load | wrk, 256 connections, 32 threads, 15 s warmup + 15 s measured, no pipelining, `GET /{size}` returns `size` bytes |
@@ -18,6 +18,18 @@ Measured on crank on 2026-10-28, 3 runs per cell (162 runs). The values below ar
 | Payload | 1 KB, 8 KB, 64 KB |
 | CPU | server machine-level CPU (`benchmarks/cpu/global`), average of the 15 s steady window. Only 2 of 4 CPUs are used, so it is 52-58% in keep-alive and TLS runs |
 | RPS / CPU | mean RPS divided by mean machine CPU %, i.e. RPS per 1% of machine CPU |
+
+## Current build, TCP keep-alive 1 KB
+
+The same machines, 2 server CPUs and 2 workers, 256 connections and 32 `wrk` threads, 1 KB TCP keep-alive, re-measured on 2026-11-12 on the current build of branch `dmkorolev/project-bedrock` (Bedrock registration, joined wake-ups, default mode), 2 runs per cell. The application CPUs were saturated (about 198% of 200%) and the load machine was at 66-76%.
+
+| Transport | Requests per second (run 1, run 2) | Mean | % of Sockets | CPU per request | System time per request |
+| --- | --- | --- | --- | --- | --- |
+| Sockets | 67,969, 65,315 | 66.6K | 100% | 30.6 µs | 15.8 µs |
+| epoll | 81,411, 89,094 | 85.3K | 128% | 23.0 µs | |
+| io_uring | 97,704, 99,670 | 98.7K | 148% | 20.3 µs | 11.1 µs |
+
+Both native transports use much less CPU per request than Sockets. The mechanism was not isolated. Raw rows: [results/scaling-2026-11-12/recheck-linux.csv](results/scaling-2026-11-12/recheck-linux.csv). The TLS and larger-payload cells below were not re-measured on this build.
 
 ## Variants
 
@@ -68,7 +80,7 @@ All TLS columns except Sockets are transport-owned TLS, enabled when binding the
 
 ## Where we win
 
-- **TCP keep-alive:** epoll +9% to +22% RPS, io_uring +23% to +30% RPS. RPS/CPU is +15% to +19% for epoll and +17% to +29% for io_uring. The 64 KB gap is smaller for both because the payload copy dominates.
+- **TCP keep-alive:** epoll +9% to +22% RPS, io_uring +23% to +30% RPS. RPS/CPU is +15% to +19% for epoll and +17% to +29% for io_uring. The 64 KB gap is smaller for both because the payload copy dominates. On the current build the 1 KB cell is +28% (epoll) and +48% (io_uring) ([Current build](#current-build-tcp-keep-alive-1-kb)).
 - **TCP close:** no valid conclusion, see note 1.
 - **TCP + TLS keep-alive:** every transport variant is +31% to +54% over Sockets at 1 and 8 KB, and +32% to +40% at 64 KB (the one exception is io_uring + session at 1 KB, +14%). RPS/CPU follows the same pattern.
 - **TCP + TLS close:** +30% to +47% RPS, indicative only, see note 2.
@@ -80,7 +92,7 @@ All TLS columns except Sockets are transport-owned TLS, enabled when binding the
 2. **‡ TLS close:** the server is saturated (about 191-198% of 200%) and the load generator is at about 99.9% in every run, so both sides are saturated. Treat it as indicative, not as capacity.
 3. **Keep-alive runs are server-bound:** server core use is 190-198% of 200% and the load generator is at 45-75%.
 4. **Noise:** TLS keep-alive 1 KB varies about 5-20% between runs (io_uring ring/BIO ranged 50.3k-62.1k, epoll 50.1k-54.3k), so the differences between the TLS variants at 1 KB are partly noise. The 8 KB epoll row ranged 31.9k-38.7k.
-5. **Errors:** no bad responses in any run. Two `epoll + session` TLS close 8 KB runs (r2, r3) had 1 socket error each out of about 14.6k requests. One session run needed a retry after a VPN drop.
+5. **Errors:** no bad responses in any run. Two `epoll + session` TLS close 8 KB runs (r2, r3) had 1 socket error each out of about 14.6k requests.
 6. **TLS paths:** epoll, io_uring and io_uring fd use the transport's own OpenSSL integration. The session columns use `TlsSocketSession` from the runtime prototype (dotnet/runtime#128871). The cost of the session wrapper versus native OpenSSL was not profiled.
 7. **Sockets baseline** ignores `workers`. It runs stock Kestrel defaults under the 2-CPU limit.
 
@@ -113,3 +125,18 @@ In TLS close the same comparisons are within -1% to -10% (indicative only, note 
 - **Group D was not measured**, so this data does not say whether a full TLS transport is needed or a TCP transport with an optional TLS layer is enough. Every variant compared here owns TLS inside the transport.
 - If a layer is used on io_uring, it has to take ciphertext in and out (buffer mode) to have a chance of matching ring/BIO. `TlsSocketSession` is fd-bound and cannot.
 - **Not run:** a plain TCP transport (epoll or io_uring) with Kestrel `UseHttps` and the sans-IO `TlsBufferSession`, as in [dotnet/aspnetcore#69565](https://github.com/dotnet/aspnetcore/pull/69565) (opt-in via `Microsoft.AspNetCore.Server.Kestrel.EnableSansIoTls`). It needs a Kestrel build that contains that PR.
+
+## Client
+
+`BedrockClient` (an `HttpClient` / `SocketsHttpHandler` application) with the prototype plugged in through `SocketsHttpHandler.ConnectCallback` (`IConnectionFactory`), against a plain Kestrel Sockets server on the other machine, so only the client transport changes. Measured on 2026-11-12 on the current build, `idna` profiles, the client limited to `W` cores (`--client.cpuSet`), 128 connections at 2 cores and 256 at 4, 1 KB responses, 10 s warmup, 15 s measured, 2 runs per cell, 0 errors and 0 bad responses in all 12 Linux runs.
+
+| Client cores | Handler | Requests/s (run 1, run 2) | Mean | % of Sockets | Machine CPU (client / server) |
+| --- | --- | --- | --- | --- | --- |
+| 2 | Sockets | 58,987, 64,242 | 61,614 | 100% | 56% / 71% |
+| 2 | epoll | 71,295, 68,651 | 69,973 | 114% | 55% / 66% |
+| 2 | io_uring | 73,287, 72,832 | 73,059 | 119% | 53% / 69% |
+| 4 | Sockets | 99,679, 104,232 | 101,955 | 100% | 93% / 88% |
+| 4 | epoll | 102,085, 104,865 | 103,475 | 101% | 89% / 84% |
+| 4 | io_uring | 103,005, 106,743 | 104,874 | 103% | 88% / 88% |
+
+When the client is the limiting side (2 cores) the native clients are ahead. At 4 cores both machines are 80-99% busy, so the server limits and the Linux providers converge on Sockets. Raw rows: [results/scaling-2026-11-12/client-idna-linux.csv](results/scaling-2026-11-12/client-idna-linux.csv). The Linux client on the 56-core machines is in [GOLD-RESULTS.md](GOLD-RESULTS.md#client-httpclient-with-the-prototype-as-connectcallback) (single runs, an earlier build).

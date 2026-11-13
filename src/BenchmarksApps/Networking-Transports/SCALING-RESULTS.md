@@ -1,171 +1,101 @@
-# Networking-Transports: why Linux lost at 56 cores, and the results after the fix
+# Networking-Transports: what limits the Linux server numbers
 
-These results were measured on crank on 2026-11-12. They follow up [GOLD-RESULTS.md](GOLD-RESULTS.md), where the Linux native transports fell behind the Sockets transport at 8 and 28 workers on the 56-core "gold" machines while RIO and IOCP did not. The architecture, the two changes and their API are described in `src/Servers/Kestrel/Transport.Networking/Bedrock.md` and `Bedrock-API.md` in the aspnetcore branch `dmkorolev/project-bedrock` of DeagleGross/aspnetcore.
+The throughput tables are in [GOLD-RESULTS.md](GOLD-RESULTS.md) (56-core machines), [LINUX-RESULTS.md](LINUX-RESULTS.md) and [WINDOWS-RESULTS.md](WINDOWS-RESULTS.md) (small machines). This file holds the measurements that explain them: what each request costs in CPU, where the network receive work runs, whether the load machine is the limit, and how to run one cell. The architecture and the API are described in `src/Servers/Kestrel/Transport.Networking/Bedrock.md` and `Bedrock-API.md` in the aspnetcore branch `dmkorolev/project-bedrock` of DeagleGross/aspnetcore.
 
-All numbers are as measured on crank and have not been independently reproduced. In every table "% of Sockets" means throughput as a fraction of the System.Net.Sockets run in the same table (100% is parity, 120% is 20% more requests per second than Sockets).
+All numbers are as measured on crank (`aspnet-gold-lin-relay` unless stated, runtime `11.0.0-rtm.26480.113`, TCP HTTP/1.1 keep-alive, 1 KB response) and have not been independently reproduced. The CPU-per-request and NIC rows are **single runs**. In every table "% of Sockets" means throughput as a fraction of the System.Net.Sockets run in the same table (100% is parity, 120% is 20% more requests per second than Sockets).
 
-## What changed between GOLD-RESULTS.md and these runs
+## Switches that the results depend on
 
-| Change | Default | Switch |
+| Setting | Default | Switch in these apps |
 | --- | --- | --- |
-| Join pending worker wake-ups (one `eventfd` write per batch of commands instead of one per command) on the Linux providers' server side | **on** (it was off for servers) | `NETWORKPROTO_COALESCE=0` restores the old behaviour |
-| Complete a pending receive on the provider worker instead of queueing the consumer continuation to the thread pool (`NetworkEngineOptions.CompleteReceivesInline`) | off | `NETWORKPROTO_INLINE_INPUT=1` in these apps (`Common/NativeTransport.cs`, `BedrockClient/Common.cs`) |
-| `NetworkInputReader` completes its pending read outside its internal lock | always | none |
-| `ConnectionContextStream` zero-length read leaves the data unexamined (the client stall fix) | always | none |
+| Join pending worker wake-ups (one `eventfd` write per batch of commands instead of one per command) on the Linux providers | on | `NETWORKPROTO_COALESCE=0` restores a wake per command |
+| Complete a pending receive on the provider worker instead of queueing the consumer continuation to the thread pool (`NetworkEngineOptions.CompleteReceivesInline`) | off | `NETWORKPROTO_INLINE_INPUT=1` (`Common/NativeTransport.cs`, `BedrockClient/Common.cs`) |
+| Inline Sockets baseline: `SocketTransportOptions.UnsafePreferInlineScheduling = true`, plus on Linux `DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1` (that variable only applies to the Unix socket engine) | off | `NETWORKPROTO_SOCKETS_INLINE=1` |
+| A once-per-second sampler (`Common/ScalingDiagnostics.cs`, and the epoll counters in the transport) | off | `NETWORKPROTO_DIAG=1` |
 
-For the Sockets baseline, "inline" means `SocketTransportOptions.UnsafePreferInlineScheduling = true` (`NETWORKPROTO_SOCKETS_INLINE=1`) plus, on Linux, `DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1`. That environment variable only applies to the Unix socket engine. `NETWORKPROTO_DIAG=1` turns on a once-per-second sampler (`Common/ScalingDiagnostics.cs`, and the epoll counters in the transport).
+The sampler prints per-thread-group CPU, context switches, run-queue wait, thread-pool and lock counters, the topology of the allowed CPUs (`DIAG_TOPO`), the CPUs outside the cpuset (`DIAG_OUT`), cumulative `NET_RX` softirq counts inside and outside the cpuset (`DIAG_NETRX`), and each NIC's link speed, queue count and interrupt affinity (`DIAG_NIC`, `DIAG_NICIRQ`). [scripts/analyze-diag.py](scripts/analyze-diag.py) turns a crank log into the per-request figures below; it counts `iowait` as idle, because the idle time before and after the load shows up as `iowait` for io_uring.
 
-## Environment
+## CPU per request
 
-| Item | Linux | Windows |
-| --- | --- | --- |
-| Crank profile | `aspnet-gold-lin-relay` | `aspnet-gold-win-relay` |
-| Application machine | 56 cores | 56 cores |
-| Load machine | separate Linux machine, `wrk` | separate Linux machine, `wrk` |
-| Runtime | `11.0.0-rtm.26480.113` | `11.0.0-rtm.26480.113` |
-| Registration | Bedrock (`registration=bedrock`) | Bedrock |
+Whole-process CPU divided by requests per second over the steady window of about 27 s (single runs). Thread-pool items per request are the runtime's work-item counter.
 
-The application is limited to `W` cores (`--application.cpuSet 0-(W-1)`) and runs `W` workers, so "4 workers" is four cores of a 56-core machine. TCP, HTTP/1.1 keep-alive, 1 KB response, `wrk` with 256 connections and 32 threads for 4 and 8 workers and 896 connections and 56 threads for 28 workers, 15 s measured window. Each cell is **2 repetitions**; both values are listed. One crank invocation per cell, run in the order repetition, workers, configuration so that drift hits every configuration alike.
-
-The Windows and Linux matrices ran concurrently on different machines. Repetition 1 of the Linux and Windows `inline` rows ran on a build with an environment-variable switch inside the transport. Repetition 2 ran on the build with the public option (except the Linux 4-worker epoll `inline` cell). Repetition 2 is within 0.1-5% of repetition 1 in every inline cell.
-
-## Linux server
-
-Requests per second:
-
-| Workers | Configuration | Repetition 1 | Repetition 2 | Mean | % of Sockets default | % of Sockets inline |
-| --- | --- | --- | --- | --- | --- | --- |
-| 4 | Sockets default | 309,747 | 312,262 | 311,004 | 100% | |
-| 4 | Sockets inline | 431,441 | 442,114 | 436,778 | 140% | 100% |
-| 4 | epoll default | 390,166 | 375,843 | 383,005 | 123% | 88% |
-| 4 | epoll inline | 540,949 | 528,410 | 534,679 | 172% | 122% |
-| 4 | io_uring default | 395,128 | 389,949 | 392,538 | 126% | 90% |
-| 4 | io_uring inline | 604,434 | 580,919 | 592,676 | 191% | 136% |
-| 8 | Sockets default | 548,760 | 530,387 | 539,573 | 100% | |
-| 8 | Sockets inline | 770,816 | 757,014 | 763,915 | 142% | 100% |
-| 8 | epoll default | 542,031 | 536,288 | 539,160 | 100% | 71% |
-| 8 | epoll inline | 848,459 | 889,067 | 868,763 | 161% | 114% |
-| 8 | io_uring default | 600,620 | 595,995 | 598,307 | 111% | 78% |
-| 8 | io_uring inline | 987,207 | 984,645 | 985,926 | 183% | 129% |
-| 28 | Sockets default | 1,774,934 | 1,791,846 | 1,783,390 | 100% | |
-| 28 | Sockets inline | 1,990,877 | 1,979,448 | 1,985,162 | 111% | 100% |
-| 28 | epoll default | 1,853,393 | 1,860,734 | 1,857,064 | 104% | 94% |
-| 28 | epoll inline | 2,408,393 | 2,434,420 | 2,421,406 | 136% | 122% |
-| 28 | io_uring default | 1,835,313 | 1,810,782 | 1,823,048 | 102% | 92% |
-| 28 | io_uring inline | 2,600,642 | 2,598,607 | 2,599,625 | 146% | 131% |
-
-p99 latency (ms, mean of 2) at 4 / 8 / 28 workers: Sockets default 4.0 / 3.4 / 3.4, Sockets inline 2.3 / 1.6 / 1.8, epoll default 2.9 / 3.5 / 3.6, epoll inline 1.9 / 1.2 / 1.7, io_uring default 2.8 / 2.0 / 2.8, io_uring inline 1.3 / 1.0 / 1.3.
-
-For comparison, the 2026-11-09 run (default configuration before the changes above, mean of 2) gave epoll 107.8%, 92.7%, 78.1% and io_uring 108.3%, 87.2%, 62.9% of Sockets at 4, 8 and 28 workers.
-
-Raw rows: [results/scaling-2026-11-12/server-linux.csv](results/scaling-2026-11-12/server-linux.csv).
-
-### What the sampler says at 28 workers
-
-Single runs with `NETWORKPROTO_DIAG=1` (per-thread-group CPU from `/proc`, thread-pool and lock counters from the runtime, epoll syscall counters from the transport), steady window of about 27 s. Files: [diag-before-fix-epoll-w28.txt](results/scaling-2026-11-12/diag-before-fix-epoll-w28.txt) and [diag-final-shape-w28.txt](results/scaling-2026-11-12/diag-final-shape-w28.txt).
-
-| Configuration (28 workers) | Requests/s | CPU per request | Thread-pool items per request | Worker wake-ups per request | Run-queue wait (cores) |
+| Workers | Configuration | Requests/s | CPU per request | Thread-pool items per request | Allocated per request |
 | --- | --- | --- | --- | --- | --- |
-| Sockets default | 1.78M | 15.1 µs | 1.96 | n/a | 2.3 |
-| Sockets inline | 1.99M | 13.6 µs | 0 | n/a | 0.2 |
-| epoll, wake-ups not joined (the GOLD-RESULTS build) | 1.41M | 17.7 µs | 0.97 | 2.00 | 18.4 |
-| epoll, wake-ups joined | 1.83M | 14.6 µs | 0.97 | 0.07 | 17.2 |
-| epoll, joined and inline receive | 2.41M | 11.2 µs | 0 | 0 | 0.5 |
-| io_uring, default | 1.82M | 14.5 µs | 0.97 | n/a | 21.6 |
-| io_uring, inline receive | 2.64M | 10.3 µs | 0 | n/a | 0.2 |
+| 16 | Sockets default | 1.01M | 14.8 µs | 1.90 | 2 B |
+| 16 | Sockets inline | 1.34M | 11.5 µs | 0 | 133 B |
+| 16 | epoll default | 1.18M | 12.4 µs | 0.92 | 246 B |
+| 16 | io_uring default | 1.18M | 11.5 µs | 0.81 | 218 B |
+| 16 | io_uring inline | 1.75M | 8.9 µs | 0 | 249 B |
+| 28 | Sockets default | 1.78M | 15.1 µs | 1.94-1.96 | 2 B |
+| 28 | Sockets inline | 1.99M | 13.6 µs | 0 | |
+| 28 | epoll default | 1.83M | 14.6 µs | 0.97 | 258 B |
+| 28 | epoll inline | 2.41M | 11.2 µs | 0 | |
+| 28 | io_uring default | 1.82M | 14.5 µs | 0.97 | 259 B |
+| 28 | io_uring inline | 2.64M | 10.3 µs | 0 | |
+| 56 | Sockets default | 2.22M | 22.6 µs | 1.96 | 3 B |
+| 56 | epoll default | 2.40M | 21.7 µs | 0.96 | 256 B |
+| 56 | io_uring default | 2.40M | 21.4 µs | 1.05 | 280 B |
 
-- The `recv` and `send` system time per request is similar: 6.8-7.6 µs on the epoll threads against 7.9-8.0 µs on the Sockets thread-pool threads.
-- Not joining wake-ups added about 3 µs per request (two `eventfd` writes per request from thread-pool threads, and 0.46 `epoll_wait` calls per request against 0.11 once joined), and more runtime lock contention (0.021 contended acquisitions per request against 0.0004).
-- In default mode 28 epoll threads and about 40 thread-pool threads share 28 cores. Inline completion removes the thread-pool set and the run-queue wait.
-- io_uring is reported now: [scripts/analyze-diag.py](scripts/analyze-diag.py) counts `iowait` as idle (idle time before and after the load shows up as `iowait` for io_uring, which had widened the steady window and diluted the per-request CPU). In default mode io_uring uses 14.5 µs per request against 14.7 µs for epoll.
+The 56 worker rows run two threads per physical core and are not comparable with the others. The io_uring and epoll 56 worker steady windows are 13-14 s, Sockets 28 s. Per-thread-group figures: [results/scaling-2026-11-12/recheck-sampler.txt](results/scaling-2026-11-12/recheck-sampler.txt), [diag-final-shape-w28.txt](results/scaling-2026-11-12/diag-final-shape-w28.txt).
 
 ### Default mode has a ceiling
 
-Single runs on gold-lin at 28 workers, [default-mode-experiments.txt](results/scaling-2026-11-12/default-mode-experiments.txt) (summary), [default-mode-experiments-diag.txt](results/scaling-2026-11-12/default-mode-experiments-diag.txt) (sampler output per cell) and [default-mode-experiments.patch](results/scaling-2026-11-12/default-mode-experiments.patch) (the experimental code, not merged). Sockets control of the same evening: 1.77M requests per second.
+At 28 workers every transport in default mode is CPU-bound at 14-15 µs per request:
 
-- About 8 µs per request is kernel TCP work, the same for Sockets, epoll and inline. The hop to the thread pool costs the Bedrock providers about 3.5 µs per request (14.7 µs in default mode against 11.2 µs inline) and Sockets about 1.5 µs. That is why default mode is only 102-104% of Sockets at 28 workers and inline is 136-146%.
-- Sending from the thread that flushes the response and returning pages from the thread that releases them (no commands, no wake-ups): 1.70M, 96% of Sockets. Running `recv`, the application and `send` on a thread-pool thread with an edge-triggered epoll thread: 1.45M, 82%. The same direct send inside inline completion: 2.23M against 2.40M for inline. None of them helped.
-- 14 workers lose (epoll 1.66M, io_uring 1.58M, 12-17% of the cores idle), 20 workers equal 28 (1.85M and 1.78M), and `DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0` makes no difference (1.75M and 1.72M).
-- `Connection: close` is not measurable with this load generator (Sockets: 10.6K requests per second, 896 socket errors, load machine at 95% CPU).
-- Bedrock allocates about 258 B per request (Sockets default: 2 B), which costs 2.4-2.8% in GC pauses.
+| | Sockets default | epoll default | epoll inline |
+| --- | --- | --- | --- |
+| System time (`recv`, `send`, `epoll_wait`) | 8.4 µs | 8.1 µs | 7.6 µs |
+| User time | 6.9 µs | 6.6 µs | 3.6 µs |
+| Soft-interrupt share of the allowed cores | 17% | 19% | 23% |
 
-### Re-check: small machine, client capacity, and the NIC's interrupts
+- **About 8 µs per request is kernel TCP work, and it is the same for all transports.** The epoll threads spend 6.8-7.6 µs of system time per request on `recv` and `send`, and the Sockets thread-pool threads 7.9-8.0 µs.
+- **The thread-pool hop costs the prototype providers about 3.5 µs per request** (14.7 µs in default mode against 11.2 µs inline for epoll, almost all of it user time) and Sockets about 1.5 µs (15.3 against 13.8 µs). The likely cause is cache locality: with the hop, the connection's state is touched by a different core on each request. This was not profiled. The providers do not hop more often than Sockets: 0.97 thread-pool items per request against 1.94.
+- **Both Linux providers already batch.** io_uring runs one ring per worker with `SINGLE_ISSUER` and `DEFER_TASKRUN` and a multishot receive from a provided buffer ring. epoll does 0.14 `epoll_wait` calls and 1.07 events per request, about 7.6 events per wait in default mode (about 17 inline), and 0.07 worker wake-ups per request.
+- **Keep-alive is already the best case for a transport.** A `Connection: close` run is not measurable with this load generator (Sockets: 10.6K requests per second, all 896 connections reporting socket errors, load machine at 95% CPU).
+- **Allocation:** the providers allocate about 250 B per request (Sockets default: 2 B), and the GC pauses cost 2.4-2.8% of the time at 28 workers. Pooling the three per-receive objects (the page lease, the buffer storage and the input segment) would recover part of that, probably 1-2%, and was not done.
 
-Files: [recheck-linux.csv](results/scaling-2026-11-12/recheck-linux.csv) (22 runs, one row each) and [recheck-sampler.txt](results/scaling-2026-11-12/recheck-sampler.txt) (per-request CPU, softirq inside and outside the cpuset, client load). Single runs unless stated, measured on crank, not independently reproduced. The sampler now also prints the CPUs outside the cpuset (`DIAG_OUT`), cumulative `NET_RX` softirq counts inside and outside (`DIAG_NETRX`), and each NIC's link speed, queue count and interrupt affinity (`DIAG_NIC`, `DIAG_NICIRQ`).
+## The cpuset is not a smaller machine
 
-**Default-mode margin by cpuset size (gold-lin, % of Sockets):**
+The application is limited to `W` of the 56 logical CPUs with `--application.cpuSet`. The 40 Gbit/s Mellanox NIC (`mlx5_core`) has 56 receive queues, and `/proc/irq/*/smp_affinity_list` shows one completion-queue interrupt per queue, each pinned to a different single CPU, covering 0-55 exactly once. A cpuset of `W` CPUs therefore holds only `W` of the interrupts, and the rest of the receive (`NET_RX`) softirq work runs on CPUs that the process may not use. The machine is one package with 28 physical cores and two SMT threads per core (CPU `i` and `i + 28`), and one L3 cache shared by all CPUs. Cpusets `0-(W-1)` with `W` up to 28 therefore hold one SMT thread of each core.
 
-| Workers | Sockets default | epoll | io_uring | Runs |
+| Workers | CPUs outside the cpuset | `NET_RX` events handled outside | Softirq CPU per request on the outside CPUs | Softirq share of the allowed CPUs |
 | --- | --- | --- | --- | --- |
-| 4 | 312.9K | 123% | 126% | 2 |
-| 8 | 539.6K | 100% | 111% | 2 |
-| 16 | 1.007M | 118% | 117% | 1 |
-| 28 | 1.78M | 104% | 102% | 2 |
-| 56 (whole machine) | 2.222M | 108% | 108% | 1 |
+| 16 Sockets default | 40 | 64% | 1.5 µs | 10.9% |
+| 16 io_uring default | 40 | 62% | 1.6 µs | 10.4% |
+| 16 Sockets inline | 40 | 67% | 2.5 µs | 12.8% |
+| 16 io_uring inline | 40 | 63% | 2.3 µs | 15.3% |
+| 28 Sockets default | 28 (the SMT siblings of the busy cores) | 49% | 1.7 µs | 17.9-18.5% |
+| 28 io_uring default | 28 | 49% | 2.0 µs | 18.1-18.9% |
+| 56 (whole machine) | 0 | 0% | none | 25.0% Sockets, 26.9% epoll, 28.1% io_uring |
 
-**The NIC explains part of the shape.** `ens1f0np0` is a Mellanox mlx5 at 40 Gbit/s with 56 receive queues, and each queue's interrupt is pinned to a different single CPU, covering 0-55 once. A cpuset of `W` CPUs holds only `W` of them. Measured share of `NET_RX` softirq events handled on CPUs outside the cpuset: 62-67% at 16 workers, 49% at 28, 0% at 56. At 28 workers those outside CPUs are the idle SMT siblings of the busy cores, running 11-13% softirq (1.7-2.0 µs per request). Total soft-interrupt CPU per request is about 3.2 µs at 16 workers and about 4.75 µs at 28. At 56 workers every CPU is 92-98% busy.
+- **The margin of a small cpuset is helped by work the application does not pay for.** At 4 and 16 workers most of the receive processing happens outside the cpuset, so the transport's user-space saving is a larger share of what the application's CPUs do. A real 4-core machine would not have that.
+- **The 28-worker cpuset is the least favorable layout.** The idle SMT siblings (about 12% softirq, otherwise idle) do half of the receive work, next to busy cores. Total softirq CPU per request is about 4.75 µs for Sockets at 28 workers against about 3.2 µs at 16 workers, and io_uring's CPU per request rises from 11.5 µs (16 workers) to 14.5 µs (28) while Sockets stays at about 15 µs. SMT contention between the busy cores and the softirq on their siblings is a possible cause; it was not isolated.
+- **The whole machine is the unconstrained number.** At 56 workers the interrupts land on the application's own CPUs, all CPUs are 92-98% busy, and epoll and io_uring are 108% of Sockets (one run each).
+- The 40 Gbit/s link is not the limit: 2.6M responses of 1 KB per second is about 22.7 Gbit/s of response bytes.
 
-**The client is not the limit in default mode.** Load machine CPU (logical, steady average): 34-41% at 16 workers, 57-61% at 28 and 69-76% at 56 in default mode; 44% (Sockets inline) and 58% (io_uring inline) at 16, and 82% (io_uring inline) at 28. The same machine produced 2.40-2.63M requests per second against inline transports at 28 workers. Because it has SMT, 80% logical is close to its physical limit, so inline results at 28 workers and above may be partly client-limited.
+## Is the load machine the limit?
 
-**16 workers, inline** (single runs): io_uring inline 1.751M (174% of Sockets default, 130% of Sockets inline), Sockets inline 1.342M (133% of Sockets default). At 28 workers: 148% and 131%. The inline margin over the equally inline Sockets path is stable across 16 and 28 workers.
+Load machine CPU (logical, steady average, `wrk` with 576 connections at 16 workers, 896 at 28 and 1,792 at 56):
 
-**Small machine** (`idna-intel-lin-relay`, application limited to 2 CPUs, 2 workers, 256 connections, 1 KB keep-alive, 2 runs each, application CPUs saturated at about 198%):
-
-| Transport | Requests per second (run 1, run 2) | Mean | % of Sockets | CPU per request |
-| --- | --- | --- | --- | --- |
-| Sockets | 67,969, 65,315 | 66.6K | 100% | 30.6 µs |
-| epoll | 81,411, 89,094 | 85.3K | 128% | 23.0 µs |
-| io_uring | 97,704, 99,670 | 98.7K | 148% | 20.3 µs |
-
-System time per request is 15.8 µs for Sockets and 11.1 µs for io_uring. The cause of the gap was not isolated. An earlier pre-Bedrock run on a similar machine gave io_uring +23% and epoll +9% ([LINUX-RESULTS.md](LINUX-RESULTS.md)).
-
-**Per-request CPU by cpuset size (default mode, µs):** Sockets 14.8 (16 workers) and 15.1 (28); epoll 12.4 and 14.6; io_uring 11.5 and 14.5. Thread-pool items per request at 28 workers: Sockets 1.94, io_uring 0.97, so Bedrock is not hopping to the thread pool more than Sockets does. Why io_uring's CPU per request rises by 3 µs between 16 and 28 workers while Sockets' does not was not isolated. SMT contention with softirq on the sibling CPUs is a hypothesis.
-
-One run did not complete: the second io_uring repetition at 4 workers (`chk-gold-w4`) hung and was killed, so that cell has one run.
-
-## Windows server
-
-| Workers | Configuration | Repetition 1 | Repetition 2 | Mean | % of Sockets default |
+| Workers | Sockets default | epoll default | io_uring default | Sockets inline | io_uring inline |
 | --- | --- | --- | --- | --- | --- |
-| 4 | Sockets default | 282,310 | 282,554 | 282,432 | 100% |
-| 4 | Sockets inline | 286,685 | 286,670 | 286,678 | 102% |
-| 4 | IOCP default | 266,856 | 263,103 | 264,980 | 94% |
-| 4 | IOCP inline | 319,463 | 318,997 | 319,230 | 113% |
-| 4 | RIO default | 327,119 | 324,810 | 325,964 | 115% |
-| 4 | RIO inline | 439,809 | 447,438 | 443,623 | 157% |
-| 28 | Sockets default | 1,401,514 | 1,421,807 | 1,411,660 | 100% |
-| 28 | Sockets inline | 1,403,994 | 1,392,249 | 1,398,121 | 99% |
-| 28 | IOCP default | 1,402,736 | 1,411,268 | 1,407,002 | 100% |
-| 28 | IOCP inline | 1,711,183 | 1,722,915 | 1,717,049 | 122% |
-| 28 | RIO default | 1,702,721 | 1,725,383 | 1,714,052 | 121% |
-| 28 | RIO inline | 2,173,234 | 2,183,959 | 2,178,596 | 154% |
+| 16 | 34% | 41% | 40% | 44% | 58% |
+| 28 | 57% | - | 61% | - | 82% |
+| 56 | 69% | 76% | 73% | - | - |
 
-p99 latency (ms, mean of 2) at 4 / 28 workers: Sockets default 37.9 / 29.9, Sockets inline 2.1 / 3.3, IOCP default 38.1 / 23.0, IOCP inline 2.1 / 52.5, RIO default 9.1 / 21.5, RIO inline 36.5 / 92.1. **Inline raises p99 for RIO at both worker counts and for IOCP at 28 workers**, unlike Linux. Its cause was not investigated. Sockets and IOCP default at 28 workers are both about 1.40M, which is not a machine limit because RIO inline reaches 2.18M.
+In default mode the load machine is not the limit: it produced 2.40-2.63M requests per second against inline transports on the same hardware, and it is at 34-41% at 16 workers. The load machine has SMT, so its logical CPU use understates its physical limit, and at 82% (inline at 28 workers) the inline rows may be partly client-limited. A client limit is not proven away, only not indicated.
 
-Raw rows: [results/scaling-2026-11-12/server-windows.csv](results/scaling-2026-11-12/server-windows.csv).
+## Small machine
 
-## Client on small machines
+`idna-intel-lin-relay` (4 logical CPUs, the server limited to 2 CPUs with 2 workers, 256 connections, 32 `wrk` threads, 2 runs per cell, application CPUs saturated at about 198% and the load machine at 66-76%):
 
-`BedrockClient` (`HttpClient` with the prototype in `SocketsHttpHandler.ConnectCallback`) against a plain Kestrel Sockets server on a Linux machine, 1 KB responses, `idna` crank profiles. The client is limited to `W` cores; 128 connections at 2 cores, 256 at 4; 10 s warmup, 15 s measured; 2 repetitions. 0 errors and 0 bad responses in all 24 runs.
+| Transport | Requests per second (run 1, run 2) | Mean | % of Sockets | CPU per request | System time per request |
+| --- | --- | --- | --- | --- | --- |
+| Sockets | 67,969, 65,315 | 66.6K | 100% | 30.6 µs | 15.8 µs |
+| epoll | 81,411, 89,094 | 85.3K | 128% | 23.0 µs | |
+| io_uring | 97,704, 99,670 | 98.7K | 148% | 20.3 µs | 11.1 µs |
 
-| Client OS | Client cores | Handler | Requests/s (rep 1, rep 2) | Mean | % of Sockets | Machine CPU (client / server) |
-| --- | --- | --- | --- | --- | --- | --- |
-| Linux | 2 | Sockets | 58,987, 64,242 | 61,614 | 100% | 56% / 71% |
-| Linux | 2 | epoll | 71,295, 68,651 | 69,973 | 114% | 55% / 66% |
-| Linux | 2 | io_uring | 73,287, 72,832 | 73,059 | 119% | 53% / 69% |
-| Linux | 4 | Sockets | 99,679, 104,232 | 101,955 | 100% | 93% / 88% |
-| Linux | 4 | epoll | 102,085, 104,865 | 103,475 | 101% | 89% / 84% |
-| Linux | 4 | io_uring | 103,005, 106,743 | 104,874 | 103% | 88% / 88% |
-| Windows (AMD) | 2 | Sockets | 46,730, 55,401 | 51,066 | 100% | 71% / 64% |
-| Windows (AMD) | 2 | IOCP | 52,173, 52,828 | 52,500 | 103% | 69% / 65% |
-| Windows (AMD) | 2 | RIO | 70,658, 74,136 | 72,397 | 142% | 73% / 65% |
-| Windows (AMD) | 4 | Sockets | 84,052, 81,249 | 82,650 | 100% | 90% / 80% |
-| Windows (AMD) | 4 | IOCP | 75,337, 74,262 | 74,800 | 91% | 99% / 73% |
-| Windows (AMD) | 4 | RIO | 98,714, 98,448 | 98,581 | 119% | 98% / 82% |
-
-At 4 cores both machines are 80-99% busy, so the server limits and the Linux providers converge on Sockets. Sockets at 2 cores on Windows varied by 17% between repetitions. These runs are the first client matrices after the zero-length read fix, so they also serve as its check. Raw rows: [results/scaling-2026-11-12/client-idna-linux.csv](results/scaling-2026-11-12/client-idna-linux.csv) and [results/scaling-2026-11-12/client-idna-windows.csv](results/scaling-2026-11-12/client-idna-windows.csv).
-
-A first Windows client run on a different idna machine was discarded: every handler measured 1.6-4k requests per second with the machine at 91-100% CPU while the client process used 0.3-0.6 cores, which points at something else running on the machine. The Linux client on the 56-core machines was not re-run after the fix.
+Both native transports use much less CPU per request than Sockets on this machine. The mechanism was not isolated. A gold-lin cpuset of 4 workers (2 runs per cell, 256 connections) gave Sockets 313.9K and 311.8K, epoll 383.9K and 392.4K and io_uring 397.2K requests per second (one run), which is about 124% and 127% of Sockets.
 
 ## Running one cell
 
@@ -192,9 +122,9 @@ Add `--application.environmentVariables NETWORKPROTO_SOCKETS_INLINE=1` and `DOTN
 
 ## Caveats
 
-- Two repetitions per cell (a few percent between them). The diagnostic and default-mode experiment rows are single runs.
-- 1 KB keep-alive TCP only; TLS, larger bodies and connection churn were not measured on these machines.
-- `W` workers on `W` cores of a 56-core machine is not the same as a `W`-core machine.
+- The CPU-per-request, softirq and load-machine rows are single runs. The throughput tables have 1 or 2 repetitions per cell (see [GOLD-RESULTS.md](GOLD-RESULTS.md)), and a few percent between repetitions is noise.
+- 1 KB keep-alive TCP only; TLS, larger bodies and connection churn were not measured on the 56-core machines.
+- `W` workers on `W` cores of a 56-core machine is not the same as a `W`-core machine (see above).
 - Inline completion runs the consumer's code on the transport's worker thread. A consumer that blocks stalls the other connections of that worker, which is why it is an option and not the default.
-- The Windows inline p99 increase and the Windows Sockets and IOCP default plateau at 28 workers are not explained.
-- The client matrices on the 56-core machines (GOLD-RESULTS.md) were not repeated, and the idna client matrices have 2 repetitions per cell.
+- The Windows inline p99 increase and the Windows Sockets and IOCP default plateau at 28 workers are not explained, and no CPU-per-request figures were taken on Windows.
+- Experiments that did not raise default-mode throughput, and the first (superseded) gold-machine numbers, are recorded in `Bedrock-History.md` in the aspnetcore branch, with the raw files in [results/scaling-2026-11-12](results/scaling-2026-11-12) and [results/gold-2026-11-09](results/gold-2026-11-09).

@@ -1,8 +1,8 @@
-# Networking-Transports: Windows results (IOCP and RIO vs stock Sockets)
+# Networking-Transports: Windows results on small machines (IOCP and RIO vs stock Sockets)
 
-Measured on crank, 3 runs per cell. The values below are means of the 3 runs. They are not independently reproduced.
+The 4-vCPU Intel crank machine (`idna-intel-win-relay`), with the original (private-factory) registration, TCP and TLS, plus the client on a small Windows machine. The 56-core machines (the current build, through the Connections abstractions) are in [GOLD-RESULTS.md](GOLD-RESULTS.md). All values are means of 3 runs per cell unless stated, measured on crank, and not independently reproduced.
 
-Sockets, IOCP and all TCP rows were measured on 2026-10-27 (108 runs). The RIO TLS rows (keep-alive and close) were re-measured on 2026-10-29 (18 runs) after the RIO TLS close fix and replace the 2026-10-27 RIO TLS rows. Sockets and IOCP were not re-run on 2026-10-29.
+Sockets, IOCP and all TCP rows were measured on 2026-10-27 (108 runs). The RIO TLS rows (keep-alive and close) were measured on 2026-10-29 (18 runs, 0 bad responses, 0 socket errors) on a build with the RIO TLS close fix. The server matrix below was not re-measured on the current build; the client section was (2026-11-12).
 
 ## Environment
 
@@ -12,7 +12,7 @@ Sockets, IOCP and all TCP rows were measured on 2026-10-27 (108 runs). The RIO T
 | Server | `IDNA_INTEL`, Windows x64, 4 logical CPUs, no CPU pinning |
 | Load generator | `IDNA_AMD`, Linux x64, 4 logical CPUs, wrk |
 | Runtime | net11.0, `11.0.0-rtm.26480.113` (SDK `11.0.100-rtm.26480.113`) |
-| Prototype | `dmkorolev/network-proto` of the aspnetcore fork, Release build of `src/Servers/Kestrel/Transport.Networking`. The RIO TLS rerun build contains the RIO TLS close fix (`b46ed6e964`); later commits only add Linux code |
+| Prototype | `dmkorolev/network-proto` of the aspnetcore fork, Release build of `src/Servers/Kestrel/Transport.Networking` (RIO TLS rows: the build with the RIO TLS close fix, `b46ed6e964`). Registered through the prototype's own factory, before `CompleteReceivesInline` existed |
 | IOCP / RIO | 4 workers, `NETWORKPROTO_WINDOWS_ACCEPT=pool`, TLS owned by the transport (direct SSPI Schannel) |
 | Sockets | stock Kestrel Sockets transport, `UseHttps` (SslStream), same certificate, TLS resumption disabled |
 | TLS | TLS 1.2 for all transports (`NETWORKPROTO_WINDOWS_TLS=1.2`) |
@@ -58,7 +58,22 @@ Sockets, IOCP and all TCP rows were measured on 2026-10-27 (108 runs). The RIO T
 
 ## Notes
 
-1. **Invalid rows were re-measured.** The 2026-10-27 RIO TLS close rows (15-33 RPS) came from a build with a RIO TLS close stall bug and were invalid. After the fix, all RIO TLS rows (keep-alive and close, 1/8/64 KB, 3 runs each, 18 runs, 0 bad responses, 0 socket errors) were re-measured on 2026-10-29 and replace the 2026-10-27 RIO TLS rows.
+1. **RIO TLS rows.** All RIO TLS rows (keep-alive and close, 1/8/64 KB, 3 runs each, 18 runs) are from the 2026-10-29 build with the RIO TLS close fix.
 2. **TCP close is not a fair comparison.** The load generator machine is at 99-100% CPU in every close run (TCP and TLS), so the RPS of about 1.3k is limited by the client and is nearly identical across transports. Keep-alive runs leave the client at 59-92%.
 3. Sockets TCP keep-alive 1 KB varied 15.6% (CV) between its 3 runs, so the IOCP -6.8% there is within noise.
-4. **RIO TLS rerun versus 2026-10-27.** Keep-alive 1 KB (90.5k to 92.0k) and 64 KB (15.9k to 15.9k) are within run-to-run noise. Keep-alive 8 KB moved from 62.4k to 68.4k (+9.6%) and the run ranges do not overlap (59.2-64.6k before, 66.1-70.7k after), but Sockets and IOCP were not re-run on the same day, so this cannot be attributed to the fix. RIO TLS close is within -2.5%, -2.9% and -8.9% of IOCP (1, 8, 64 KB), both transports being limited by the saturated load generator (about 99.8% CPU) and the server machine (92-98% CPU).
+4. **RIO TLS close** is within -2.5%, -2.9% and -8.9% of IOCP (1, 8, 64 KB), both transports being limited by the saturated load generator (about 99.8% CPU) and the server machine (92-98% CPU).
+
+## Client
+
+`BedrockClient` (an `HttpClient` / `SocketsHttpHandler` application) with the prototype plugged in through `SocketsHttpHandler.ConnectCallback`, on a Windows AMD machine against a plain Kestrel Sockets server on a Linux machine, so only the client transport changes. Measured on 2026-11-12 on the current build (the Bedrock registration), the client limited to `W` cores, 128 connections at 2 cores and 256 at 4, 1 KB responses, 10 s warmup, 15 s measured, 2 runs per cell, 0 errors and 0 bad responses in all 12 Windows runs.
+
+| Client cores | Handler | Requests/s (run 1, run 2) | Mean | % of Sockets | Machine CPU (client / server) |
+| --- | --- | --- | --- | --- | --- |
+| 2 | Sockets | 46,730, 55,401 | 51,066 | 100% | 71% / 64% |
+| 2 | IOCP | 52,173, 52,828 | 52,500 | 103% | 69% / 65% |
+| 2 | RIO | 70,658, 74,136 | 72,397 | 142% | 73% / 65% |
+| 4 | Sockets | 84,052, 81,249 | 82,650 | 100% | 90% / 80% |
+| 4 | IOCP | 75,337, 74,262 | 74,800 | 91% | 99% / 73% |
+| 4 | RIO | 98,714, 98,448 | 98,581 | 119% | 98% / 82% |
+
+When the client is the limiting side (2 cores) RIO is clearly ahead and IOCP is at parity. At 4 cores both machines are 80-99% busy, IOCP is behind (91%, as on the server at 4 workers) and RIO stays ahead. Sockets at 2 cores varied by 17% between repetitions, so that cell is noisy. Raw rows: [results/scaling-2026-11-12/client-idna-windows.csv](results/scaling-2026-11-12/client-idna-windows.csv). The Windows client on the 56-core machine is in [GOLD-RESULTS.md](GOLD-RESULTS.md#client-httpclient-with-the-prototype-as-connectcallback) (single runs, an earlier build).
