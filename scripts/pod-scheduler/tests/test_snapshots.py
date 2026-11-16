@@ -55,9 +55,10 @@ class TestSnapshots(unittest.TestCase):
                     ]
                 self.assertTrue(current_roles, "current cohort has no managed roles")
                 for role, framework, channel in current_roles:
+                    expected_channel = "" if role == "application" else "latest"
                     self.assertEqual(
-                        (framework, channel), ("net12.0", "latest"),
-                        f"{template}: {role} must select coherent daily versions",
+                        (framework, channel), ("net12.0", expected_channel),
+                        f"{template}: {role} must use the intended version/channel policy",
                     )
 
     def test_each_config_produces_committed_yaml(self):

@@ -59,12 +59,17 @@ directory and reference it from the relevant `benchmarks_ci_*_pods.json`.
 
 ### Current CoreCLR version
 
-The current CoreCLR CI cohort selects `net12.0` and the `latest` channel for
-each migrated managed application and load role. Crank resolves a coherent
-.NET 12 daily SDK, runtime, and ASP.NET Core set; `latest` is scoped to the
-selected framework, not a floating major-version alias. Selecting the channel
-explicitly keeps these jobs on daily builds after public preview metadata
-becomes available. Crank itself continues to run on .NET 10.
+The current CoreCLR CI cohort selects `net12.0`. Application jobs omit the
+channel and require an agent with the net12 implicit-`latest` default from
+[dotnet/crank#925](https://github.com/dotnet/crank/pull/925), or an equivalent
+update, deployed before relying on daily behavior. Without that agent update,
+`current` can fall back to `latest` while release metadata is absent, then
+stop following daily builds when that metadata appears.
+
+The migrated managed server, client, warmup, and load roles retain their explicit
+`latest` selectors. Crank resolves a coherent .NET 12 daily SDK, runtime, and
+ASP.NET Core set; `latest` is scoped to the selected framework, not a floating
+major-version alias. Crank itself continues to run on .NET 10.
 
 Versioned baselines, Mono, dedicated Blazor/WASM and NativeAOT templates, the
 `yarp-net80` comparison, and fixed Docker/container/Minimal Todo versions are
