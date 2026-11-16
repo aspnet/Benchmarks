@@ -6,6 +6,7 @@ Run from the ``scripts/pod-scheduler`` directory:
 """
 
 import os
+import re
 import tempfile
 import unittest
 
@@ -32,6 +33,33 @@ CASES = [
 
 
 class TestSnapshots(unittest.TestCase):
+    def test_current_coreclr_templates_select_daily_versions_for_each_role(self):
+        templates = [
+            "trend", "trend-database", "mvc", "pgo", "singlefile",
+            "proxies", "proxies-custom", "grpc", "httpclient", "signalr",
+            "sslstream", "websocket", "efcore", "gc", "build-perf", "crossgen2",
+        ]
+        selector = re.compile(
+            r"--([a-z]+)\.framework\s+(net\d+\.\d+)"
+            r"(?:\s+--\1\.channel\s+(\w+))?"
+        )
+        for template in templates:
+            with self.subTest(template=template):
+                with open(os.path.join(_BUILD, f"{template}-scenarios.yml"),
+                          encoding="utf-8") as f:
+                    current_roles = [
+                        role
+                        for line in f
+                        if not (template == "proxies" and "--property proxy=yarp-net80" in line)
+                        for role in selector.findall(line)
+                    ]
+                self.assertTrue(current_roles, "current cohort has no managed roles")
+                for role, framework, channel in current_roles:
+                    self.assertEqual(
+                        (framework, channel), ("net12.0", ""),
+                        f"{template}: {role} must use the intended version/channel policy",
+                    )
+
     def test_each_config_produces_committed_yaml(self):
         for config_name, base_name, expected_files in CASES:
             with self.subTest(config=config_name):
