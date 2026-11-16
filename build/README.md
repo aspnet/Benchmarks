@@ -57,6 +57,21 @@ groups:
 When adding a new benchmark family, drop a `*-scenarios.yml` template in this
 directory and reference it from the relevant `benchmarks_ci_*_pods.json`.
 
+### Current CoreCLR version
+
+The current CoreCLR CI cohort selects `net12.0` and the `latest` channel for
+each migrated managed application and load role. Crank resolves a coherent
+.NET 12 daily SDK, runtime, and ASP.NET Core set; `latest` is scoped to the
+selected framework, not a floating major-version alias. Selecting the channel
+explicitly keeps these jobs on daily builds after public preview metadata
+becomes available. Crank itself continues to run on .NET 10.
+
+Versioned baselines, Mono, dedicated Blazor/WASM and NativeAOT templates, the
+`yarp-net80` comparison, and fixed Docker/container/Minimal Todo versions are
+unchanged. EF Core's CI template overrides the shared job's framework without
+changing other consumers of that job. PR-benchmark defaults and Medium are
+not part of this migration.
+
 ## PR benchmarks
 
 `prbenchmarks.yml` polls benchmark requests on `dotnet/aspnetcore`,
