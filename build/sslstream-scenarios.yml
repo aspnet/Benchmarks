@@ -19,7 +19,7 @@ parameters:
 
   - name: tfm
     type: string
-    default: "--client.framework net12.0 --client.channel latest --server.framework net12.0 --server.channel latest"
+    default: "--client.framework net12.0 --server.framework net12.0"
 
   - name: sslstreamTransport
     type: object
